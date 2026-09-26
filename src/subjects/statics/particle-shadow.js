@@ -19,11 +19,14 @@ const MIN_LEN = 0.25; // tiny answers still get a visible arrow (the label gives
 
 // An arrow drawn shorter than its true size says so in its label, so a
 // capped arrow never looks like a smaller answer than the student typed.
-function shadowArrow(at, v, k, label, id, minLen = MIN_LEN) {
+// minX: arrows pointing left stop before this x (the divider beside the FBD).
+function shadowArrow(at, v, k, label, id, minLen = MIN_LEN, minX = -Infinity) {
   const m = mag(v);
   if (m < 1e-9) return [];
-  const len = Math.max(minLen, Math.min(MAX_LEN, m * k));
-  const note = m * k > MAX_LEN ? " (drawn shorter)" : "";
+  const room = v[0] < 0 ? (at[0] - minX) / (-v[0] / m) : Infinity; // length until it reaches minX
+  const max = Math.max(minLen, Math.min(MAX_LEN, room));
+  const len = Math.max(minLen, Math.min(max, m * k));
+  const note = m * k > max ? " (drawn shorter)" : "";
   return [{ type: "arrow", id, from: at, to: add(at, scale(v, len / m)), role: "shadow", label: label + note }];
 }
 
@@ -38,7 +41,7 @@ function nearestAngle(v, others) {
 }
 
 // guesses: { quantityName: number } typed by the student
-export function shadowShapes(setup, result, at, guesses, k) {
+export function shadowShapes(setup, result, at, guesses, k, minX = -Infinity) {
   const vals = result ? result.values : {};
   const g = (key) => (Number.isFinite(guesses[key]) ? guesses[key] : null);
   const shapes = [];
@@ -50,7 +53,7 @@ export function shadowShapes(setup, result, at, guesses, k) {
     if (gx != null || gy != null) {
       // Their components → the force they describe, plus its dashed components.
       const v = [gx ?? vals[`${f.id}.x`], gy ?? vals[`${f.id}.y`]];
-      const main = shadowArrow(at, v, k, `your ${f.symbol} = ${format(mag(v), "N")}`, `shadow-${f.id}`);
+      const main = shadowArrow(at, v, k, `your ${f.symbol} = ${format(mag(v), "N")}`, `shadow-${f.id}`, MIN_LEN, minX);
       shapes.push(...main);
       // Its dashed components end exactly at the shadow arrow's tip.
       if (main.length) {
@@ -63,7 +66,7 @@ export function shadowShapes(setup, result, at, guesses, k) {
     } else if (gm != null && magnitudeOf(f) == null) {
       // Their size for an unknown force, along its known direction.
       const v = scale(directionOf(f), gm);
-      shapes.push(...shadowArrow(at, v, k, `your ${f.symbol} = ${format(gm, "N")}`, `shadow-${f.id}`));
+      shapes.push(...shadowArrow(at, v, k, `your ${f.symbol} = ${format(gm, "N")}`, `shadow-${f.id}`, MIN_LEN, minX));
       vectors.push(v);
     } else {
       const m = magnitudeOf(f);
@@ -81,19 +84,19 @@ export function shadowShapes(setup, result, at, guesses, k) {
       // would lie on top of another arrow; then it starts a little to the side.
       const hidden = nearestAngle(net, vectors) < 12;
       const start = hidden ? add(at, scale([-net[1], net[0]], 0.22 / mag(net))) : at;
-      shapes.push(...shadowArrow(start, net, k, `ΣF = ${format(mag(net), "N")} ≠ 0`, "shadow-net"));
+      shapes.push(...shadowArrow(start, net, k, `ΣF = ${format(mag(net), "N")} ≠ 0`, "shadow-net", MIN_LEN, minX));
     }
   }
 
   // Resultant: their F_Rx / F_Ry, or their size F_R and angle θ.
   if (g("R.x") != null || g("R.y") != null) {
     const v = [g("R.x") ?? vals["R.x"], g("R.y") ?? vals["R.y"]];
-    shapes.push(...shadowArrow(at, v, k, `your F_R = ${format(mag(v), "N")}`, "shadow-R"));
+    shapes.push(...shadowArrow(at, v, k, `your F_R = ${format(mag(v), "N")}`, "shadow-R", MIN_LEN, minX));
   } else if (g("R") != null || g("R.angle") != null) {
     const size = g("R") ?? vals.R;
     const angle = (g("R.angle") ?? vals["R.angle"]) * DEG; // from the x-axis, same quarter as the real one
     const v = [Math.sign(vals["R.x"] || 1) * size * Math.cos(angle), Math.sign(vals["R.y"] || 1) * size * Math.sin(angle)];
-    shapes.push(...shadowArrow(at, v, k, "your F_R", "shadow-R"));
+    shapes.push(...shadowArrow(at, v, k, "your F_R", "shadow-R", MIN_LEN, minX));
   }
   return shapes;
 }

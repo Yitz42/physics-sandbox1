@@ -11,6 +11,7 @@ import { measureLabel, labelBox } from "./arrows.js";
 const TRIES = [
   [0, 0], [0, 18], [0, -18], [30, 0], [-30, 0], [30, 18], [-30, 18], [30, -18], [-30, -18],
   [0, 36], [0, -36], [60, 0], [-60, 0], [0, 54], [0, -54], [60, 36], [-60, 36], [60, -36], [-60, -36],
+  [100, 0], [-100, 0], [100, 36], [-100, 36], [100, -36], [-100, -36], // far tries: to get back inside a diagram
 ];
 
 function overlapArea(a, b) {
@@ -43,18 +44,22 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     const width = measureLabel(ctx, l.text, l.size, l.weight);
     let best = null;
     let bestCost = Infinity;
-    // Try each nearby spot, with the preferred alignment and also centred.
-    const tries = TRIES.flatMap(([dx, dy]) => [[dx, dy, l.align], [dx, dy, "center"]]);
+    // Try each nearby spot, with the preferred alignment, then centred, then
+    // running the other way (e.g. a long label that must stay inside its diagram).
+    const aligns = [l.align, ...["center", "left", "right"].filter((a) => a !== l.align)];
+    const tries = TRIES.flatMap(([dx, dy]) => aligns.map((a) => [dx, dy, a]));
     for (const [dx, dy, align] of tries) {
       if (l.maxMove != null && Math.hypot(dx, dy) > l.maxMove) continue; // e.g. angles stay by their arc
       const pos = [l.pos[0] + dx, l.pos[1] + dy];
       const box = labelBox(pos[0], pos[1], width, l.size, align);
       // Prefer the original spot: moving away (or re-aligning) costs a little.
       let cost = Math.hypot(dx, dy) + (align === l.align ? 0 : 8);
-      for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : 4); // soft: a plate (avoid if possible)
+      // soft: a plate (avoid if possible); heavy: a point (never cover it)
+      for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
       for (const [p, q] of segments) cost += segmentHits(box, p, q) * 40;
-      // Keep it on the canvas.
+      // Keep it on the canvas, and inside its own diagram (minX/maxX, set by dividers).
       if (box.x0 < 0 || box.y0 < 0 || box.x1 > view.width || box.y1 > view.height) cost += 5000;
+      if ((l.minX != null && box.x0 < l.minX) || (l.maxX != null && box.x1 > l.maxX)) cost += 5000;
       if (cost < bestCost) {
         bestCost = cost;
         best = { pos, box, align };

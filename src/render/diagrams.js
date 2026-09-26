@@ -17,6 +17,8 @@
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
+//   divider  { x }                           soft grey vertical line between two diagrams;
+//                                            every label stays on its own side of it
 //
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
@@ -28,7 +30,7 @@ import { placeLabels, placeLegend } from "./labels.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["zone", "support", "pivot", "beam", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "support", "pivot", "beam", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 export function drawScene(cv, shapes, opts = {}) {
@@ -82,6 +84,13 @@ export function drawScene(cv, shapes, opts = {}) {
   // Point names and force labels choose their spots first; labels marked
   // `yields` (dimension labels) are placed last and move out of their way.
   wanted.sort((a, b) => (a.yields ? 1 : 0) - (b.yields ? 1 : 0));
+  // Dividers split the picture into side-by-side diagrams: each label must
+  // stay in the diagram where it starts (its arrow's side of the line).
+  const cuts = shapes.filter((s) => s.type === "divider").map((s) => cv.toScreen([s.x, 0])[0]).sort((a, b) => a - b);
+  for (const l of wanted) {
+    l.minX = Math.max(0, ...cuts.filter((x) => x <= l.pos[0]).map((x) => x + 4));
+    l.maxX = Math.min(cv.view.width, ...cuts.filter((x) => x > l.pos[0]).map((x) => x - 4));
+  }
   let placed = placeLabels(ctx, wanted, layout);
 
   // Crowded picture (several arrow labels had to move well away from their arrows)?

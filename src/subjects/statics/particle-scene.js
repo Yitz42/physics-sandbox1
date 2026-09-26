@@ -113,7 +113,7 @@ function fbdArrows(setup, result, at, opts) {
     shapes.push({ type: "arrow", id: "net", from: at, to: add(at, scale(n, 1.2 / mag(n))), role: "wrong", label: "ΣF ≠ 0" });
   }
   // After a wrong answer: faint arrows showing what the student's numbers would look like.
-  if (opts.guesses) shapes.push(...shadowShapes(setup, result, at, opts.guesses, k));
+  if (opts.guesses) shapes.push(...shadowShapes(setup, result, at, opts.guesses, k, opts.minX));
   if (setup.target) {
     const t = setup.target;
     const d = directionOf({ direction: t.direction });
@@ -169,12 +169,14 @@ export function particleScene(setup, result, opts = {}) {
   // Put the FBD to the right of the space diagram, with room to spare.
   const right = Math.max(A[0] + 1, ...space.filter((s) => s.to).map((s) => s.to[0]));
   const F = [right + 3.2, A[1]]; // room for FBD arrows and labels pointing left
+  const divider = right + 1.6; // halfway between the two diagrams
   return [
     ...space,
+    { type: "divider", x: divider },
     { type: "text", at: add(A, [0, -3.0]), text: "Space diagram" },
     { type: "text", at: add(F, [0, -3.0]), text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner
-    ...fbdArrows(fs, result, F, opts),
+    ...fbdArrows(fs, result, F, { ...opts, minX: divider + 0.25 }),
     { type: "point", at: F, label: setup.point.label || "", style: "dot" },
   ];
 }

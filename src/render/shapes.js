@@ -90,7 +90,7 @@ export function drawShape(cv, s, env) {
       ctx.arc(x, y, s.style === "ring" ? 6 : 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      out.boxes.push(circleBox(x, y, 7));
+      out.boxes.push({ ...circleBox(x, y, 7), heavy: true }); // labels must never hide a point
       // The point's name (e.g. "A") is placed by diagrams.js with the arrow labels.
       break;
     }
@@ -155,6 +155,20 @@ export function drawShape(cv, s, env) {
     case "text": {
       const [x, y] = S(s.at);
       out.boxes.push(drawLabel(ctx, s.text, x, y, { color: faint, size: 13, weight: 600 }));
+      break;
+    }
+    case "divider": {
+      // A soft grey line from top to bottom of the picture, between two
+      // diagrams (e.g. the space diagram and the FBD). Labels stay on their side.
+      const [x] = S([s.x, 0]);
+      ctx.strokeStyle = faint;
+      ctx.globalAlpha = 0.6;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, 8);
+      ctx.lineTo(x, cv.view.height - 8);
+      ctx.stroke();
+      out.segments.push([[x, 0], [x, cv.view.height]]);
       break;
     }
     case "handle": {
