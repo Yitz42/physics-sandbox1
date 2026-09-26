@@ -105,7 +105,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
         // Label beside the middle, on the side the normal points to.
         const side = s.labelSide || 1;
         const pos = [(a[0] + b[0]) / 2 + n[0] * 14 * side, (a[1] + b[1]) / 2 + n[1] * 14 * side];
-        out.labels.push({ text: s.label, pos, align: "center", size: 13, weight: s.role ? 600 : 500, color, maxMove: 36 });
+        out.labels.push({ text: s.label, pos, align: "center", size: 13, weight: s.role ? 600 : 500, color, maxMove: 36, yields: true });
       }
       break;
     }

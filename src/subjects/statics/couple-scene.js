@@ -7,7 +7,7 @@
 //   • for the point P: the moment arm from P to every line of action,
 //   • the total moment as a curved arrow (and the net force if it isn't zero).
 
-import { add, sub, scale, mag, dot, angleDeg } from "../../core/vector.js";
+import { add, sub, scale, mag, dot, angleDeg, distToSegment } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { angleMarks } from "./particle-scene.js";
@@ -50,6 +50,7 @@ export function coupleScene(setup, result, opts = {}) {
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });
   for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(mag(sub(d.to, d.from)), "m"), labelSide: d.side || 1 });
 
+  const arrowSegs = []; // each force's arrow, so P's arms can keep clear of them
   // Forces. An unknown (replacement) force is faint with "?" until revealed.
   // A "push" is drawn the textbook way: arrowhead AT the point, tail outside
   // the body. Otherwise the tail is at the point (a pull, or any applied force).
@@ -63,6 +64,7 @@ export function coupleScene(setup, result, opts = {}) {
     // A couple's second force has the same size, so it just gets its name.
     const label = f.second && show ? f.symbol : `${f.symbol} = ${show ? format(F, "N") : "?"}`;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: head, label, role: known ? "known" : "unknown", alpha: show ? undefined : 0.5 });
+    arrowSegs.push({ id: f.id, tail, head, u: directionOf(f) });
     if (!setup.hideAngles && !f.push) shapes.push(...angleMarks(f, f.at, len));
     if (f.pointLabel) shapes.push({ type: "point", at: f.at, label: f.pointLabel, style: "dot" });
   });
@@ -86,18 +88,48 @@ export function coupleScene(setup, result, opts = {}) {
   // of P, the second to the other — each joined to P by a thin line. That
   // leaves a clear gap around P for the point, its name and the curved moment
   // arrow, and each arm's label goes on its outer side, away from P.
+  // If an arm would run into a force's arrow (or the space just past its tip,
+  // where the force's label goes) or the bar, it steps further out along the
+  // lines of action, or the arms swap sides: the forces and labels stay put.
   const about = setup.about && !setup.about.hidden;
   if (about && showArms) {
     const P = setup.about.at;
     const gap = setup.about.gap ?? 0.15 * size;
-    allForces(setup).filter((f) => !f.replacement).forEach((f, i) => {
-      const a = armOf(setup, f, f.at);
-      if (a.d < 1e-6) return;
-      const u = directionOf(f);
-      // One common "up" along the lines, so opposite forces still go to opposite sides.
-      const w = upAlong(u);
-      const out = scale(w, (i % 2 ? -1 : 1) * (1 + Math.floor(i / 2)));
-      const shift = scale(out, gap);
+    const clearance = 0.05 * size;
+    const bodySegs = [];
+    const pts = (setup.body && setup.body.points) || [];
+    for (let j = 1; j < pts.length; j++) bodySegs.push([pts[j - 1], pts[j]]);
+    const blockers = [
+      ...arrowSegs.map((s) => [s.tail, add(s.head, scale(s.u, 0.1 * size))]), // arrow + room for its label
+      ...bodySegs,
+    ];
+    const arms = allForces(setup).filter((f) => !f.replacement)
+      .map((f) => ({ f, a: armOf(setup, f, f.at), u: directionOf(f) }))
+      .filter(({ a }) => a.d >= 1e-6);
+    // Place each arm `k` gaps out from P on side `sign` (+1 up, −1 down).
+    // How close does it come to anything in the way? (0 = it crosses something)
+    const room = (arm, sign, k) => {
+      const out = scale(upAlong(arm.u), sign * gap * k);
+      return Math.min(Infinity, ...blockers.map(([p, q]) => segmentGap(add(P, out), add(arm.a.foot, out), p, q)));
+    };
+    const steps = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+    // The nearest clear spot on that side (or the roomiest one if none is clear).
+    const fit = (arm, sign) => {
+      const k = steps.find((x) => room(arm, sign, x) > clearance);
+      return k != null ? { k, cost: k } : { k: steps.reduce((b, x) => (room(arm, sign, x) > room(arm, sign, b) ? x : b)), cost: 20 };
+    };
+    // Arms alternate sides of P (up, down, up …). Try it both ways round and
+    // keep whichever needs the arms moved least.
+    const layout = (flip) => arms.map((arm, i) => {
+      const sign = (i % 2 ? -1 : 1) * (flip ? -1 : 1);
+      const { k, cost } = fit(arm, sign);
+      return { ...arm, sign, k: k + Math.floor(i / 2), cost };
+    });
+    const [first, second] = [layout(false), layout(true)];
+    const total = (l) => l.reduce((t, x) => t + x.cost, 0);
+    for (const { f, a, u, sign, k } of total(second) < total(first) ? second : first) {
+      const out = scale(upAlong(u), sign);
+      const shift = scale(out, gap * k);
       const from = add(P, shift), to = add(a.foot, shift);
       // Which side of the dimension line is "away from P" (dim labels use labelSide ±1).
       const e = sub(to, from);
@@ -105,7 +137,7 @@ export function coupleScene(setup, result, opts = {}) {
       shapes.push({ type: "line", from: P, to: from, style: "reference" });
       shapes.push({ type: "line", from: add(f.at, scale(u, -0.5 * size)), to: add(f.at, scale(u, 0.5 * size)), style: "action" });
       shapes.push({ type: "dim", id: f.id, from, to, role: "arm", label: `${armSymbolOf(f)} = ${format(a.d, "m")}`, labelSide: side });
-    });
+    }
   }
 
   // The total moment: a curved arrow showing which way it turns.
@@ -141,6 +173,13 @@ export function coupleScene(setup, result, opts = {}) {
   if (opts.guesses) shapes.push(...coupleShadow(setup, result, opts.guesses, { k, size, center: momentCenter(setup) }));
   if (about) shapes.push({ type: "point", at: setup.about.at, label: setup.about.label || "P", style: "ring" });
   return shapes;
+}
+
+// Shortest distance between segments p1–p2 and q1–q2 (0 if they cross).
+function segmentGap(p1, p2, q1, q2) {
+  const side = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
+  if (side(p1, p2, q1) * side(p1, p2, q2) < 0 && side(q1, q2, p1) * side(q1, q2, p2) < 0) return 0;
+  return Math.min(distToSegment(p1, q1, q2), distToSegment(p2, q1, q2), distToSegment(q1, p1, p2), distToSegment(q2, p1, p2));
 }
 
 // Lines of action of a couple's two forces and the distance d between them.

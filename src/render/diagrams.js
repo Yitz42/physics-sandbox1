@@ -79,6 +79,9 @@ export function drawScene(cv, shapes, opts = {}) {
   }
 
   const layout = { obstacles, segments, view: cv.view };
+  // Point names and force labels choose their spots first; labels marked
+  // `yields` (dimension labels) are placed last and move out of their way.
+  wanted.sort((a, b) => (a.yields ? 1 : 0) - (b.yields ? 1 : 0));
   let placed = placeLabels(ctx, wanted, layout);
 
   // Crowded picture (several arrow labels had to move well away from their arrows)?
