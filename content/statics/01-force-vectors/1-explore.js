@@ -13,7 +13,7 @@ export default {
     "Click an arrow or an equation term to see how they match.",
   setup: {
     analysis: "components",
-    point: { at: [0, 0], label: "O" }, // named because the direction dropdown says "From O to …"
+    point: { at: [0, 0], label: "O", object: "eyebolt", mount: [-1, -1] }, // named because the direction dropdown says "From O to …"; the eyebolt is screwed in down-left
     forceScale: 100, // arrows drawn 1 m long per 100 N, so dragging sets the size
     dragStep: 10,
     dragMax: 300,

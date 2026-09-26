@@ -4,18 +4,13 @@
 //   dim        { from, to, label, role?, labelSide?, labelOn? }  a dimension / moment-arm
 //              line with end ticks; labelOn puts the label in a break in the middle of the line
 //   rightangle { at, u, v }                    small square marking a 90° corner
-//   motor      { at }                          an electric motor seen end-on, shaft at `at`
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove? } curved arrow: sense +1 CCW, −1 CW;
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
+// Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
-
-// A colour from a CSS variable (via the page), with a fallback.
-function cssColorOr(env, name, fallback) {
-  const v = typeof getComputedStyle === "function" ? getComputedStyle(document.documentElement).getPropertyValue(name).trim() : "";
-  return v || fallback;
-}
+import { drawObject } from "./objects.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -130,64 +125,6 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.stroke();
       break;
     }
-    case "motor": {
-      // An electric motor seen end-on (a simple facsimile): a round housing
-      // with cooling fins, bolted to a foot on the ground, and the shaft in
-      // the middle — the shaft is what turns. Sized in pixels.
-      const [x, y] = S(s.at);
-      const R = 26, grey = cssColorOr(env, "--c-line", "#d5dbe4");
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = ink;
-      // Foot and ground.
-      ctx.fillStyle = grey;
-      ctx.beginPath();
-      ctx.moveTo(x - 14, y + R - 6);
-      ctx.lineTo(x + 14, y + R - 6);
-      ctx.lineTo(x + 22, y + R + 10);
-      ctx.lineTo(x - 22, y + R + 10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x - 32, y + R + 10);
-      ctx.lineTo(x + 32, y + R + 10);
-      ctx.stroke();
-      ctx.lineWidth = 1;
-      for (let t = -30; t <= 30; t += 7) {
-        ctx.beginPath();
-        ctx.moveTo(x + t, y + R + 10);
-        ctx.lineTo(x + t - 6, y + R + 17);
-        ctx.stroke();
-      }
-      // Housing with fins.
-      ctx.lineWidth = 2;
-      for (let k = 0; k < 12; k++) {
-        const a = (k * Math.PI) / 6;
-        ctx.beginPath();
-        ctx.moveTo(x + Math.cos(a) * R, y + Math.sin(a) * R);
-        ctx.lineTo(x + Math.cos(a) * (R + 5), y + Math.sin(a) * (R + 5));
-        ctx.stroke();
-      }
-      ctx.fillStyle = grey;
-      ctx.beginPath();
-      ctx.arc(x, y, R, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = paper;
-      ctx.beginPath();
-      ctx.arc(x, y, R - 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Shaft, with a key so you can see it turn.
-      ctx.fillStyle = ink;
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = paper;
-      ctx.fillRect(x - 1.5, y - 6, 3, 4);
-      out.boxes.push({ x0: x - R - 6, y0: y - R - 6, x1: x + R + 6, y1: y + R + 18 });
-      break;
-    }
     case "moment": {
       // A curved arrow around the centre: 290° of arc, head showing the turning sense.
       const [x, y] = S(s.center);
@@ -224,6 +161,11 @@ export function drawExtraShape(cv, s, env, roleColor) {
       if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60 });
       out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r });
       break;
+    }
+    default: {
+      // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js.
+      const obj = drawObject(cv, s, env);
+      if (obj) return obj;
     }
   }
   return out;

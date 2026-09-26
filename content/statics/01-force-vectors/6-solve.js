@@ -12,7 +12,7 @@ export default {
     "Three forces act on the eyebolt. Find their resultant: its components, its magnitude $F_R$, and the angle $\\theta$ it makes with the x-axis.",
   setup: {
     analysis: "resultant",
-    point: { at: [0, 0], label: "" },
+    point: { at: [0, 0], label: "", object: "eyebolt" }, // screwed in where no force points
     forces: [
       { id: "F1", symbol: "F_1", magnitude: 600, direction: { angle: 45, from: "+x", toward: "+y" } },
       { id: "F2", symbol: "F_2", magnitude: 400, direction: { slope: [-4, 3] } },

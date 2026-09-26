@@ -124,6 +124,27 @@ function fbdArrows(setup, result, at, opts) {
   return shapes;
 }
 
+// What the forces act on, when the stage names it (setup.point.object):
+// "eyebolt" or "bracket", fixed to a surface in direction setup.point.mount
+// ([x, y]), or — if no mount is given — into the widest gap between the
+// forces, so no arrow lies on top of it.
+function mountShapes(setup, A) {
+  const kind = setup.point.object;
+  if (kind !== "eyebolt" && kind !== "bracket") return [];
+  let dir = setup.point.mount;
+  if (!dir) {
+    const angles = setup.forces.map((f) => Math.atan2(...[...directionOf(f)].reverse())).sort((a, b) => a - b);
+    let best = { gap: -1, mid: -Math.PI / 2 };
+    angles.forEach((a, i) => {
+      const next = i + 1 < angles.length ? angles[i + 1] : angles[0] + 2 * Math.PI;
+      if (next - a > best.gap) best = { gap: next - a, mid: (a + next) / 2 };
+    });
+    dir = [Math.cos(best.mid), Math.sin(best.mid)];
+  }
+  const m = mag(dir) || 1;
+  return [{ type: kind, at: A, dir: [dir[0] / m, dir[1] / m] }];
+}
+
 // The real setup: ring, cables to supports, hanging crate.
 function spaceDiagram(setup) {
   const A = setup.point.at;
@@ -147,8 +168,11 @@ function spaceDiagram(setup) {
       shapes.push(...angleMarks(f, A, Math.min(1.2, mag(d)), setup.forces.indexOf(f)));
     } else if (f.kind === "weight") {
       const top = add(A, [0, -0.7]);
+      const label = f.mass != null ? `${+f.mass.toFixed(2)} kg` : f.symbol;
       shapes.push({ type: "line", id: f.id, from: A, to: top, style: "cable" });
-      shapes.push({ type: "box", id: f.id, at: add(top, [0, -0.3]), w: 0.95, h: 0.6, label: f.mass != null ? `${+f.mass.toFixed(2)} kg` : f.symbol });
+      // What hangs there: a crate, or a real object the stage names (object: "lamp").
+      if (f.object === "lamp") shapes.push({ type: "lamp", id: f.id, at: top, w: 0.9, h: 0.5, label });
+      else shapes.push({ type: "box", id: f.id, at: add(top, [0, -0.3]), w: 0.95, h: 0.6, label });
     }
   }
   shapes.push({ type: "point", at: A, label: setup.point.label || "", style: "ring" });
@@ -164,7 +188,7 @@ export function particleScene(setup, result, opts = {}) {
   const fs = opts.fbdSetup || setup;
   const hasBodies = setup.forces.some((f) => f.kind === "cable" || f.kind === "weight");
   if (!hasBodies || opts.fbdOnly) {
-    return [{ type: "axes" }, ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
+    return [{ type: "axes" }, ...mountShapes(fs, A), ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
   }
   const space = spaceDiagram(setup);
   // Two diagrams side by side with a soft line between them: the space

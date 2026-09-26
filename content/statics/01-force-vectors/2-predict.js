@@ -11,7 +11,7 @@ export default {
     "The force $F$ on the bracket is shown in the picture, with its angle. Predict its components $F_x$ and $F_y$ — **including their signs** — then press **Test**.",
   setup: {
     analysis: "components",
-    point: { at: [0, 0], label: "" },
+    point: { at: [0, 0], label: "", object: "bracket" }, // the bracket is fixed on the side away from F
     forces: [{ id: "F", symbol: "F", magnitude: 400, direction: { angle: 30, from: "+y", toward: "-x" } }],
   },
   // "Try a new version" picks new numbers from these lists.

@@ -17,7 +17,7 @@ export default {
     forces: [
       { id: "T_AB", symbol: "T_{AB}", kind: "cable", magnitude: null, direction: { slope: [-4, 3] }, anchor: { label: "B", length: 2.2 } },
       { id: "T_AC", symbol: "T_{AC}", kind: "cable", magnitude: null, direction: { angle: 45, from: "+x", toward: "+y" }, anchor: { label: "C", length: 2 } },
-      { id: "W", symbol: "W", kind: "weight", mass: 20 },
+      { id: "W", symbol: "W", kind: "weight", mass: 20, object: "lamp" },
     ],
   },
   vary: [
