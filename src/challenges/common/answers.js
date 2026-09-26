@@ -48,8 +48,6 @@ export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mist
 //   asks: [{ quantity, label?, unit?, precision? }]
 //   quantities: solver.quantities(setup) — supplies labels and units
 export function answerInputs(container, asks, quantities) {
-  // Tell students up front how exact they need to be.
-  container.appendChild(el("div", { className: "answer-precision", textContent: "Give at least 1 decimal place: answers must be within the ± shown beside each box." }));
   const rows = asks.map((ask) => {
     const q = quantities[ask.quantity] || {};
     const unit = ask.unit || q.unit || "";

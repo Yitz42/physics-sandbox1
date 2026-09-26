@@ -53,6 +53,7 @@ export function mount(ctx) {
     actions.innerHTML = "";
     ctx.el.feedback.innerHTML = "";
     ctx.el.explanation.innerHTML = "";
+    if (mem.correct < required) ctx.showHints(); // fresh hints for the new question
     // A picture helps many questions; hide the figure when there isn't one.
     const setup = q.setup || ctx.setup;
     ctx.el.figure.hidden = !setup;
@@ -77,6 +78,7 @@ export function mount(ctx) {
       const q = current();
       b.classList.add("is-right");
       lock();
+      ctx.hideHints(); // answered correctly: no hint needed
       mem.correct++;
       mem.pos++;
       showMessage(ctx.el.feedback, "good", "Correct ✓", q.explanation || "");

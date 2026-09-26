@@ -51,6 +51,14 @@ export function runStage({ stage, view, key, next }) {
         ctx.revealed = true;
         setStatus(key, STATUS.PRACTICE);
       },
+      // Hints are pointless once a question is answered; challenges hide them
+      // after a correct answer and bring them back for the next question.
+      hideHints() {
+        el.hints.innerHTML = "";
+      },
+      showHints() {
+        buildHints(el.hints, stage.hints);
+      },
       explain() {
         showExplanation(el.explanation, stage.explanation);
       },
@@ -81,7 +89,7 @@ export function runStage({ stage, view, key, next }) {
         el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
       },
     };
-    buildHints(el.hints, stage.hints);
+    ctx.showHints();
     challenge.mount(ctx);
   }
 

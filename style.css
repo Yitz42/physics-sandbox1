@@ -163,7 +163,6 @@ p { margin: 0 0 8px; }
 .answer-input { font: inherit; font-size: 17px; width: 130px; padding: 6px 8px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-panel); color: var(--c-ink); }
 .answer-unit { color: var(--c-muted); }
 .answer-tol { font-size: 15px; color: var(--c-ink); background: var(--c-bg); border-radius: 999px; padding: 1px 8px; }
-.answer-precision { font-size: 14px; color: var(--c-muted); margin: -2px 0 4px; }
 .status-badge[hidden] { display: none; }
 .answer-note { font-size: 14px; margin-top: 4px; }
 .answer-row.is-wrong .answer-note { color: var(--c-bad); }
