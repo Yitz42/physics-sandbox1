@@ -22,6 +22,8 @@ import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
 const EQ_MUTATORS = { swap: swapFactor, sign: flipSign, missing: removeTerm };
+// "w_{A}" → "wA", for plain-text button labels.
+const plain = (symbol) => String(symbol).replace(/[{}_]/g, "").replace(/\\/g, "");
 
 export function mount(ctx) {
   const { stage, solver } = ctx;
@@ -35,11 +37,19 @@ export function mount(ctx) {
 
   const ws = createWorkspace(ctx, { equations: "never", reveal: false, sceneOpts: { ...(stage.sceneOpts || {}), fbdSetup: wrongSetup } });
   const correctEqs = solver.equations(ws.setup, ws.result);
-  const wrongEqs = isFbd
+  const wrongEqs = (isFbd
     ? solver.equations(wrongSetup, solver.solve(wrongSetup))
-    : correctEqs.map((eq) => (eq.id === mutation.equation ? EQ_MUTATORS[mutation.kind](eq, mutation.term) : eq));
+    : correctEqs.map((eq) => (eq.id === mutation.equation ? EQ_MUTATORS[mutation.kind](eq, mutation.term) : eq))
+  ).map((eq) => JSON.parse(JSON.stringify(eq))); // own copies: changing them must not touch the correct ones
   // "define" equations (resultants) show their value; recompute it for the wrong version.
-  wrongEqs.forEach((eq) => eq.result && (eq.result = { ...eq.result, value: evaluate(eq) }));
+  // An equation can also define a value that later lines use (eq.defines, e.g.
+  // F_2 = ½Lw and then F_R = F_1 + F_2): the student's wrong value is carried
+  // forward, so their work reads the way they would really have written it.
+  wrongEqs.forEach((eq, i) => {
+    if (eq.result) eq.result = { ...eq.result, value: evaluate(eq) };
+    if (!eq.defines || !eq.result) return;
+    for (const later of wrongEqs.slice(i + 1)) for (const t of later.terms) if (t.id === eq.defines) t.value = eq.result.value;
+  });
 
   // ---- Layout ---------------------------------------------------------------
   const intro = el("div", { className: "debug-intro" });
@@ -123,7 +133,8 @@ export function mount(ctx) {
       return dbg.missingChoices.map((c) => ({ label: c.label, correct: c.id === mutation.force, feedback: c.feedback || "That force doesn't act on this point." }));
     }
     if (mutation.kind === "missing") {
-      return ws.setup.forces.map((f) => ({ label: `Add the ${f.symbol.replace(/[{}_]/g, "")} term`, correct: f.id === mutation.term, feedback: "That force's term is already there. Which force is missing from this equation?" }));
+      // One choice per term of the correct equation (only the missing one fixes it).
+      return target.terms.map((t) => ({ label: `Add the ${plain(t.symbol)} term`, correct: t.id === mutation.term, feedback: "That term is already there. Which one is missing from this equation?" }));
     }
     if (mutation.kind === "reverse") {
       return [
@@ -140,17 +151,27 @@ export function mount(ctx) {
     ];
   }
 
-  // Force id → its symbol as inline math, e.g. "T_AB" → "$T_{AB}$".
+  // Force id → its symbol as inline math, e.g. "T_AB" → "$T_{AB}$". Ids that
+  // aren't plain forces (a piece of a distributed load, a support reaction)
+  // are looked up in the equations.
   function sym(id) {
-    const f = ws.setup.forces.find((x) => x.id === id);
-    return `$${f ? f.symbol : id}$`;
+    const f = (ws.setup.forces || []).find((x) => x.id === id);
+    const t = [...correctEqs, ...wrongEqs].flatMap((e) => e.terms).find((x) => x.id === id);
+    return `$${f ? f.symbol : t ? t.symbol : id}$`;
   }
 
   function describeMistake() {
     if (mutation.kind === "remove") return `A force is missing from the FBD. Every force acting on the point must be drawn — here that includes ${sym(mutation.force)}.`;
     if (mutation.kind === "reverse") return `The arrow for ${sym(mutation.force)} points the wrong way. It must be reversed.`;
     if (mutation.kind === "missing") return `The term for ${sym(mutation.term)} is missing from the equation.`;
-    return mutation.kind === "swap" ? `The ${sym(mutation.term)} term has sin and cos swapped.` : `The ${sym(mutation.term)} term has the wrong sign.`;
+    if (mutation.kind === "swap") {
+      // The term can say what its slip was (a wrong moment arm, a missing ½ …); else it's sin/cos.
+      const eq = correctEqs.find((e) => e.id === mutation.equation);
+      const t = eq && eq.terms.find((x) => x.id === mutation.term);
+      const why = t && t.factor && t.factor.swapReason;
+      return `The ${sym(mutation.term)} term ${why || "has sin and cos swapped"}.`;
+    }
+    return `The ${sym(mutation.term)} term has the wrong sign.`;
   }
 
   // ---- Done: show the corrected work -----------------------------------------

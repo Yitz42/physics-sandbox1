@@ -25,6 +25,7 @@ const UNITS = {
   m: { text: "m", tex: "\\text{m}" },
   kg: { text: "kg", tex: "\\text{kg}" },
   "N·m": { text: "N·m", tex: "\\text{N}\\!\\cdot\\!\\text{m}" },
+  "N/m": { text: "N/m", tex: "\\text{N/m}" }, // a distributed load: newtons per metre of beam
   deg: { text: "°", tex: "^\\circ" },
   "": { text: "", tex: "" },
 };

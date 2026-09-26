@@ -16,6 +16,7 @@ The first course is **Statics**. Mechanics of materials and dynamics come later.
 | 3 | Moment of a force | $M = Fd$, the moment arm, clockwise vs counterclockwise |
 | 4 | Couples | Equal, opposite, offset forces; $M = Fd$ about any point; equivalent couples |
 | 5 | Equivalent force systems | Replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
+| 6 | Distributed loads | A load's resultant is its area, at its centroid; trapezoids split up; curved loads by $\int w\,dx$ |
 
 Every unit has six stages, each testing the idea a different way:
 
@@ -57,7 +58,7 @@ src/core/             shared machinery: vectors, units, equations, progress savi
 src/challenges/       the six stage types (explore, predict, build, debug, concept-check, solve)
 src/render/           drawing only: arrows, labels, beams, lamps, motors …
 src/ui/               menus, buttons, feedback messages
-src/subjects/statics/ the physics: one solver per topic (particle, moment, couple, equivalent)
+src/subjects/statics/ the physics: one solver per topic (particle, moment, couple, equivalent, distributed)
 content/statics/      the lessons: one folder per unit, one file per stage
 tests/                the test page and test files
 docs/CURRICULUM.md    the plan for every unit

@@ -245,3 +245,66 @@ test("Unit 5 solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 N·m", () =>
   close(r.values["R.y"], -430);
   close(r.values.M, -448);
 });
+
+test("Unit 6 explore: 200 → 600 N/m over 6 m gives F_R = 2400 N at x̄ = 3.5 m", () => {
+  const st = find("06-distributed-loads/1-explore");
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values.R, 2400);
+  close(r.values.pos, 3.5);
+});
+
+test("Unit 6 predict: F_R = ½(600)(6) = 1800 N at x̄ = 4 m; every version's resultant is on the load", () => {
+  const st = find("06-distributed-loads/2-predict");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 1800);
+  close(r.values.pos, 4);
+  for (let i = 0; i < 30; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    const v = solver.solve(s).values, L = s.loads[0].to;
+    close(v.pos, s.loads[0].peak === "right" ? (2 * L) / 3 : L / 3, 1e-9, JSON.stringify(s.loads[0]));
+  }
+});
+
+test("Unit 6 build: the start fails; w_F = 2400, w_B = 600 N/m puts 6000 N over the axle; 3000/0 is too far forward", () => {
+  const st = find("06-distributed-loads/3-build");
+  const solver = getSolver(st.solver);
+  const tryLoad = (front, back) => {
+    const s = clone(st.setup);
+    setPath(s, "loads.#g.w.0", front);
+    setPath(s, "loads.#g.w.1", back);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting load should not meet the goal");
+  ok(tryLoad(2400, 600).ok, "hand-worked answer should meet the goal");
+  ok(/in front of/.test(tryLoad(3000, 0).message), "a triangle 3000 → 0 acts at 1.33 m, in front of the axle");
+  ok(/must be 6000/.test(tryLoad(1000, 1000).message));
+});
+
+test("Unit 6 debug: F_R = 4100 N and ΣFx̃ = 16100 N·m; every version's load rises left to right", () => {
+  const st = find("06-distributed-loads/4-debug");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 4100);
+  close(r.values.M, 16100);
+  for (let i = 0; i < 20; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    ok(s.loads[0].w[1] > s.loads[0].w[0], "the triangle must sit on top of the rectangle");
+    equal(solver.equations(s).map((e) => e.id), ["A_w_rect", "A_w_tri", "F", "M"]);
+  }
+});
+
+test("Unit 6 solve: w = 600(x/4)² gives 800 N at 3.00 m; w = 900(x/5)³ gives 1125 N at 4.00 m", () => {
+  const st = find("06-distributed-loads/6-solve");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 800);
+  close(r.values.pos, 3);
+  const s = clone(st.setup);
+  setPath(s, "loads.#w.w", 900);
+  setPath(s, "loads.#w.n", 3);
+  setPath(s, "loads.#w.to", 5);
+  const r3 = solver.solve(s);
+  close(r3.values.R, 1125);
+  close(r3.values.pos, 4);
+});

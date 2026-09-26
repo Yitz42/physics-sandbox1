@@ -7,10 +7,12 @@
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove? } curved arrow: sense +1 CCW, −1 CW;
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
-// Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js.
+// Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js;
+// distributed loads and wheels in loads.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
 import { drawObject } from "./objects.js";
+import { drawLoadShape } from "./loads.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -163,8 +165,9 @@ export function drawExtraShape(cv, s, env, roleColor) {
       break;
     }
     default: {
-      // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js.
-      const obj = drawObject(cv, s, env);
+      // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js;
+      // distributed loads and wheels in loads.js.
+      const obj = drawObject(cv, s, env) || drawLoadShape(cv, s, env, roleColor);
       if (obj) return obj;
     }
   }

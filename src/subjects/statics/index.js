@@ -19,6 +19,9 @@ import { coupleHandles, coupleDrag, coupleMistakes, coupleSummary } from "./coup
 import { solveEquivalent, equivalentQuantities } from "./equivalent.js";
 import { equivalentScene } from "./equivalent-scene.js";
 import { equivalentMistakes, equivalentSummary } from "./equivalent-tools.js";
+import { solveDistributed, distributedQuantities } from "./distributed.js";
+import { distributedScene } from "./distributed-scene.js";
+import { distributedMistakes, distributedSummary } from "./distributed-tools.js";
 
 // Units 1–2: forces through one point.
 registerSolver("statics.particle", {
@@ -68,4 +71,14 @@ registerSolver("statics.equivalent", {
   scene: equivalentScene,
   quantities: (setup) => equivalentQuantities(setup, coupleQuantities(setup)),
   mistakes: equivalentMistakes,
+});
+
+// Unit 6: distributed loads — each replaced by its area, acting at its centroid.
+registerSolver("statics.distributed", {
+  solve: solveDistributed,
+  equations: (setup, result) => (result || solveDistributed(setup)).equations,
+  summary: distributedSummary,
+  scene: distributedScene,
+  quantities: distributedQuantities,
+  mistakes: distributedMistakes,
 });

@@ -43,7 +43,14 @@ export function mount(ctx) {
   let current = null; // the active step's tool (has .reveal())
   const attempts = createAttempts(ctx, actions, () => current && current.reveal());
 
-  const symbolOf = (id) => (ws.setup.forces.find((f) => f.id === id) || { symbol: id }).symbol;
+  // A term's symbol, for messages: from the setup's forces, else from the
+  // equations themselves (support reactions, pieces of a distributed load …).
+  const symbolOf = (id) => {
+    const f = (ws.setup.forces || []).find((x) => x.id === id);
+    if (f) return f.symbol;
+    const t = solver.equations(ws.setup, ws.result).flatMap((e) => e.terms).find((x) => x.id === id);
+    return t ? t.symbol : id;
+  };
   const wrong = (problems) => {
     showMessage(ctx.el.feedback, "bad", "Not yet", problems.map((p) => "• " + p).join("\n\n"));
     attempts.wrong();

@@ -12,5 +12,6 @@ export default {
     "03-moments",
     "04-couples",
     "05-equivalent-systems",
+    "06-distributed-loads",
   ],
 };
