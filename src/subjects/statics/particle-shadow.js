@@ -1,0 +1,84 @@
+// particle-shadow.js — "what would your answer look like?"
+//
+// After a wrong answer, the picture shows faint dashed "shadow" arrows built
+// from the numbers the student typed, next to the real arrows:
+//   • typed components (F_x, F_y)  → the force those components make
+//   • typed tensions (T_AB …)      → arrows of that size along each cable,
+//     plus the unbalanced force they'd leave (ΣF ≠ 0) — so the student
+//     can SEE that their numbers don't hold the ring still
+//   • typed resultant (F_Rx, F_Ry, F_R, θ) → the resultant they'd get
+// Shadows use the same scale as the real arrows (k = picture metres per newton).
+
+import { add, scale, mag, sum, DEG } from "../../core/vector.js";
+import { format } from "../../core/units.js";
+import { directionOf, magnitudeOf } from "./particle.js";
+
+const MAX_LEN = 2.3; // very wrong answers are drawn capped (so they stay in view), still pointing their way
+
+const MIN_LEN = 0.45; // tiny answers still get a visible arrow (the label gives the real size)
+
+function shadowArrow(at, v, k, label, id, minLen = MIN_LEN) {
+  const m = mag(v);
+  if (m < 1e-9) return [];
+  const len = Math.max(minLen, Math.min(MAX_LEN, m * k));
+  return [{ type: "arrow", id, from: at, to: add(at, scale(v, len / m)), role: "shadow", label }];
+}
+
+// guesses: { quantityName: number } typed by the student
+export function shadowShapes(setup, result, at, guesses, k) {
+  const vals = result ? result.values : {};
+  const g = (key) => (Number.isFinite(guesses[key]) ? guesses[key] : null);
+  const shapes = [];
+  const vectors = []; // every force, using the student's numbers where they gave one
+  let complete = true;
+
+  for (const f of setup.forces) {
+    const gx = g(`${f.id}.x`), gy = g(`${f.id}.y`), gm = g(f.id);
+    if (gx != null || gy != null) {
+      // Their components → the force they describe, plus its dashed components.
+      const v = [gx ?? vals[`${f.id}.x`], gy ?? vals[`${f.id}.y`]];
+      const main = shadowArrow(at, v, k, `your ${f.symbol} = ${format(mag(v), "N")}`, `shadow-${f.id}`);
+      shapes.push(...main);
+      // Its dashed components end exactly at the shadow arrow's tip.
+      if (main.length) {
+        const tip = main[0].to;
+        const corner = [tip[0], at[1]];
+        if (Math.abs(tip[0] - at[0]) > 1e-6) shapes.push({ ...main[0], id: `shadow-${f.id}-x`, to: corner, label: "" });
+        if (Math.abs(tip[1] - at[1]) > 1e-6) shapes.push({ ...main[0], id: `shadow-${f.id}-y`, from: corner, to: tip, label: "" });
+      }
+      vectors.push(v);
+    } else if (gm != null && magnitudeOf(f) == null) {
+      // Their size for an unknown force, along its known direction.
+      const v = scale(directionOf(f), gm);
+      shapes.push(...shadowArrow(at, v, k, `your ${f.symbol} = ${format(gm, "N")}`, `shadow-${f.id}`));
+      vectors.push(v);
+    } else {
+      const m = magnitudeOf(f);
+      if (m == null) complete = false;
+      else vectors.push(scale(directionOf(f), m));
+    }
+  }
+
+  // Equilibrium: with the student's numbers, do the forces cancel?
+  if (setup.analysis === "equilibrium" && complete && vectors.length) {
+    const net = sum(vectors);
+    const biggest = Math.max(...vectors.map(mag));
+    if (mag(net) > 0.005 * biggest) {
+      // Start it a little to the side, so it isn't hidden under a real arrow.
+      const side = scale([-net[1], net[0]], 0.22 / mag(net));
+      shapes.push(...shadowArrow(add(at, side), net, k, `ΣF ≠ 0 with your numbers (${format(mag(net), "N")})`, "shadow-net"));
+    }
+  }
+
+  // Resultant: their F_Rx / F_Ry, or their size F_R and angle θ.
+  if (g("R.x") != null || g("R.y") != null) {
+    const v = [g("R.x") ?? vals["R.x"], g("R.y") ?? vals["R.y"]];
+    shapes.push(...shadowArrow(at, v, k, `your F_R = ${format(mag(v), "N")}`, "shadow-R"));
+  } else if (g("R") != null || g("R.angle") != null) {
+    const size = g("R") ?? vals.R;
+    const angle = (g("R.angle") ?? vals["R.angle"]) * DEG; // from the x-axis, same quarter as the real one
+    const v = [Math.sign(vals["R.x"] || 1) * size * Math.cos(angle), Math.sign(vals["R.y"] || 1) * size * Math.sin(angle)];
+    shapes.push(...shadowArrow(at, v, k, "your F_R", "shadow-R"));
+  }
+  return shapes;
+}

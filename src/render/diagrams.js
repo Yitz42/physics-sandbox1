@@ -3,7 +3,7 @@
 // Subjects describe WHAT to draw (see e.g. subjects/statics/particle-scene.js);
 // render/shapes.js decides HOW each shape looks. Shape types:
 //   arrow    { id, from, to, label, role }   role: known | unknown | resultant |
-//                                            component | target | wrong | student
+//                                            component | target | wrong | student | shadow
 //   line     { id?, from, to, style }        style: cable | reference | dashed
 //   support  { from, to, normal }            hatched ground/ceiling/wall
 //   point    { at, label, style }            style: ring | dot | pin

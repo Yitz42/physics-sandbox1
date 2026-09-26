@@ -5,6 +5,7 @@ import { solveParticle } from "../../src/subjects/statics/particle.js";
 import { particleMistakes } from "../../src/subjects/statics/particle-mistakes.js";
 import { particleMutate, particleDrag } from "../../src/subjects/statics/particle-tools.js";
 import { particleScene } from "../../src/subjects/statics/particle-scene.js";
+import { shadowShapes } from "../../src/subjects/statics/particle-shadow.js";
 import { boundsOf } from "../../src/render/canvas.js";
 
 setFile("statics / particle");
@@ -165,4 +166,22 @@ test("scene: FBD is drawn to the right of the space diagram and fits in view", (
   ok(Number.isFinite(dots[0].at[0]) && dots[0].at[0] > 2, "FBD point should sit right of the cables");
   const b = boundsOf(shapes);
   ok(b.xmax > dots[0].at[0] && b.xmin < -1, `view ${JSON.stringify(b)} should include both drawings`);
+});
+
+// --- Shadow of a wrong answer ---
+test("shadow: guessed components draw 'your F' pointing where the guess points", () => {
+  const s = { analysis: "components", point: { at: [0, 0] }, forces: [force("F", 400, { angle: 30, from: "+y", toward: "-x" })] };
+  const shapes = shadowShapes(s, solveParticle(s), [0, 0], { "F.x": -346.4, "F.y": 200 }, 1 / 400);
+  const main = shapes.find((x) => x.id === "shadow-F");
+  ok(main.to[0] < 0 && main.to[1] > 0, "should point up-left");
+  ok(/400 N/.test(main.label), main.label);
+});
+test("shadow: tensions that are too small leave ΣF pointing down (the crate would fall)", () => {
+  const s = crate(30, 45, 60); // real answer: 430.9 N and 527.7 N
+  const shapes = shadowShapes(s, solveParticle(s), [0, 0], { T_AB: 300, T_AC: 300 }, 1 / 600);
+  const net = shapes.find((x) => x.id === "shadow-net");
+  ok(net, "expected an unbalanced-force arrow");
+  ok(net.to[1] < net.from[1], "net force should point down");
+  const exact = shadowShapes(s, solveParticle(s), [0, 0], { T_AB: 430.88, T_AC: 527.73 }, 1 / 600);
+  ok(!exact.some((x) => x.id === "shadow-net"), "correct tensions should balance");
 });

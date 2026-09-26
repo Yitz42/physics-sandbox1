@@ -104,3 +104,14 @@ export function checkRows(inputs, result, mistakesFor) {
   }
   return allOk;
 }
+
+// The numbers the student typed, by quantity name (for drawing a "shadow"
+// of their answer on the picture). Boxes that don't hold a number are left out.
+export function guessesFrom(inputs) {
+  const out = {};
+  for (const r of inputs.rows) {
+    const v = parseNumber(r.input.value);
+    if (v != null) out[r.ask.quantity] = v;
+  }
+  return out;
+}

@@ -16,6 +16,7 @@ const ROLE_COLORS = {
   target: ["--c-target", "#16a34a"],
   wrong: ["--c-wrong", "#dc2626"],
   student: ["--c-student", "#0f766e"],
+  shadow: ["--c-wrong", "#dc2626"], // the student's (wrong) answer, drawn faint and dashed
 };
 
 export function roleColor(role) {
@@ -38,8 +39,8 @@ export function drawShape(cv, s, env) {
       drawArrow(ctx, a, b, {
         color: roleColor(s.role), glow: lit,
         width: s.role === "component" ? 1.8 : 2.8,
-        dashed: s.role === "component" || s.role === "target" || s.role === "resultant",
-        alpha: s.alpha ?? (s.role === "target" ? 0.7 : 1),
+        dashed: ["component", "target", "resultant", "shadow"].includes(s.role),
+        alpha: s.alpha ?? (s.role === "target" ? 0.7 : s.role === "shadow" ? 0.55 : 1),
       });
       out.segments.push([a, b]);
       break;

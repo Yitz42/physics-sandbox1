@@ -126,6 +126,9 @@ export default {
   the student gets a new version with different numbers (the stage's `vary` rules;
   debug uses the next `mutation`, concept-check the next question). Only solving a
   version without help marks it **complete** (shown as a centred "Stage complete" card).
+- After a wrong numeric answer, the picture shows a faint dashed **shadow** of what the
+  student's numbers would look like (their force, their tensions plus the ΣF they leave
+  unbalanced, or their resultant), drawn to the same scale as the real arrows.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted
   precision next to the unit. Numeric answers must be within **±0.1** of the true
   value in its unit (±0.1 N, ±0.1°), unless a stage sets `ask.precision`.

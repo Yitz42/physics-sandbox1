@@ -7,7 +7,7 @@
 //   hints      shown one at a time
 
 import { createWorkspace } from "./common/workspace.js";
-import { answerInputs, checkRows } from "./common/answers.js";
+import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
 import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
@@ -26,6 +26,7 @@ export function mount(ctx) {
   ctx.el.area.appendChild(actions);
 
   const attempts = createAttempts(ctx, actions, () => {
+    delete ws.sceneOpts.guesses; // the real answer replaces the shadow
     inputs.fill(ws.result.values);
     ws.setReveal(true);
     ws.showEquations(true);
@@ -45,13 +46,17 @@ export function mount(ctx) {
     }
     const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []));
     if (allOk) {
+      delete ws.sceneOpts.guesses;
       testBtn.disabled = true;
       ws.setReveal(true);
       showMessage(ctx.el.feedback, "good", "Correct!", "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
       ctx.explain();
       ctx.finish();
     } else {
-      showMessage(ctx.el.feedback, "bad", "Not yet", "Read the note under each red box, fix it, and press Test again.");
+      // Draw a faint "shadow" of what their numbers would look like.
+      ws.sceneOpts.guesses = guessesFrom(inputs);
+      ws.redraw();
+      showMessage(ctx.el.feedback, "bad", "Not yet", "The faint red dashed arrows show what your numbers would look like — compare them with the picture. Read the note under each red box, fix it, and press Test again.");
       attempts.wrong();
     }
   }

@@ -13,7 +13,8 @@
 //   equations(setup, result)   → list of equations (see equations.js)
 //   summary(setup, result, { mode, reveal }) → extra KaTeX lines under the equations
 //   scene(setup, result, opts) → list of drawing shapes for render/diagrams.js
-//                                opts: { reveal, hide: [ids], flagged: [ids], fbdSetup, … }
+//                                opts: { reveal, hide: [ids], flagged: [ids], fbdSetup,
+//                                        guesses: { quantity: number } → "shadow" of a wrong answer }
 //   quantities(setup)          → { name: { label, unit } } describing result.values
 //   handles(setup)             → draggable points [{ id, at: [x, y] }]
 //   drag(setup, id, point)     → changes setup when handle `id` is dragged to point

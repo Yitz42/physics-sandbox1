@@ -16,7 +16,7 @@ import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
 import { createFbdTool } from "./common/fbd-tool.js";
 import { createEquationPick } from "./common/equation-pick.js";
-import { answerInputs, checkRows } from "./common/answers.js";
+import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
@@ -89,7 +89,11 @@ export function mount(ctx) {
       const inputs = answerInputs(body, [].concat(stage.ask), solver.quantities(ws.setup));
       const check = () => {
         if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q))) done(false);
-        else wrong(["Read the note under each red box, fix it, and check again."]);
+        else {
+          ws.sceneOpts.guesses = guessesFrom(inputs); // faint "shadow" of their answer
+          ws.redraw();
+          wrong(["The faint red dashed arrows show what your numbers would look like. Read the note under each red box, fix it, and check again."]);
+        }
       };
       const checkBtn = button("Check answers", check, "btn btn-play");
       inputs.rows.forEach((r) => r.input.addEventListener("keydown", (e) => e.key === "Enter" && check()));
@@ -101,6 +105,7 @@ export function mount(ctx) {
         },
       };
       const done = (shown) => {
+        delete ws.sceneOpts.guesses;
         checkBtn.remove();
         ws.showEquations(true);
         ws.setReveal(true);

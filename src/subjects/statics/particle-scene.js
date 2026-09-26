@@ -13,6 +13,7 @@
 import { add, scale, sub, mag, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { directionOf, magnitudeOf, particleQuantities } from "./particle.js";
+import { shadowShapes } from "./particle-shadow.js";
 
 const AXIS_DEG = { "+x": 0, "+y": 90, "-x": 180, "-y": 270 };
 const AXIS_VEC = { "+x": [1, 0], "+y": [0, 1], "-x": [-1, 0], "-y": [0, -1] };
@@ -27,11 +28,19 @@ export function anchorPoint(setup, force) {
   return add(A, scale(d, length));
 }
 
+// Picture metres per newton. Stages that let students drag arrows fix it
+// (setup.forceScale); otherwise the biggest force is drawn 1.7 m long.
+// Arrows are proportional to their force, so "shadow" arrows of a
+// student's answer (particle-shadow.js) can be compared by eye.
+function lengthPerNewton(setup, maxKnown) {
+  return setup.forceScale ? 1 / setup.forceScale : 1.7 / (maxKnown || 1);
+}
+
 // Length of a force arrow in drawing units (metres of the picture).
-function arrowLength(setup, force, m, maxKnown) {
+function arrowLength(setup, force, m, k) {
   if (setup.forceScale) return m / setup.forceScale; // drawn to scale (drag-able)
   if (m == null) return 1.3; // unknown and not yet revealed: a neutral length
-  return 0.8 + 0.9 * Math.min(1, Math.abs(m) / (maxKnown || 1));
+  return Math.max(0.5, Math.abs(m) * k); // tiny forces still get a visible arrow
 }
 
 // Label under an arrow, e.g. "T_{AB} = 245 N" or "T_{AB} = ?"
@@ -67,11 +76,14 @@ function fbdArrows(setup, result, at, opts) {
   const vals = result ? result.values : {};
   const knownMags = setup.forces.map(magnitudeOf).filter((m) => m != null);
   const maxKnown = Math.max(1, ...knownMags, ...(opts.reveal ? Object.values(vals).map(Math.abs) : []));
+  const k = lengthPerNewton(setup, maxKnown);
   for (const f of setup.forces) {
     if (opts.hide && opts.hide.includes(f.id)) continue;
     const known = magnitudeOf(f);
+    // An unknown the student has guessed: their shadow arrow takes its place.
+    if (known == null && !opts.reveal && opts.guesses && Number.isFinite(opts.guesses[f.id])) continue;
     const m = known ?? (opts.reveal ? vals[f.id] : null);
-    const len = arrowLength(setup, f, m, maxKnown);
+    const len = arrowLength(setup, f, m, k);
     const d = directionOf(f);
     const tip = add(at, scale(d, len));
     shapes.push({
@@ -92,7 +104,7 @@ function fbdArrows(setup, result, at, opts) {
   }
   if (opts.resultant && opts.reveal && result && result.status === "resultant") {
     const R = [vals["R.x"], vals["R.y"]];
-    const len = setup.forceScale ? mag(R) / setup.forceScale : 1.6;
+    const len = Math.max(0.5, mag(R) * k);
     if (mag(R) > 1e-9) shapes.push({ type: "arrow", id: "R", from: at, to: add(at, scale(R, len / mag(R))), role: "resultant", label: `F_R = ${format(mag(R), "N")}` });
   }
   // Unbalanced force: the point can't stay put. Show which way it gets pushed.
@@ -100,6 +112,8 @@ function fbdArrows(setup, result, at, opts) {
     const n = result.net;
     shapes.push({ type: "arrow", id: "net", from: at, to: add(at, scale(n, 1.2 / mag(n))), role: "wrong", label: "ΣF ≠ 0" });
   }
+  // After a wrong answer: faint arrows showing what the student's numbers would look like.
+  if (opts.guesses) shapes.push(...shadowShapes(setup, result, at, opts.guesses, k));
   if (setup.target) {
     const t = setup.target;
     const d = directionOf({ direction: t.direction });
