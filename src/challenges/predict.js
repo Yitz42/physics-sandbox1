@@ -3,7 +3,7 @@
 //
 // Tests: can they compute it.
 // Stage fields used:
-//   ask        { quantity, label?, unit?, tolerance? } or a list of them
+//   ask        { quantity, label?, unit?, precision? }  (precision: ± allowed, default 0.1) or a list of them
 //   hints      shown one at a time
 
 import { createWorkspace } from "./common/workspace.js";

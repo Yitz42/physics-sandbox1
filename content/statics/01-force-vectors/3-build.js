@@ -14,7 +14,7 @@ export default {
     `${TARGET} N straight up. The resultant stays hidden until you press **Test**, so work it out with components first!`,
   setup: {
     analysis: "resultant",
-    point: { at: [0, 0], label: "" },
+    point: { at: [0, 0], label: "O" }, // named because the direction dropdown says "From O to …"
     forceScale: 150,
     dragStep: 10,
     dragMax: 500,
@@ -28,7 +28,7 @@ export default {
   editable: [
     { path: "forces.#F2.magnitude", label: "Size F₂", min: 10, max: 500, step: 10, unit: "N" },
     { path: "forces.#F2.direction.angle", label: "Angle of F₂", min: 0, max: 90, step: 1, unit: "deg" },
-    angleOptions("forces.#F2", "angle of F₂ measured"),
+    angleOptions("forces.#F2", "Angle of F₂ measured"),
   ],
   draggable: ["F2"],
   sceneOpts: { resultant: true },

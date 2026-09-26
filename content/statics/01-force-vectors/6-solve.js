@@ -30,7 +30,7 @@ export default {
     { quantity: "R.x" },
     { quantity: "R.y" },
     { quantity: "R" },
-    { quantity: "R.angle", label: "\\theta", tolerance: 0.01 },
+    { quantity: "R.angle", label: "\\theta" },
   ],
   hints: [
     "The 3-4-5 triangle means $F_2$'s components are $\\tfrac{4}{5}F_2$ and $\\tfrac{3}{5}F_2$ — no angle needed.",

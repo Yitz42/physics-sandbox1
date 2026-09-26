@@ -42,6 +42,13 @@ function variants(setup) {
       delete w.kind;
       w.direction = "down";
       out.push({ setup: s, message: `Did you use the mass (${f.mass} kg) as the force? The weight is W = mg = ${f.mass}(${G}) N.` });
+      const s2 = clone(setup);
+      const w2 = s2.forces.find((x) => x.id === f.id);
+      w2.magnitude = w2.mass * 9.8; // rounded g
+      delete w2.mass;
+      delete w2.kind;
+      w2.direction = "down";
+      out.push({ setup: s2, message: `Close — but use g = ${G} m/s², not 9.8. The small difference matters at ±0.1 N.` });
     }
   }
   for (const f of setup.forces) {

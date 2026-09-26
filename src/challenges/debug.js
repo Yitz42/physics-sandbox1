@@ -16,7 +16,7 @@ import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
 import { swapFactor, flipSign, removeTerm, evaluate } from "../core/equations.js";
 import { renderEquations, renderMixed, highlightTerms } from "../render/panel.js";
-import { formatTex } from "../core/units.js";
+import { fixedTex } from "../core/units.js";
 import { arrowAt } from "../render/fbd.js";
 import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
@@ -154,7 +154,7 @@ export function mount(ctx) {
     correctEqs.forEach((eq, i) => {
       if (eq.result && Math.abs(eq.result.value - wrongEqs[i].result.value) > 1e-6) {
         const name = eq.lhs.split("=")[0].trim(); // e.g. F_{Rx}
-        extra.push(`${name}\\text{: the mistake gave } ${formatTex(wrongEqs[i].result.value, "N")}\\text{; correct is } ${formatTex(eq.result.value, "N")}`);
+        extra.push(`${name}\\text{: the mistake gave } ${fixedTex(wrongEqs[i].result.value, "N")}\\text{; correct is } ${fixedTex(eq.result.value, "N")}`);
       }
     });
     step.textContent = "Corrected work (the fixed term is highlighted):";

@@ -71,6 +71,7 @@ export function runStage({ stage, view, key, next }) {
         showCenterCard({
           title: "Stage complete",
           body: message,
+          explanation: stage.explanation,
           buttons: [
             ...(next ? [{ label: "Next stage →", onClick: goNext, primary: true }] : []),
             { label: "Play a new version", onClick: newRound },

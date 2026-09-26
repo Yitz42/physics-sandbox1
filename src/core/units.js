@@ -51,3 +51,12 @@ export function formatTex(value, unit = "", sig = 3) {
 export function unitLabel(unit) {
   return UNITS[unit] ? UNITS[unit].text : unit;
 }
+
+// KaTeX for a value to a fixed number of decimals, e.g. fixedTex(359.07, "N") → "359.1\,\text{N}".
+// Used for final answers, which students must match to ±0.1.
+export function fixedTex(value, unit = "", decimals = 1) {
+  const num = (Math.abs(value) < 0.5 * 10 ** -decimals ? 0 : value).toFixed(decimals);
+  if (unit === "deg") return `${num}^\\circ`;
+  const u = UNITS[unit] ? UNITS[unit].tex : `\\text{${unit}}`;
+  return u ? `${num}\\,${u}` : num;
+}

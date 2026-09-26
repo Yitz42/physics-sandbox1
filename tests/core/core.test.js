@@ -118,3 +118,21 @@ test("labels: a label moves off an arrow line that runs through it", () => {
   });
   ok(l.pos[1] !== 100, "label should have moved off the line");
 });
+
+// ---- Answer checking (challenges/common/answers.js): must be within ±0.1 ----
+import { checkAnswer, precisionText } from "../../src/challenges/common/answers.js";
+test("answers: 346.4 is accepted for 346.41 N; 346.2 is 'very close' but wrong", () => {
+  ok(checkAnswer("346.4", 346.41).ok);
+  ok(checkAnswer("346.5 N", 346.41).ok, "within 0.1");
+  const near = checkAnswer("346.2", 346.41, { unit: "N" });
+  ok(!near.ok && /±0.1 N/.test(near.message), near.message);
+  ok(!checkAnswer("346", 346.41).ok, "3 significant figures is not enough any more");
+});
+test("answers: a known slip gets its own explanation", () => {
+  const out = checkAnswer("-346.4", -200, { mistakes: [{ value: -346.41, message: "sin/cos swapped" }] });
+  equal(out.message, "sin/cos swapped");
+});
+test("answers: the ± label reads '±0.1 N' and '±0.1°'", () => {
+  equal(precisionText(0.1, "N"), "±0.1 N");
+  equal(precisionText(0.1, "deg"), "±0.1°");
+});

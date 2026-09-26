@@ -22,8 +22,8 @@ export default {
     { path: "forces.0.direction.toward", values: ["+x", "-x"] },
   ],
   ask: [
-    { quantity: "F.x", tolerance: 0.02 },
-    { quantity: "F.y", tolerance: 0.02 },
+    { quantity: "F.x" },
+    { quantity: "F.y" },
   ],
   sceneOpts: { components: true },
   hints: [

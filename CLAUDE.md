@@ -109,7 +109,7 @@ export default {
   instructions: "Plain-language instructions shown to the student.",
   setup: { bodies: [...], supports: [...], loads: [...] },
   editable: ["loads.0.position"],
-  ask: { quantity: "supports.0.Ry", units: "N", tolerance: 0.02 }, // predict/solve
+  ask: { quantity: "supports.0.Ry", units: "N", precision: 0.1 }, // predict/solve; ±0.1 is the default
   goal: null,                    // used by build challenges
   hints: ["First hint", "Second hint"],
   explanation: "Shown after completion: why the answer is what it is.",
@@ -127,7 +127,8 @@ export default {
   debug uses the next `mutation`, concept-check the next question). Only solving a
   version without help marks it **complete** (shown as a centred "Stage complete" card).
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted
-  precision next to the unit (e.g. "N ±2%").
+  precision next to the unit. Numeric answers must be within **±0.1** of the true
+  value in its unit (±0.1 N, ±0.1°), unless a stage sets `ask.precision`.
 - **Drawing FBDs** (solve challenge): click a force in the palette; a faint shadow
   arrow follows the pointer, snapping to allowed directions; click to place. Dragging
   from the palette also works (touchscreens). The palette includes tempting wrong

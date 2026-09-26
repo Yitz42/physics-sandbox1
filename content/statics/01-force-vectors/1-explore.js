@@ -8,12 +8,12 @@ export default {
   solver: "statics.particle",
   title: "Pull on the Eyebolt",
   instructions:
-    "A force $F$ pulls on an eyebolt. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
-    "The angle $\\theta$ is measured from one axis toward another (e.g. from +x toward +y), the way your textbook does it — pick them in the dropdown, or type exact values into the boxes. " +
+    "A force $F$ pulls on an eyebolt at point O. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
+    "The angle $\\theta$ is measured from the x-axis, the way your textbook does it; the dropdown sets which way the force points from O (e.g. **From O to −x,+y** is up and to the left). You can also type exact values into the boxes. " +
     "Click an arrow or an equation term to see how they match.",
   setup: {
     analysis: "components",
-    point: { at: [0, 0], label: "" },
+    point: { at: [0, 0], label: "O" }, // named because the direction dropdown says "From O to …"
     forceScale: 100, // arrows drawn 1 m long per 100 N, so dragging sets the size
     dragStep: 10,
     dragMax: 300,
@@ -23,7 +23,7 @@ export default {
   editable: [
     { path: "forces.0.magnitude", label: "Size F", min: 10, max: 300, step: 10, unit: "N" },
     { path: "forces.0.direction.angle", label: "Angle θ", min: 0, max: 90, step: 1, unit: "deg" },
-    angleOptions("forces.0"),
+    angleOptions("forces.0", "Angle θ measured"),
   ],
   draggable: ["F"],
   sceneOpts: { components: true },
