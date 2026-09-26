@@ -109,8 +109,9 @@ export function drawShape(cv, s, env) {
         const size = Math.max(8, Math.min(13, (13 * (w - 6)) / Math.max(1, measureLabel(ctx, s.label, 13))));
         drawLabel(ctx, s.label, x, y, { color: ink, size });
       }
-      // A "passable" box (a plate) lets labels sit on top of it; a crate keeps them off.
-      if (!s.passable) out.boxes.push({ x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2 });
+      // A crate keeps labels off. A "passable" box (a plate) is a soft obstacle:
+      // labels avoid covering it when there's another good spot, but may if not.
+      out.boxes.push({ x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2, soft: !!s.passable });
       break;
     }
     case "arc": {

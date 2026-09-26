@@ -36,7 +36,7 @@ function segmentHits(box, p, q) {
 // obstacles: boxes already on the picture
 // segments:  [[p, q], ...] arrow and cable lines (pixels)
 // view:      { width, height } of the canvas
-// Returns the labels with an adjusted `pos`.
+// Returns the labels with an adjusted `pos` (and the `box` each one covers).
 export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }) {
   const taken = obstacles.slice();
   return labels.map((l) => {
@@ -51,7 +51,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       const box = labelBox(pos[0], pos[1], width, l.size, align);
       // Prefer the original spot: moving away (or re-aligning) costs a little.
       let cost = Math.hypot(dx, dy) + (align === l.align ? 0 : 8);
-      for (const t of taken) cost += overlapArea(box, t) * 4;
+      for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : 4); // soft: a plate (avoid if possible)
       for (const [p, q] of segments) cost += segmentHits(box, p, q) * 40;
       // Keep it on the canvas.
       if (box.x0 < 0 || box.y0 < 0 || box.x1 > view.width || box.y1 > view.height) cost += 5000;
@@ -63,7 +63,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     }
     taken.push(best.box);
     // cost tells the caller how hard it was to fit (0 = its first choice was free).
-    return { ...l, pos: best.pos, align: best.align, cost: bestCost };
+    return { ...l, pos: best.pos, align: best.align, box: best.box, cost: bestCost };
   });
 }
 

@@ -69,9 +69,9 @@ export function coupleScene(setup, result, opts = {}) {
     if (f.pointLabel) shapes.push({ type: "point", at: f.at, label: f.pointLabel, style: "dot" });
   });
 
-  // Couple moments given directly: a curved arrow.
+  // Couple moments given directly: a curved arrow, its label kept right beside it.
   for (const m of setup.moments || []) {
-    shapes.push({ type: "moment", center: m.at, sense: m.sense, rPx: 30, role: "known", label: `${m.symbol} = ${format(m.magnitude, "N·m")}` });
+    shapes.push({ type: "moment", center: m.at, sense: m.sense, rPx: 30, role: "known", label: `${m.symbol} = ${format(m.magnitude, "N·m")}`, labelMove: 0 });
   }
   if (setup.target) {
     const t = setup.target;

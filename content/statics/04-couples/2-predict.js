@@ -12,19 +12,19 @@ export default {
     "How big must $F'$ be? Predict it, then press **Test**.",
   setup: {
     analysis: "couple",
-    plates: [{ from: [0, 0], to: [0.5, 0.3] }, { from: [1, 0], to: [1.5, 0.3] }],
-    texts: [{ at: [0.75, 0.02], text: "same effect as" }],
+    plates: [{ from: [0, 0], to: [0.5, 0.3] }, { from: [1.25, 0], to: [1.75, 0.3] }],
+    texts: [{ at: [0.875, 0.02], text: "same effect as" }],
     forceScale: 800, // arrows drawn 1 m per 800 N, so F and F' can be compared by eye
     couples: [
       // F up at B and down at A: vertical lines 0.5 m apart (A to B diagonally is 0.583 m).
       { id: "C1", symbol: "F", magnitude: 120, direction: "up", at: [0.5, 0.3], opposite: [0, 0], pointLabels: ["B", "A"], dimShift: 0.16 },
       // F' left at C and right at D: horizontal lines 0.3 m apart.
-      { id: "C2", symbol: "F'", dSymbol: "d'", magnitude: null, equivalentTo: "C1", direction: "left", at: [1, 0.3], opposite: [1.5, 0], pointLabels: ["C", "D"], dimShift: 0.72 },
+      { id: "C2", symbol: "F'", dSymbol: "d'", magnitude: null, equivalentTo: "C1", direction: "left", at: [1.25, 0.3], opposite: [1.75, 0], pointLabels: ["C", "D"], dimShift: 0.72 },
     ],
     showSeparation: true, // d and d' are given, so they're drawn from the start
     momentAt: [0.25, 0.15], // the original couple's moment is drawn on its own plate
   },
-  view: { xmin: -0.2, xmax: 1.95, ymin: -0.3, ymax: 0.72 },
+  view: { xmin: -0.2, xmax: 2.2, ymin: -0.3, ymax: 0.72 },
   vary: [{ path: "couples.#C1.magnitude", values: [60, 90, 120, 150, 180, 240] }],
   ask: [{ quantity: "C2" }],
   hints: [

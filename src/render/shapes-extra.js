@@ -4,7 +4,7 @@
 //   dim        { from, to, label, role?, labelSide?, labelOn? }  a dimension / moment-arm
 //              line with end ticks; labelOn puts the label in a break in the middle of the line
 //   rightangle { at, u, v }                    small square marking a 90° corner
-//   moment     { center, r, sense, label, role } curved arrow: sense +1 CCW, −1 CW
+//   moment     { center, r, sense, label, role, labelMove? } curved arrow: sense +1 CCW, −1 CW
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
 
 import { drawLabel, measureLabel } from "./arrows.js";
@@ -153,7 +153,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.lineTo(ex - tx * hl * 0.6 + ty * hl * 0.5, ey - ty * hl * 0.6 - tx * hl * 0.5);
       ctx.closePath();
       ctx.fill();
-      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: 60 });
+      // labelMove: how far the label may move to dodge things (0 keeps it right above the arrow).
+      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60 });
       out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r });
       break;
     }
