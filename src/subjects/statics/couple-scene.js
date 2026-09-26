@@ -12,7 +12,7 @@ import { format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { angleMarks } from "./particle-scene.js";
 import { armOf } from "./moment.js";
-import { allForces, coupleGeometry, dSymbolOf, armSymbolOf, isSlanted } from "./couple-geometry.js";
+import { allForces, coupleGeometry, dSymbolOf, armSymbolOf, isSlanted, upAlong } from "./couple-geometry.js";
 import { coupleShadow, phiOf, momentCenter } from "./couple-tools.js";
 
 // Overall size of the picture, so arrows scale with it.
@@ -95,7 +95,7 @@ export function coupleScene(setup, result, opts = {}) {
       if (a.d < 1e-6) return;
       const u = directionOf(f);
       // One common "up" along the lines, so opposite forces still go to opposite sides.
-      const w = u[1] > 1e-9 || (Math.abs(u[1]) <= 1e-9 && u[0] > 0) ? u : scale(u, -1);
+      const w = upAlong(u);
       const out = scale(w, (i % 2 ? -1 : 1) * (1 + Math.floor(i / 2)));
       const shift = scale(out, gap);
       const from = add(P, shift), to = add(a.foot, shift);
@@ -148,10 +148,11 @@ function separation(setup, c, size) {
   const g = coupleGeometry(setup, c);
   if (g.d < 1e-9) return [];
   const out = [];
-  // The dimension sits c.dimShift along the lines from force a's point. Each
-  // line of action is drawn just far enough to reach it (like extension lines
-  // on an engineering drawing), so long dashed lines don't clutter the picture.
-  const s = c.dimShift ?? 0;
+  // The dimension sits c.dimShift from force a's point, measured along the
+  // lines' fixed "up" direction (upAlong) — so flipping the couple doesn't
+  // make it jump to the other side. Each line of action is drawn just far
+  // enough to reach it (like extension lines on an engineering drawing).
+  const s = (c.dimShift ?? 0) * dot(upAlong(g.u), g.u); // the same offset, measured along u
   const pad = 0.06 * size;
   const extend = (P, t0, t1) => ({ type: "line", from: add(P, scale(g.u, Math.min(t0, t1) - pad)), to: add(P, scale(g.u, Math.max(t0, t1) + pad)), style: "action" });
   out.push(extend(g.a.at, 0, s), extend(g.b.at, 0, dot(g.r, g.u) + s));

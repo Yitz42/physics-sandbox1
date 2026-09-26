@@ -18,6 +18,8 @@
 //     or a pair:  { forces: ["F_A", "F_B"] } → two of the plain forces above
 //     dSymbol: "d'" name of its separation (default d, d_1 …)
 //     push: [true, false]  draw force a (or b) as a push: arrowhead at the point
+//     dimShift: where d is drawn: this far from force a's point along the lines
+//               of action, + meaning up (or right, for horizontal lines)
 //     equivalentTo: "C1" with magnitude: null → an unknown REPLACEMENT couple:
 //                 its forces are found so that it has the same moment as C1.
 //                 (It replaces C1, so it is not added to the totals.)

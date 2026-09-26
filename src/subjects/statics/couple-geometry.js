@@ -52,6 +52,11 @@ export function coupleGeometry(setup, c) {
 // has to be worked out as r sin φ instead of read off as a gap in x or y.
 export const isSlanted = (u) => Math.abs(u[0]) > 1e-9 && Math.abs(u[1]) > 1e-9;
 
+// One fixed "upward" direction along a line of action: u or −u, whichever
+// points up (or right, for a horizontal line). Picture offsets are measured
+// along it, so they stay put when a force is flipped to point the other way.
+export const upAlong = (u) => (u[1] > 1e-9 || (Math.abs(u[1]) <= 1e-9 && u[0] > 0) ? u : scale(u, -1));
+
 // Name of a couple's separation, e.g. "d", "d_{2}", "d'".
 export const dSymbolOf = (c) => c.dSymbol || named("d", c.symbol);
 // Name of one force's moment arm about P, e.g. "d_{A}" for the force at A.

@@ -19,7 +19,7 @@ export default {
       // F up at B and down at A: vertical lines 0.5 m apart (A to B diagonally is 0.583 m).
       { id: "C1", symbol: "F", magnitude: 120, direction: "up", at: [0.5, 0.3], opposite: [0, 0], pointLabels: ["B", "A"], dimShift: 0.16 },
       // F' left at C and right at D: horizontal lines 0.3 m apart.
-      { id: "C2", symbol: "F'", dSymbol: "d'", magnitude: null, equivalentTo: "C1", direction: "left", at: [1, 0.3], opposite: [1.5, 0], pointLabels: ["C", "D"], dimShift: -0.62, dimSide: -1 },
+      { id: "C2", symbol: "F'", dSymbol: "d'", magnitude: null, equivalentTo: "C1", direction: "left", at: [1, 0.3], opposite: [1.5, 0], pointLabels: ["C", "D"], dimShift: 0.62, dimSide: -1 },
     ],
     showSeparation: true, // d and d' are given, so they're drawn from the start
     momentAt: [0.25, 0.15], // the original couple's moment is drawn on its own plate

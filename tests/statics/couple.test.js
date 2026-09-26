@@ -147,3 +147,12 @@ test("dragging P snaps to 0.05 m and stays inside its bounds", () => {
   coupleDrag(s, "P", [0.337, 0.9]);
   equal(s.about.at, [0.35, 0.4]);
 });
+
+test("picture offsets use a fixed 'up' along the lines, so flipping a couple doesn't move its d", async () => {
+  const { upAlong } = await import("../../src/subjects/statics/couple-geometry.js");
+  equal(upAlong([0, -1]), [0, 1]); // a downward force: "up" is still up
+  equal(upAlong([0, 1]), [0, 1]);
+  equal(upAlong([-1, 0]), [1, 0]); // a horizontal line: "up" means right
+  const u = [-Math.SQRT1_2, -Math.SQRT1_2];
+  close(upAlong(u)[1], Math.SQRT1_2);
+});

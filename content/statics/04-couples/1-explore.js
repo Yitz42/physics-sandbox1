@@ -23,7 +23,7 @@ export default {
     couples: [{
       id: "C", symbol: "F", magnitude: 100, direction: "up",
       at: [0.5, 0], opposite: [0, 0], pointLabels: ["B", "A"],
-      dimShift: -0.5, // draw d below the bar, clear of the arrows
+      dimShift: -0.5, // draw d below the bar (whichever way the couple turns), clear of P
     }],
   },
   view: { xmin: -0.6, xmax: 1.3, ymin: -0.62, ymax: 0.55 },
