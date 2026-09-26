@@ -62,6 +62,37 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       if (cost === 0) break;
     }
     taken.push(best.box);
-    return { ...l, pos: best.pos, align: best.align };
+    // cost tells the caller how hard it was to fit (0 = its first choice was free).
+    return { ...l, pos: best.pos, align: best.align, cost: bestCost };
   });
+}
+
+// A small list of labels in a corner of the picture, for when there isn't
+// room to put every value beside its arrow. Picks the corner (top-right,
+// top-left, bottom-right) that covers the least of the drawing.
+// items: [{ text, color }]. Returns { box, lines: [{ text, color, x, y }] }.
+export function placeLegend(ctx, items, { obstacles = [], segments = [], view }) {
+  const size = 14, lineH = 20, pad = 10;
+  const width = Math.max(...items.map((it) => measureLabel(ctx, it.text, size))) + 2 * pad;
+  const height = items.length * lineH + pad;
+  const m = 8; // margin from the canvas edge
+  const corners = [
+    [view.width - width - m, m],
+    [m, m],
+    [view.width - width - m, view.height - height - m],
+  ];
+  let best = null;
+  let bestCost = Infinity;
+  for (const [x0, y0] of corners) {
+    const box = { x0, y0, x1: x0 + width, y1: y0 + height };
+    let cost = 0;
+    for (const t of obstacles) cost += overlapArea(box, t);
+    for (const [p, q] of segments) cost += segmentHits(box, p, q) * 40;
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = box;
+    }
+  }
+  const lines = items.map((it, i) => ({ ...it, x: best.x0 + pad, y: best.y0 + pad + i * lineH + size * 0.55 }));
+  return { box: best, lines, size };
 }

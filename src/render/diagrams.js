@@ -21,7 +21,7 @@
 
 import { labelPosition, drawLabel, cssColor } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
-import { placeLabels } from "./labels.js";
+import { placeLabels, placeLegend } from "./labels.js";
 
 export { roleColor };
 
@@ -56,11 +56,43 @@ export function drawScene(cv, shapes, opts = {}) {
       const mid = s.role === "component" || s.role === "target";
       const side = s.labelSide || (s.role === "target" ? -1 : 1);
       const size = lit ? 15 : 14, weight = lit ? 700 : 500;
-      wanted.push({ text: s.label, ...labelPosition(a, b, 14, mid, side), size, weight, color: roleColor(s.role) });
+      wanted.push({ text: s.label, ...labelPosition(a, b, 14, mid, side), size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow" });
     }
   }
 
-  for (const l of placeLabels(ctx, wanted, { obstacles, segments, view: cv.view })) {
+  const layout = { obstacles, segments, view: cv.view };
+  let placed = placeLabels(ctx, wanted, layout);
+
+  // Crowded picture (several arrow labels had to move well away from their arrows)?
+  // Then keep only the short name at each arrow ("W_10") and list the full
+  // values ("W_10 = 98.1 N") in a tidy box in a free corner.
+  const valued = wanted.filter((l) => l.fromArrow && l.text.includes(" = "));
+  // "Struggled" = had to move ~45 px or more, or still overlaps something.
+  const struggled = placed.filter((l) => l.fromArrow && l.cost > 45);
+  const crowded = struggled.length >= 2 || struggled.some((l) => l.cost > 150);
+  if (crowded && valued.length > 1) {
+    const legend = placeLegend(ctx, valued.map((l) => ({ text: l.text, color: l.color })), layout);
+    const shortened = wanted.map((l) => (valued.includes(l) ? { ...l, text: l.text.split(" = ")[0] } : l));
+    placed = placeLabels(ctx, shortened, { ...layout, obstacles: [...obstacles, legend.box] });
+    drawLegend(ctx, legend, env);
+  }
+
+  for (const l of placed) {
     drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align, background: l.plain ? null : env.paper });
   }
+}
+
+// The corner list of values: a light box with one coloured line per force.
+function drawLegend(ctx, legend, env) {
+  const { box, lines, size } = legend;
+  ctx.save();
+  ctx.fillStyle = env.paper;
+  ctx.globalAlpha = 0.92;
+  ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = env.faint;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(box.x0 + 0.5, box.y0 + 0.5, box.x1 - box.x0 - 1, box.y1 - box.y0 - 1);
+  ctx.restore();
+  for (const l of lines) drawLabel(ctx, l.text, l.x, l.y, { color: l.color, size, align: "left" });
 }

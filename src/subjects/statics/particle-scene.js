@@ -171,8 +171,8 @@ export function particleScene(setup, result, opts = {}) {
   const F = [right + 3.2, A[1]]; // room for FBD arrows and labels pointing left
   return [
     ...space,
-    { type: "text", at: add(A, [0, -2.6]), text: "Space diagram" },
-    { type: "text", at: add(F, [0, -2.6]), text: `FBD of ${setup.point.label || "the point"}` },
+    { type: "text", at: add(A, [0, -3.0]), text: "Space diagram" },
+    { type: "text", at: add(F, [0, -3.0]), text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner
     ...fbdArrows(fs, result, F, opts),
     { type: "point", at: F, label: setup.point.label || "", style: "dot" },
