@@ -41,14 +41,14 @@ export function particleDrag(setup, id, point) {
 //   forces      the correct forces: { id, symbol, dir }
 //   directions  directions a placed arrow can snap to
 export function particleFbd(setup, sceneOpts = {}) {
-  const forces = setup.forces.map((f) => ({ id: f.id, symbol: f.symbol, dir: directionOf(f), kind: f.kind || "applied" }));
+  const forces = setup.forces.map((f) => ({ id: f.id, symbol: f.symbol, dir: directionOf(f), kind: f.kind || "applied", shared: f.shared }));
   const directions = [];
   // Eight compass directions …
   for (let k = 0; k < 8; k++) directions.push([Math.cos((k * Math.PI) / 4), Math.sin((k * Math.PI) / 4)]);
   // … plus both ways along every cable and every force, so a correct arrow
   // is always reachable and a backwards one is too (a common mistake to catch).
   for (const f of forces) directions.push(f.dir, scale(f.dir, -1));
-  for (const f of setup.forces.filter((x) => x.kind === "cable")) {
+  for (const f of setup.forces.filter((x) => x.kind === "cable" || x.kind === "spring")) {
     const d = sub(anchorPoint(setup, f), setup.point.at);
     directions.push(scale(d, 1 / mag(d)), scale(d, -1 / mag(d)));
   }

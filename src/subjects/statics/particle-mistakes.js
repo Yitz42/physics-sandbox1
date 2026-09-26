@@ -70,11 +70,19 @@ function variants(setup) {
       out.push({ setup: s, message: `Check the sign of ${pretty(f.symbol)}'s ${axis}-component. Look at the arrow: does it point ${axis === "x" ? "left or right" : "up or down"}?` });
     }
   }
-  for (const f of setup.forces.filter((x) => x.kind === "cable")) {
+  for (const f of setup.forces.filter((x) => x.kind === "cable" || x.kind === "spring")) {
     const s = clone(setup);
     const g = s.forces.find((x) => x.id === f.id);
     g.direction = reverse(g.direction);
-    out.push({ setup: s, message: `Check the direction of ${pretty(f.symbol)}. A cable always pulls: its arrow points away from the point, along the cable.` });
+    out.push({ setup: s, message: f.kind === "spring"
+      ? `Check the direction of ${pretty(f.symbol)}. A stretched spring pulls: its arrow points away from the point, along the spring toward its anchor.`
+      : `Check the direction of ${pretty(f.symbol)}. A cable always pulls: its arrow points away from the point, along the cable.` });
+  }
+  // A cable over a pulley pulls on it twice (once on each side). Leaving one side out:
+  for (const f of setup.forces.filter((x) => x.shared)) {
+    const s = clone(setup);
+    s.forces = s.forces.filter((x) => x.id !== f.id);
+    out.push({ setup: s, message: `The cable runs over the pulley, so it pulls on it TWICE — once on each side — and both pulls have the same tension ${pretty(f.symbol)}. Put both in ΣFx and ΣFy.` });
   }
   return out;
 }
@@ -147,6 +155,22 @@ export function particleMistakes(setup, name) {
   if (uf && uf.direction && uf.direction.points) {
     const [nA, nB] = uf.direction.names || ["A", "B"];
     list.push({ value: pointsDelta(uf.direction)[u[2] === "x" ? 0 : 1], message: `That's the change in ${u[2]} from ${nA} to ${nB}. Divide it by the length r_${nA}${nB} to get the unit vector, whose parts are always between −1 and 1.` });
+  }
+  // Springs: the stretch s = F / k and the length l = l₀ + s.
+  const sp = name.match(/^(.+)\.([sl])$/);
+  const spring = sp && setup.forces.find((x) => x.id === sp[1] && x.kind === "spring");
+  if (spring) {
+    const v = solveParticle(setup).values;
+    const F = v[spring.id], k = spring.k, s = v[`${spring.id}.s`], l0 = spring.unstretched;
+    const add = (value, message) => Number.isFinite(value) && list.push({ value, message });
+    const scaled = sp[2] === "s" ? (x) => x : (x) => (l0 ?? 0) + x; // the same slip, carried into the length
+    add(scaled(F * k), "Divide the force by the stiffness, don't multiply: F = k s, so s = F / k.");
+    add(scaled(k / F), "Upside down: F = k s, so s = F / k (force on top).");
+    if (l0 != null && sp[2] === "l") {
+      add(s, `That's only the stretch. The spring's length is its unstretched length plus the stretch: l = l₀ + s = ${l0} + s.`);
+      add(l0 - s, "The spring is stretched (it pulls), so it gets LONGER: l = l₀ + s.");
+    }
+    if (l0 != null && sp[2] === "s") add(l0 + s, "That's the stretched length. The stretch is only the extra length: s = F / k.");
   }
   if (name === "R.angle" && correct != null) {
     list.push({ value: 90 - correct, message: "That's the angle from the y-axis. θ here is measured from the x-axis." });

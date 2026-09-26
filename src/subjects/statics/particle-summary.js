@@ -4,7 +4,7 @@
 
 import { fixedTex, sigFig, unitTex } from "../../core/units.js";
 import { pointsDelta } from "./directions.js";
-import { lineName, unitVectorSymbol } from "./particle.js";
+import { lineName, unitVectorSymbol, springName } from "./particle.js";
 
 // A vector symbol in bold, the way textbooks print vectors: F_1 → **F**_1.
 export const bold = (symbol) => String(symbol).replace(/^([A-Za-z])/, "\\mathbf{$1}");
@@ -69,8 +69,14 @@ export function particleSummary(setup, result, opts = {}) {
   }
   if (!reveal || result.status !== "determinate") return lines;
   for (const id of result.unknowns) {
-    const f = setup.forces.find((x) => x.id === id);
+    const f = setup.forces.find((x) => x.id === id || x.shared === id);
     lines.push(`${f.symbol} = ${fixedTex(v[id], "N")}`);
+  }
+  // Springs: the stretch that force needs, s = F / k (and the stretched length).
+  for (const f of setup.forces.filter((x) => x.kind === "spring" && v[`${x.id}.s`] != null)) {
+    const n = springName(f);
+    const L = f.unstretched != null ? `, \\quad l_{${n}} = l_0 + s_{${n}} = ${sigFig(f.unstretched, 4)} + ${sigFig(v[`${f.id}.s`], 4)} = ${fixedTex(v[`${f.id}.l`], "m", 3)}` : "";
+    lines.push(`s_{${n}} = \\dfrac{${f.symbol}}{k} = \\dfrac{${sigFig(v[f.id], 5)}}{${sigFig(f.k, 5)}} = ${fixedTex(v[`${f.id}.s`], "m", 3)}${L}`);
   }
   return lines;
 }

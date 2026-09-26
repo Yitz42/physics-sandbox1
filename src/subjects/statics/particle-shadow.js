@@ -41,7 +41,8 @@ export function shadowShapes(setup, result, at, guesses, k, minX = -Infinity) {
   let complete = true;
 
   for (const f of setup.forces) {
-    const gx = g(`${f.id}.x`), gy = g(`${f.id}.y`), gm = g(f.id);
+    // (Forces sharing one unknown — both sides of a cable over a pulley — use its name.)
+    const gx = g(`${f.id}.x`), gy = g(`${f.id}.y`), gm = g(f.id) ?? (f.shared ? g(f.shared) : null);
     const gux = g(`${f.id}.ux`), guy = g(`${f.id}.uy`);
     if ((gux != null || guy != null) && magnitudeOf(f) != null) {
       // Their unit vector, scaled by the force's size.

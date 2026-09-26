@@ -256,3 +256,84 @@ test("force along a line: a cable to B ends exactly at B in the space diagram, w
   ok(shapes.some((s) => s.type === "point" && s.label === "A (1, 2)"), "A should be labelled with its coordinates");
   ok(shapes.some((s) => s.type === "point" && s.label === "O (0, 0)"), "the origin should be shown");
 });
+
+// ---- Springs and pulleys (Unit 2) ---------------------------------------------
+
+// Ring A: cable AB up-left at 30°, spring AC horizontal to the right (k = 800 N/m,
+// unstretched 0.5 m), crate 20 kg. ΣFy: T sin30° = 196.2 → T = 392.4 N;
+// ΣFx: −392.4 cos30° + F_AC = 0 → F_AC = 339.83 N; s = 339.83/800 = 0.4248 m; l = 0.9248 m.
+const springSetup = () => ({
+  analysis: "equilibrium",
+  point: { at: [0, 0], label: "A" },
+  forces: [
+    { id: "T_AB", symbol: "T_{AB}", kind: "cable", magnitude: null, direction: { angle: 30, from: "-x", toward: "+y" }, anchor: { label: "B" } },
+    { id: "F_AC", symbol: "F_{AC}", kind: "spring", k: 800, unstretched: 0.5, magnitude: null, direction: "right", anchor: { label: "C", length: 1.5 } },
+    { id: "W", symbol: "W", kind: "weight", mass: 20 },
+  ],
+});
+
+test("spring: F_AC = 339.8 N, so it stretches s = F/k = 0.425 m to l = 0.925 m", () => {
+  const r = solveParticle(springSetup());
+  equal(r.status, "determinate");
+  close(r.values.T_AB, 392.4);
+  close(r.values.F_AC, 339.829, 1e-3);
+  close(r.values["F_AC.s"], 0.424786, 1e-5);
+  close(r.values["F_AC.l"], 0.924786, 1e-5);
+});
+
+test("spring: a known stretch makes a known force (F = k s)", () => {
+  const s = springSetup();
+  s.forces[1] = { ...s.forces[1], magnitude: undefined, stretch: 0.25 }; // 800 × 0.25 = 200 N
+  s.forces[2] = { id: "P", symbol: "P", magnitude: null, direction: "down" }; // what load does that hold?
+  const r = solveParticle(s);
+  close(r.values.F_AC, 200);
+  // ΣFx: −T cos30° + 200 = 0 → T = 230.94 N; ΣFy: T sin30° − P = 0 → P = 115.47 N
+  close(r.values.P, 115.470, 1e-3);
+});
+
+test("spring mistakes: multiplying by k, F/k upside down, and giving s when l was asked", () => {
+  const setup = springSetup();
+  const has = (name, value, re) => ok(particleMistakes(setup, name).some((m) => Math.abs(m.value - value) < 1e-3 * Math.max(1, Math.abs(value)) && re.test(m.message)), `${name} = ${value} should be explained`);
+  has("F_AC.s", 339.829 * 800, /Divide/);
+  has("F_AC.s", 800 / 339.829, /Upside/);
+  has("F_AC.l", 0.424786, /only the stretch/);
+  has("F_AC.s", 0.924786, /stretched length/);
+});
+
+// Pulley A rides on cable BAC (same tension T both sides): AB up-left at 60°,
+// AC up-right at 30°; a rope AD pulls A to the left; crate 30 kg (W = 294.3 N).
+// ΣFy: T sin60° + T sin30° = 294.3 → T = 215.44 N
+// ΣFx: −T cos60° + T cos30° − T_AD = 0 → T_AD = 215.44(0.8660 − 0.5) = 78.86 N
+const pulleySetup = () => ({
+  analysis: "equilibrium",
+  point: { at: [0, 0], label: "A", object: "pulley" },
+  forces: [
+    { id: "T_AB", symbol: "T", shared: "T", kind: "cable", magnitude: null, direction: { angle: 60, from: "-x", toward: "+y" }, anchor: { label: "B" } },
+    { id: "T_AC", symbol: "T", shared: "T", kind: "cable", magnitude: null, direction: { angle: 30, from: "+x", toward: "+y" }, anchor: { label: "C" } },
+    { id: "T_AD", symbol: "T_{AD}", kind: "cable", magnitude: null, direction: "left", anchor: { label: "D", length: 1.5 } },
+    { id: "W", symbol: "W", kind: "weight", mass: 30 },
+  ],
+});
+
+test("pulley: both sides of the cable are ONE unknown T = 215.4 N; the rope pulls 78.9 N", () => {
+  const r = solveParticle(pulleySetup());
+  equal(r.status, "determinate");
+  equal(r.unknowns, ["T", "T_AD"]);
+  close(r.values.T, 215.436, 1e-3);
+  close(r.values.T_AB, 215.436, 1e-3);
+  close(r.values.T_AC, 215.436, 1e-3);
+  close(r.values.T_AD, 78.857, 1e-3);
+});
+
+test("pulley: leaving out one side of the cable is explained", () => {
+  // Only T sin30° holds the crate: T = 588.6 N.
+  ok(particleMistakes(pulleySetup(), "T").some((m) => Math.abs(m.value - 588.6) < 0.1 && /TWICE/.test(m.message)));
+});
+
+test("spring and pulley: drawn as a zig-zag spring and a pulley wheel", () => {
+  const sp = particleScene(springSetup(), solveParticle(springSetup()), {});
+  ok(sp.some((s) => s.type === "spring" && s.id === "F_AC"), "spring shape");
+  ok(sp.some((s) => s.type === "text" && /k = 800 N\/m, l₀ = 0.5 m/.test(s.text)), "stiffness written under the picture");
+  const pu = particleScene(pulleySetup(), solveParticle(pulleySetup()), {});
+  ok(pu.some((s) => s.type === "pulley"), "pulley wheel");
+});

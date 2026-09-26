@@ -25,6 +25,7 @@ const UNITS = {
   m: { text: "m", tex: "\\text{m}" },
   kg: { text: "kg", tex: "\\text{kg}" },
   "N·m": { text: "N·m", tex: "\\text{N}\\!\\cdot\\!\\text{m}" },
+  "N/m": { text: "N/m", tex: "\\text{N/m}" },
   deg: { text: "°", tex: "^\\circ" },
   "": { text: "", tex: "" },
 };

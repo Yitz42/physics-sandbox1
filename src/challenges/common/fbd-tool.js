@@ -144,9 +144,10 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   // ---- Checking -----------------------------------------------------------------
   function check() {
     const problems = [];
+    const matches = sharedMatches();
     for (const [id, dir] of placed) {
       const c = candidates.find((x) => x.id === id);
-      const right = correct.get(id);
+      const right = correct.get(matches.get(id) || id);
       if (!right) problems.push(c.feedback || `${labelOf(c)} doesn't act on this point.`);
       else if (dot(dir, right.dir) < SAME_DIRECTION) problems.push(c.wrongDirection || wrongDirectionText(right));
     }
@@ -167,6 +168,23 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     }
   }
 
+  // Forces that share one tension (both sides of a cable over a pulley) have the
+  // same symbol, so their buttons look alike: an arrow placed with either button
+  // counts for whichever of them it points along. Returns placed id → force id.
+  function sharedMatches() {
+    const out = new Map();
+    const groups = new Set(info.forces.filter((f) => f.shared).map((f) => f.shared));
+    for (const name of groups) {
+      const ids = info.forces.filter((f) => f.shared === name).map((f) => f.id);
+      const free = [...ids];
+      for (const id of ids.filter((x) => placed.has(x))) {
+        const k = free.findIndex((r) => dot(placed.get(id), correct.get(r).dir) >= SAME_DIRECTION);
+        if (k >= 0) out.set(id, free.splice(k, 1)[0]);
+      }
+    }
+    return out;
+  }
+
   return {
     element: box,
     // "Show answer": place the correct arrows.
@@ -182,6 +200,7 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
 
 function wrongDirectionText(f) {
   if (f.kind === "cable") return "A cable can only **pull**: its arrow points away from the point, along the cable.";
+  if (f.kind === "spring") return "A stretched spring **pulls**: its arrow points away from the point, along the spring.";
   if (f.kind === "weight") return "Weight always points **straight down**, toward the Earth.";
   return "One arrow points the wrong way. Compare each arrow's direction with the picture.";
 }
@@ -189,5 +208,6 @@ function wrongDirectionText(f) {
 function missingText(f) {
   if (f.kind === "weight") return "A force is missing. What does gravity do to the hanging object?";
   if (f.kind === "cable") return "A force is missing. Every cable attached to the point pulls on it.";
+  if (f.kind === "spring") return "A force is missing. The spring attached to the point pulls on it too.";
   return "A force is missing. Look at everything touching or pulling on the point.";
 }

@@ -12,7 +12,7 @@
 
 import { add, scale, sub, mag, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
-import { directionOf, magnitudeOf, particleQuantities } from "./particle.js";
+import { directionOf, magnitudeOf, particleQuantities, springName } from "./particle.js";
 import { pointsDelta } from "./directions.js";
 import { shadowShapes } from "./particle-shadow.js";
 import { spreadPanels } from "../../render/panels.js";
@@ -168,9 +168,13 @@ function spaceDiagram(setup) {
     if (c.forbidden) shapes.push({ type: "zone", from: [c.forbidden[0], A[1] + c.y], to: [c.forbidden[1], A[1] + c.y - 0.12], label: c.forbiddenLabel || "no anchors" });
   }
   for (const f of setup.forces) {
-    if (f.kind === "cable") {
+    if (f.kind === "cable" || f.kind === "spring") {
       const P = anchorPoint(setup, f);
-      shapes.push({ type: "line", id: f.id, from: A, to: P, style: "cable" });
+      if (f.kind === "spring") {
+        shapes.push({ type: "spring", id: f.id, from: A, to: P });
+      } else {
+        shapes.push({ type: "line", id: f.id, from: A, to: P, style: "cable" });
+      }
       const d = sub(P, A);
       if (!setup.ceiling) {
         const n = Math.abs(d[1]) >= Math.abs(d[0]) ? [0, -Math.sign(d[1])] : [-Math.sign(d[0]), 0];
@@ -197,7 +201,9 @@ function spaceDiagram(setup) {
     }
   }
   const pointLabel = usesPoints(setup) ? coordLabel(setup.point.label || "A", A) : setup.point.label || "";
-  shapes.push({ type: "point", at: A, label: pointLabel, style: "ring" });
+  // A pulley at A (a cable runs over it): a wheel instead of a ring.
+  if (setup.point.object === "pulley") shapes.push({ type: "pulley", at: A });
+  shapes.push({ type: "point", at: A, label: pointLabel, style: setup.point.object === "pulley" ? "dot" : "ring" });
   return shapes;
 }
 
@@ -208,7 +214,7 @@ function spaceDiagram(setup) {
 export function particleScene(setup, result, opts = {}) {
   const A = setup.point.at;
   const fs = opts.fbdSetup || setup;
-  const hasBodies = setup.forces.some((f) => f.kind === "cable" || f.kind === "weight");
+  const hasBodies = setup.forces.some((f) => ["cable", "spring", "weight"].includes(f.kind));
   if (!hasBodies || opts.fbdOnly) {
     return [{ type: "axes" }, ...mountShapes(fs, A), ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
   }
@@ -227,8 +233,14 @@ export function particleScene(setup, result, opts = {}) {
   // the space diagram's is centred under it.
   const capY = Math.min(A[1] - 3.0, ...pts.map((p) => p[1] - 1.1));
   const ys = [...pts.map((p) => p[1]), capY - 0.2, A[1] + FBD_REACH, A[1] - FBD_REACH];
+  // Springs: their stiffness k (and unstretched length l₀) go on a line under
+  // the caption, where there's always room.
+  const springs = setup.forces.filter((f) => f.kind === "spring").map((f) =>
+    `${springName(f)}: k = ${f.k} N/m${f.unstretched != null ? `, l₀ = ${+f.unstretched.toFixed(3)} m` : ""}`);
+  if (springs.length) ys.push(capY - 0.5 * springs.length - 0.2);
   const shapes = [
     ...space,
+    ...springs.map((text, i) => ({ type: "text", at: [(x0 + x1) / 2, capY - 0.5 * (i + 1)], text: `spring ${text}` })),
     { type: "text", at: [(x0 + x1) / 2, capY], text: usesPoints(setup) ? "Space diagram (coordinates in m)" : "Space diagram" },
     { type: "text", at: [F[0], capY], text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner

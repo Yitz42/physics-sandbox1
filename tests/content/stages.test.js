@@ -301,3 +301,39 @@ test("Unit 1 solve part 2: F_R = {20 i + 390 j} N, 390.5 N at 87.1°", () => {
   close(r.values.R, 390.512, 1e-3);
   close(r.values["R.angle"], 87.0643, 1e-3);
 });
+
+// ---- New parts: Unit 2 springs and pulleys --------------------------------------
+
+test("Unit 2 build part 2: k = 980 N/m reaches C (l = 0.800 m); 500 and 1100 N/m don't", () => {
+  const st = find("02-particle-equilibrium/3-build", 2);
+  const solver = getSolver(st.solver);
+  const withK = (k) => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#F_AC.k", k);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should not already work");
+  ok(withK(980).ok, "980 N/m: s = 196.2/980 = 0.2002 m");
+  ok(/too soft/.test(withK(500).message), "500 N/m stretches too far");
+  ok(/too stiff/.test(withK(1100).message), "1100 N/m stretches too little");
+});
+
+test("Unit 2 pulley parts: rope AD always pulls (AB steeper than AC) in every version", () => {
+  for (const [id, n] of [["02-particle-equilibrium/2-predict", 3], ["02-particle-equilibrium/4-debug", 2], ["02-particle-equilibrium/6-solve", 2]]) {
+    const st = find(id, n);
+    const solver = getSolver(st.solver);
+    for (let i = 0; i < 30; i++) {
+      const r = solver.solve(makeVariant(st.setup, st.vary));
+      equal(r.status, "determinate");
+      ok(r.values.T_AD > 1, `${id}: T_AD = ${r.values.T_AD}`);
+      close(r.values.T_AB, r.values.T_AC); // one cable, one tension
+    }
+  }
+});
+
+test("Unit 2 predict part 2: 20 kg at 40°, k = 800 N/m → T_AB = 305.2 N, s = 0.292 m", () => {
+  const st = find("02-particle-equilibrium/2-predict", 2);
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values.T_AB, 305.23, 1e-2);
+  close(r.values["F_AC.s"], 0.29227, 1e-4); // 233.82 / 800
+});

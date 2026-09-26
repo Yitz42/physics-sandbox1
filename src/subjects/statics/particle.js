@@ -8,7 +8,12 @@
 //
 // A force in setup.forces looks like:
 //   { id: "T_AB", symbol: "T_{AB}", magnitude: null, direction: {...}, kind: "cable" }
-//   kind: "applied" (default), "cable" (can only pull), "weight" (uses mass, points down)
+//   kind: "applied" (default), "cable" (can only pull), "weight" (uses mass, points down),
+//         "spring" (F = k s: stiffness k in N/m, stretch s in m; stretch: 0.2 makes the
+//         force known, magnitude: null leaves it unknown and the stretch is found;
+//         unstretched: 0.8 is its length before stretching, so its length l = l₀ + s)
+//   shared: "T"  forces with the same `shared` name are ONE unknown — e.g. the two
+//         sides of a cable over a pulley, which have the same tension T
 //   direction: see directions.js — an angle, a slope, a word, or two points
 //              { points: [A, B], names: ["A", "B"] } (a force along the line A→B)
 
@@ -22,8 +27,12 @@ export const G = 9.81; // m/s², gravitational acceleration
 // Magnitude of a force in N, or null if it is unknown.
 export function magnitudeOf(force) {
   if (force.kind === "weight" && force.mass != null) return force.mass * G;
+  if (force.kind === "spring" && force.stretch != null) return force.k * force.stretch; // F = k s
   return force.magnitude ?? null;
 }
+
+// The unknown a force's size belongs to: its own id, or its `shared` name.
+const unknownOf = (f) => f.shared || f.id;
 
 export function directionOf(force, opts) {
   return force.kind === "weight" ? [0, -1] : directionVector(force.direction, opts);
@@ -71,7 +80,8 @@ export function buildEquations(setup) {
 export function solveParticle(setup) {
   const equations = buildEquations(setup);
   const values = {};
-  const unknowns = setup.forces.filter((f) => magnitudeOf(f) == null).map((f) => f.id);
+  // Unknown sizes, counting forces that share one (pulley tensions) once.
+  const unknowns = [...new Set(setup.forces.filter((f) => magnitudeOf(f) == null).map(unknownOf))];
   let status, message;
 
   if (setup.analysis === "resultant" || setup.analysis === "components") {
@@ -81,8 +91,12 @@ export function solveParticle(setup) {
     message = `There are ${unknowns.length} unknown forces but only 2 equations (ΣFx = 0, ΣFy = 0). ` +
       "Equilibrium alone can't decide how the load is shared, so this is statically indeterminate.";
   } else {
-    const sol = solveEquations(equations, unknowns);
+    // Terms of forces that share an unknown are solved as that one unknown.
+    const ids = Object.fromEntries(setup.forces.map((f) => [f.id, unknownOf(f)]));
+    const forSolving = equations.map((eq) => ({ ...eq, terms: eq.terms.map((t) => ({ ...t, id: ids[t.id] ?? t.id })) }));
+    const sol = solveEquations(forSolving, unknowns);
     Object.assign(values, sol.values);
+    for (const f of setup.forces) if (f.shared && sol.values[f.shared] != null) values[f.id] = sol.values[f.shared];
     if (sol.status === "indeterminate") {
       status = "indeterminate";
       message = "The unknown forces can't be told apart (they act along the same line), so equilibrium can't decide how they share the load.";
@@ -116,6 +130,12 @@ export function solveParticle(setup) {
     values[`${f.id}.ux`] = u[0];
     values[`${f.id}.uy`] = u[1];
     vectors.push(v);
+    if (f.kind === "spring") {
+      // F = k s, so the stretch is s = F / k (negative: squashed instead).
+      values[`${f.id}.k`] = f.k;
+      values[`${f.id}.s`] = m / f.k;
+      if (f.unstretched != null) values[`${f.id}.l`] = f.unstretched + m / f.k;
+    }
   }
   // Position vectors of forces given by two points (they're known even when
   // the force's size isn't).
@@ -153,6 +173,13 @@ export function particleQuantities(setup) {
     return symbol.includes("_") ? `(${symbol})_${axis}` : `${symbol}_${axis}`;
   };
   for (const f of setup.forces) {
+    if (f.shared) q[f.shared] = { label: f.symbol, unit: "N" };
+    if (f.kind === "spring") {
+      const name = springName(f);
+      q[`${f.id}.s`] = { label: `s_{${name}}`, unit: "m" };
+      q[`${f.id}.l`] = { label: `l_{${name}}`, unit: "m" };
+      q[`${f.id}.k`] = { label: `k_{${name}}`, unit: "N/m" };
+    }
     q[f.id] = { label: f.symbol, unit: "N" };
     q[`${f.id}.x`] = { label: comp(f.symbol, "x"), unit: "N" };
     q[`${f.id}.y`] = { label: comp(f.symbol, "y"), unit: "N" };
@@ -183,4 +210,10 @@ export const lineName = (f) => ((f.direction && f.direction.names) || ["A", "B"]
 // KaTeX name of a force's unit vector: u_{AB} along a line A→B, else u_{F}.
 export function unitVectorSymbol(f) {
   return f.direction && f.direction.points ? `u_{${lineName(f)}}` : `u_{${f.symbol}}`;
+}
+
+// "AC" for a spring whose force is F_{AC} (used to name its stretch s_AC, length l_AC).
+export function springName(f) {
+  const m = String(f.symbol).match(/_\{?([A-Za-z0-9]+)\}?$/);
+  return m ? m[1] : f.id;
 }
