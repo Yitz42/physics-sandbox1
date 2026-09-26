@@ -14,6 +14,7 @@
 //   text     { at, text }                    a caption
 //   axes     {}                              little x-y axes (bottom-left corner)
 //   handle   { at }                          a grab circle on a draggable arrow tip
+//   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
@@ -25,7 +26,7 @@ import { placeLabels } from "./labels.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["zone", "support", "line", "box", "arc", "triangle", "axes", "point", "arrow", "handle", "text"];
+const ORDER = ["zone", "support", "pivot", "beam", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 export function drawScene(cv, shapes, opts = {}) {

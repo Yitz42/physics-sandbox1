@@ -108,3 +108,28 @@ test("Unit 2 build: start fails; 44°/44° meets it; 40°/45° overloads AC; 50�
   ok(!over.ok && over.flagged.includes("T_AC"), "40/45 should overload AC (754 N)");
   ok(!tryAngles(50, 50).ok, "50/50 puts anchors in the skylight");
 });
+
+test("Unit 3 seesaw: every new version puts child B on the 3 m half-plank", () => {
+  const st = find("03-moments/2-predict");
+  const solver = getSolver(st.solver);
+  for (let i = 0; i < 40; i++) {
+    const x = solver.solve(makeVariant(st.setup, st.vary)).values["W_B.pos"];
+    ok(x > 0 && x <= 3, `x_B = ${x}`);
+  }
+});
+
+test("Unit 3 build: the start tips; 10 kg at 0, 20 kg at 1.5 m, 30 kg at 1 m balances", () => {
+  const st = find("03-moments/3-build");
+  const solver = getSolver(st.solver);
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok);
+  const s = clone(st.setup);
+  setPath(s, "forces.#B10.at.0", 0);
+  setPath(s, "forces.#B20.at.0", 1.5);
+  setPath(s, "forces.#B30.at.0", 1);
+  ok(st.goal.check(solver.solve(s), s).ok, "hand-worked answer should balance");
+});
+
+test("Unit 3 solve: default numbers give M_O = 114.95 N·m", () => {
+  const st = find("03-moments/6-solve");
+  close(getSolver(st.solver).solve(st.setup).values.M, 114.952);
+});

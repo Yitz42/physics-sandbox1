@@ -8,11 +8,12 @@
 const QUARTERS = [["+x", "+y"], ["-x", "+y"], ["-x", "-y"], ["+x", "-y"]];
 const pretty = (axis) => axis.replace("-", "−"); // real minus sign
 
-export function angleOptions(forcePath, label = "Direction") {
+// pointName: the point the force acts at ("O" in Unit 1, e.g. "A" on a wrench)
+export function angleOptions(forcePath, label = "Direction", pointName = "O") {
   return {
     label,
     options: QUARTERS.map(([from, toward]) => ({
-      label: `From O to ${pretty(from)},${pretty(toward)}`,
+      label: `From ${pointName} to ${pretty(from)},${pretty(toward)}`,
       set: { [`${forcePath}.direction.from`]: from, [`${forcePath}.direction.toward`]: toward },
     })),
   };

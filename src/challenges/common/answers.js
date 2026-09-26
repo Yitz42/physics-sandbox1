@@ -12,10 +12,10 @@ import { unitLabel } from "../../core/units.js";
 
 export const DEFAULT_PRECISION = 0.1;
 
-// Read numbers like "-200", "−200", "1,250", "346.4 N" or "2.5 kN".
+// Read numbers like "-200", "−200", "1,250", "346.4 N", "2.5 kN", "30 N·m" or "2.25 m".
 export function parseNumber(text) {
   const t = String(text).trim().replace(/−/g, "-").replace(/,/g, "").replace(/°/g, "");
-  const m = t.match(/^([-+]?\d*\.?\d+(?:e[-+]?\d+)?)\s*(k?N)?\s*$/i);
+  const m = t.match(/^([-+]?\d*\.?\d+(?:e[-+]?\d+)?)\s*(kN|N\s*[·.*]?\s*m|Nm|N|m)?\s*$/i);
   if (!m) return null;
   const v = parseFloat(m[1]);
   return m[2] && m[2].toLowerCase() === "kn" ? v * 1000 : v;

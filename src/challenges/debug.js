@@ -48,7 +48,9 @@ export function mount(ctx) {
   ctx.el.area.append(intro, step, eqBox, actions);
   // Which equation a clicked term sits in (the same force appears in ΣFx and ΣFy).
   const eqIdOf = (node) => wrongEqs[[...eqBox.querySelectorAll(".eq-row")].indexOf(node.closest(".eq-row"))].id;
-  renderEquations(eqBox, wrongEqs, { mode: "symbolic", onTermClick: isFbd ? null : (id, node) => pick(id, eqIdOf(node)) });
+  // dbg.mode "numeric" shows numbers (e.g. moment arms), so the slip is visible.
+  const mode = dbg.mode || "symbolic";
+  renderEquations(eqBox, wrongEqs, { mode, onTermClick: isFbd ? null : (id, node) => pick(id, eqIdOf(node)) });
   step.textContent = isFbd ? "Step 1: click the wrong arrow on the FBD (or press “Something is missing”)." : "Step 1: click the term that is wrong (or press “A term is missing”).";
 
   const attempts = createAttempts(ctx, actions, () => {
@@ -111,6 +113,9 @@ export function mount(ctx) {
   }
 
   function fixOptions() {
+    const target = correctEqs.find((e) => e.id === mutation.equation);
+    const term = target && target.terms.find((t) => t.id === mutation.term);
+    const swapLabel = (term && term.factor && term.factor.swapLabel) || "Swap cos ↔ sin";
     if (mutation.kind === "remove") {
       return dbg.missingChoices.map((c) => ({ label: c.label, correct: c.id === mutation.force, feedback: c.feedback || "That force doesn't act on this point." }));
     }
@@ -125,8 +130,9 @@ export function mount(ctx) {
       ];
     }
     return [
-      { label: "Swap cos ↔ sin", correct: mutation.kind === "swap", feedback: "The trig function is right here. Look at the sign instead." },
-      { label: "Flip the sign (+ ↔ −)", correct: mutation.kind === "sign", feedback: "The sign is right. Which axis is the angle measured from? That one gets cos." },
+      // The term's factor can name its own fix (e.g. "Use the perpendicular distance d").
+      { label: swapLabel, correct: mutation.kind === "swap", feedback: swapLabel.startsWith("Swap") ? "The trig function is right here. Look at the sign instead." : "That part is right here. Look at the sign instead." },
+      { label: "Flip the sign (+ ↔ −)", correct: mutation.kind === "sign", feedback: swapLabel.startsWith("Swap") ? "The sign is right. Which axis is the angle measured from? That one gets cos." : "The sign is right. Check the number against the picture." },
       { label: "Delete this term", feedback: "This force does have a component along this axis, so its term belongs." },
     ];
   }
@@ -154,11 +160,11 @@ export function mount(ctx) {
     correctEqs.forEach((eq, i) => {
       if (eq.result && Math.abs(eq.result.value - wrongEqs[i].result.value) > 1e-6) {
         const name = eq.lhs.split("=")[0].trim(); // e.g. F_{Rx}
-        extra.push(`${name}\\text{: the mistake gave } ${fixedTex(wrongEqs[i].result.value, "N")}\\text{; correct is } ${fixedTex(eq.result.value, "N")}`);
+        extra.push(`${name}\\text{: the mistake gave } ${fixedTex(wrongEqs[i].result.value, eq.result.unit)}\\text{; correct is } ${fixedTex(eq.result.value, eq.result.unit)}`);
       }
     });
     step.textContent = "Corrected work (the fixed term is highlighted):";
-    renderEquations(eqBox, correctEqs, { mode: "symbolic", extra });
+    renderEquations(eqBox, correctEqs, { mode, extra });
     highlightTerms(eqBox, mutation.term || mutation.force);
     ctx.explain();
     ctx.finish();

@@ -39,7 +39,9 @@ function termBody(term, numeric) {
   const known = numeric && term.value != null;
   const sym = known ? `(${sigFig(term.value, 4)})` : term.symbol;
   if (!term.factor) return known ? sigFig(term.value, 4) : sym;
-  return term.factor.pre ? `${term.factor.tex}${sym}` : `${sym}${term.factor.tex}`;
+  // A factor may have its own number form (numTex), e.g. moment arm "d_1" → "(0.25)".
+  const ftex = numeric && term.factor.numTex ? term.factor.numTex : term.factor.tex;
+  return term.factor.pre ? `${ftex}${sym}` : `${sym}${ftex}`;
 }
 
 // KaTeX for the sum of terms, e.g. "T_{AB}\cos 30^\circ - W".
@@ -98,27 +100,33 @@ export function solveEquations(equations, unknownIds) {
 
 const copy = (eq) => JSON.parse(JSON.stringify(eq));
 
-// Swap sin ↔ cos (or any factor with an `alt`) in one term.
-export function swapFactor(eq, termId) {
+// Swap sin ↔ cos (or any factor with an `alt`, e.g. a wrong moment arm) in one term.
+// `index` picks a term by position when one force has several terms.
+const pick = (terms, termId, index) => (index != null ? terms[index] : terms.find((x) => x.id === termId));
+
+export function swapFactor(eq, termId, index = null) {
   const out = copy(eq);
-  const t = out.terms.find((x) => x.id === termId);
+  const t = pick(out.terms, termId, index);
   if (t && t.factor && t.factor.alt) {
     const { alt, ...rest } = t.factor;
-    t.factor = { ...rest, tex: alt.tex, value: alt.value, alt: { tex: rest.tex, value: rest.value } };
+    // Swap the shown forms and value; keep extras like swapLabel/swapReason.
+    const shown = (f) => ({ tex: f.tex, numTex: f.numTex, value: f.value });
+    t.factor = { ...rest, ...shown(alt), alt: shown(rest) };
   }
   return out;
 }
 
-export function flipSign(eq, termId) {
+export function flipSign(eq, termId, index = null) {
   const out = copy(eq);
-  const t = out.terms.find((x) => x.id === termId);
+  const t = pick(out.terms, termId, index);
   if (t) t.sign = -t.sign;
   return out;
 }
 
-export function removeTerm(eq, termId) {
+export function removeTerm(eq, termId, index = null) {
   const out = copy(eq);
-  out.terms = out.terms.filter((x) => x.id !== termId);
+  const t = pick(out.terms, termId, index);
+  out.terms = out.terms.filter((x) => x !== t);
   return out;
 }
 
@@ -126,10 +134,10 @@ export function removeTerm(eq, termId) {
 // The solve challenge picks a few of these as wrong multiple-choice options.
 export function mistakesOf(eq) {
   const list = [];
-  for (const t of eq.terms) {
-    if (t.factor && t.factor.alt) list.push({ eq: swapFactor(eq, t.id), kind: "swap", termId: t.id });
-    list.push({ eq: flipSign(eq, t.id), kind: "sign", termId: t.id });
-    if (eq.terms.length > 1) list.push({ eq: removeTerm(eq, t.id), kind: "missing", termId: t.id });
-  }
+  eq.terms.forEach((t, i) => {
+    if (t.factor && t.factor.alt) list.push({ eq: swapFactor(eq, t.id, i), kind: "swap", termId: t.id, term: t });
+    list.push({ eq: flipSign(eq, t.id, i), kind: "sign", termId: t.id, term: t });
+    if (eq.terms.length > 1) list.push({ eq: removeTerm(eq, t.id, i), kind: "missing", termId: t.id, term: t });
+  });
   return list;
 }

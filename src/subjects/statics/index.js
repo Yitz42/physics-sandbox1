@@ -10,7 +10,11 @@ import { particleScene } from "./particle-scene.js";
 import { particleSummary } from "./particle-summary.js";
 import { particleMistakes } from "./particle-mistakes.js";
 import { particleHandles, particleDrag, particleFbd, particleMutate } from "./particle-tools.js";
+import { solveMoment, momentQuantities } from "./moment.js";
+import { momentScene } from "./moment-scene.js";
+import { momentHandles, momentDrag, momentMistakes, momentSummary } from "./moment-tools.js";
 
+// Units 1–2: forces through one point.
 registerSolver("statics.particle", {
   solve: solveParticle,
   // Equations come from a solved result so "define" lines can show their values.
@@ -23,4 +27,16 @@ registerSolver("statics.particle", {
   mistakes: particleMistakes,
   fbd: particleFbd,
   mutate: particleMutate,
+});
+
+// Unit 3: moments of forces about a point.
+registerSolver("statics.moment", {
+  solve: solveMoment,
+  equations: (setup, result) => (result || solveMoment(setup)).equations,
+  summary: momentSummary,
+  scene: momentScene,
+  quantities: momentQuantities,
+  handles: momentHandles,
+  drag: momentDrag,
+  mistakes: momentMistakes,
 });

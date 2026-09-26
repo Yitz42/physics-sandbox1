@@ -53,6 +53,7 @@ src/
     statics/
       index.js             registers the statics solvers with the core
       particle.js          concurrent forces, ΣF = 0
+      moment.js            moments about a point: M = Fd = xFy − yFx, balance ΣM = 0
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
       truss.js             method of joints and method of sections
       frame.js             frames and machines, multi-body
@@ -129,6 +130,9 @@ export default {
 - After a wrong numeric answer, the picture shows a faint dashed **shadow** of what the
   student's numbers would look like (their force, their tensions plus the ΣF they leave
   unbalanced, or their resultant), drawn to the same scale as the real arrows.
+- Moments: counterclockwise positive; students type clockwise moments as negative
+  numbers. Answer precision: ±0.1 N and ±0.1 N·m for forces and moments, ±0.01 m
+  for distances (set per ask with `precision`).
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted
   precision next to the unit. Numeric answers must be within **±0.1** of the true
   value in its unit (±0.1 N, ±0.1°), unless a stage sets `ask.precision`.

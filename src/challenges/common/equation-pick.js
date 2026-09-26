@@ -29,13 +29,14 @@ function pickMistakes(eq) {
 }
 
 const REASONS = {
-  swap: (s) => `the $${s}$ term has sin and cos swapped — cos goes with the axis the angle is measured from`,
+  swap: (s, term) => `the $${s}$ term ${(term && term.factor && term.factor.swapReason) || "has sin and cos swapped — cos goes with the axis the angle is measured from"}`,
   sign: (s) => `the $${s}$ term has the wrong sign — check which way that component points`,
   missing: (s) => `the $${s}$ term is missing — every force with a component along this axis belongs`,
 };
 
 // symbolOf(termId) → KaTeX symbol, for messages
-export function createEquationPick(equations, symbolOf, { onCorrect, onWrong }) {
+// mode: "symbolic" or "numeric" (numbers make e.g. a wrong moment arm visible)
+export function createEquationPick(equations, symbolOf, { onCorrect, onWrong, mode = "symbolic" }) {
   const groups = equations.map((eq) => {
     const options = shuffle([{ eq, kind: "correct" }, ...pickMistakes(eq)]);
     const wrap = el("div", { className: "eq-pick" });
@@ -45,7 +46,7 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong }) 
     let selected = null;
     const buttons = options.map((o) => {
       const b = el("button", { type: "button", className: "btn btn-choice eq-choice" });
-      renderTex(b, equationTex(o.eq, "symbolic", { highlight: false }));
+      renderTex(b, equationTex(o.eq, mode, { highlight: false, showResult: false }));
       b.onclick = () => {
         selected = o;
         buttons.forEach((x) => x.classList.toggle("selected", x === b));
@@ -70,7 +71,7 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong }) 
       else {
         b.classList.add("is-wrong");
         const name = g.eq.lhs.split("=").pop().trim();
-        problems.push(`In your $${name}$ choice, ${REASONS[s.kind](symbolOf(s.termId))}.`);
+        problems.push(`In your $${name}$ choice, ${REASONS[s.kind](symbolOf(s.termId), s.term)}.`);
       }
     }
     if (problems.length) onWrong(problems);

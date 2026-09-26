@@ -113,6 +113,7 @@ export function boundsOf(shapes, margin = 0.6) {
     include(s.at);
     include(s.from);
     include(s.to);
+    if (s.points) s.points.forEach(include);
     if (s.center) {
       include([s.center[0] - s.r, s.center[1] - s.r]);
       include([s.center[0] + s.r, s.center[1] + s.r]);

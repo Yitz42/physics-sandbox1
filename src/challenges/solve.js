@@ -23,7 +23,7 @@ import { showMessage } from "../ui/feedback.js";
 const STEP_NAMES = { fbd: "Draw the FBD", equations: "Write the equations", answer: "Solve" };
 const STEP_INTRO = {
   fbd: "Draw the free-body diagram: isolate the point and show **every** force acting on it.",
-  equations: "Choose the correct equation for each direction.",
+  equations: "Choose the correct equation in each group.",
   answer: "Solve the equations. Enter your answers:",
 };
 
@@ -77,6 +77,7 @@ export function mount(ctx) {
       body.appendChild(current.element);
     } else if (step === "equations") {
       current = createEquationPick(solver.equations(ws.setup, ws.result), symbolOf, {
+        mode: stage.solve.equationMode || "symbolic",
         onCorrect: () => {
           ws.showEquations(true);
           showMessage(ctx.el.feedback, "good", "Equations correct ✓", "They're now in the Equations panel. Click a term to see its arrow.");

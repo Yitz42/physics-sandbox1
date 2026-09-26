@@ -20,6 +20,7 @@
   --c-target: #16a34a;
   --c-wrong: #dc2626;
   --c-student: #0f766e;    /* arrows the student draws */
+  --c-arm: #b45309;        /* moment arm d */
   --c-crate: #ecd9b4;
 
   --c-good-bg: #e3f6e8;  --c-good: #17692b;
@@ -34,7 +35,7 @@
     --c-bg: #11151c; --c-panel: #1a202b; --c-canvas: #1a202b; --c-ink: #e6e9ef;
     --c-muted: #a4adbd; --c-faint: #6b7688; --c-line: #2c3444; --c-accent: #7aa7ff;
     --c-force: #6ea0ff; --c-unknown: #ff9a5c; --c-resultant: #b794ff; --c-component: #93a3b8;
-    --c-target: #4ade80; --c-wrong: #f87171; --c-student: #2dd4bf; --c-crate: #6b5a3a;
+    --c-target: #4ade80; --c-wrong: #f87171; --c-student: #2dd4bf; --c-crate: #6b5a3a; --c-arm: #fbbf24;
     --c-good-bg: #173524; --c-good: #86efac; --c-bad-bg: #3b1a1a; --c-bad: #fca5a5;
     --c-info-bg: #1b2a44; --c-info: #a8c5ff; --c-warn-bg: #3a2c12; --c-warn: #fcd34d;
   }
@@ -109,6 +110,7 @@ p { margin: 0 0 8px; }
 .status-badge.status-practice { background: var(--c-warn-bg); color: var(--c-warn); }
 .stage-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
 .stage-left, .stage-right { display: grid; gap: 12px; min-width: 0; }
+.stage-left > *, .stage-right > * { min-width: 0; } /* long equations scroll instead of widening the page */
 .stage-right { background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 16px; }
 .figure { background: var(--c-canvas); border: 1px solid var(--c-line); border-radius: var(--radius); height: 440px; overflow: hidden; }
 .figure[hidden] { display: none; }
@@ -187,6 +189,7 @@ p { margin: 0 0 8px; }
 .cc-prompt { font-size: 17px; }
 .debug-step, .palette-hint { font-size: 14px; color: var(--c-muted); margin: 6px 0; }
 .debug-eqs { background: var(--c-bg); border-radius: 8px; padding: 4px 10px; }
+.debug-eqs .katex-display > .katex, .eq-choice .katex-display > .katex { font-size: 1.05em; }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 6px; counter-reset: step; font-size: 13px; }
 .steps li { counter-increment: step; padding: 3px 10px; border-radius: 999px; background: var(--c-bg); color: var(--c-muted); }
 .steps li::before { content: counter(step) ". "; }

@@ -7,6 +7,7 @@
 //   labels:   small labels to place later, dodging everything else
 
 import { drawArrow, drawLabel, cssColor } from "./arrows.js";
+import { drawExtraShape } from "./shapes-extra.js";
 
 const ROLE_COLORS = {
   known: ["--c-force", "#1f5fbf"],
@@ -17,6 +18,7 @@ const ROLE_COLORS = {
   wrong: ["--c-wrong", "#dc2626"],
   student: ["--c-student", "#0f766e"],
   shadow: ["--c-wrong", "#dc2626"], // the student's (wrong) answer, drawn faint and dashed
+  arm: ["--c-arm", "#b45309"], // moment arm d
 };
 
 export function roleColor(role) {
@@ -94,8 +96,10 @@ export function drawShape(cv, s, env) {
     case "box": {
       const [x, y] = S(s.at);
       const w = s.w * cv.view.scale, h = s.h * cv.view.scale;
+      ctx.globalAlpha = s.alpha ?? 1; // faint for a "?" or shadow position
       ctx.fillStyle = cssColor("--c-crate", "#e9d5b0");
       ctx.strokeStyle = lit ? roleColor("known") : ink;
+      if (s.dashed) ctx.setLineDash([5, 4]);
       ctx.lineWidth = lit ? 3 : 2;
       ctx.fillRect(x - w / 2, y - h / 2, w, h);
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
@@ -168,6 +172,13 @@ export function drawShape(cv, s, env) {
       drawLabel(ctx, "y", x, y - 42, { color: faint, size: 12 });
       out.boxes.push({ x0: x - 6, y0: y - 52, x1: x + 50, y1: y + 6 });
       break;
+    }
+    default: {
+      // Shapes for moments and rigid bodies live in shapes-extra.js.
+      const extra = drawExtraShape(cv, s, { ...env, crate: cssColor("--c-crate", "#e9d5b0") }, roleColor);
+      out.boxes.push(...extra.boxes);
+      out.segments.push(...extra.segments);
+      out.labels.push(...extra.labels);
     }
   }
   ctx.restore();

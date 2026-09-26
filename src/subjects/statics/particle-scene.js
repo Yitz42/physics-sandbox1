@@ -52,7 +52,7 @@ function arrowLabel(force, m, show) {
 // Angle marking between the reference axis and the force (or a slope triangle).
 // `ring` (0, 1, 2 …) gives each force's arc its own radius, so two angles
 // measured from the same axis don't draw on top of each other.
-function angleMarks(force, at, len, ring = 0) {
+export function angleMarks(force, at, len, ring = 0) {
   const dir = force.direction;
   if (!dir || typeof dir === "string" || force.kind === "weight" || force.hideAngle) return [];
   const d = directionOf(force);
