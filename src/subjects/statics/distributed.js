@@ -29,9 +29,10 @@ const originX = (setup) => (setup.about ? setup.about.at[0] : 0);
 
 // Every piece of every load, each given a name: F_1, F_2 … (or F_R when a
 // single piece is the whole system) and x̃_1 … for its centroid.
-export function namedParts(setup) {
+// opts.alone: false never names a piece F_R (a rigid body has other forces too).
+export function namedParts(setup, opts = {}) {
   const parts = (setup.loads || []).flatMap(partsOf);
-  const alone = parts.length === 1 && !(setup.forces || []).length;
+  const alone = opts.alone !== false && parts.length === 1 && !(setup.forces || []).length;
   return parts.map((p, i) => {
     const load = setup.loads.find((l) => l.id === p.load);
     const given = load.partSymbols && load.partSymbols[partsOf(load).findIndex((q) => q.id === p.id)];

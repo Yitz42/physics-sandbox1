@@ -5,7 +5,7 @@ export default {
   id: "statics",
   title: "Statics",
   subject: "statics",
-  description: "Forces as vectors, equilibrium of a particle, moments, couples and equivalent systems.",
+  description: "Forces as vectors, equilibrium of a particle, moments, couples, equivalent systems, distributed loads, and supports with free-body diagrams.",
   units: [
     "01-force-vectors",
     "02-particle-equilibrium",
@@ -13,5 +13,6 @@ export default {
     "04-couples",
     "05-equivalent-systems",
     "06-distributed-loads",
+    "07-supports-fbd",
   ],
 };

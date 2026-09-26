@@ -9,22 +9,37 @@
 //
 // The palette also offers tempting wrong forces (e.g. a "normal force" where
 // nothing is pushing), each with its own explanation.
+//
+// Rigid bodies (Unit 7 on): each force acts at its own point (a support, the
+// centre of gravity), given by the solver's fbd() info (forces[].at) or, for a
+// tempting wrong force, by the candidate's `at` (a point name from info.points).
+// A moment (a fixed support's M_A) is a curved arrow: its button places it,
+// and clicking it on the picture flips which way it turns. Where a force's
+// sense doesn't matter (pin components, `either: true`) both ways are accepted.
 
 import { studentArrows, arrowAt, snapDirection } from "../../render/fbd.js";
 import { el, button } from "../../ui/controls.js";
 import { renderTex } from "../../render/panel.js";
-import { dot } from "../../core/vector.js";
+import { sameWay, wrongDirectionText, missingText } from "./fbd-feedback.js";
 
-const SAME_DIRECTION = Math.cos((3 * Math.PI) / 180); // within 3°
-
-// candidates: [{ id, symbol?, feedback?, missing?, wrongDirection? }]
+// candidates: [{ id, symbol?, feedback?, missing?, wrongDirection?, at?, moment? }]
 // onCorrect(): called when the FBD is right. onWrong(): called after a wrong check.
 export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   const info = ctx.solver.fbd(ws.setup, ws.sceneOpts); // same layout as the picture
   const correct = new Map(info.forces.map((f) => [f.id, f]));
   const labelOf = (c) => c.symbol || (correct.get(c.id) || {}).symbol || c.id;
-  const placed = new Map(); // id → direction
+  const placed = new Map(); // id → direction (a unit vector), or a moment's sense (+1 / −1)
   let ghost = null; // { id, dir } while choosing a direction
+  const candidate = (id) => candidates.find((c) => c.id === id) || {};
+  // Where a force acts and which way is "outside" the body there.
+  const spot = (id) => {
+    const f = correct.get(id);
+    if (f && f.at) return { at: f.at, outward: f.outward };
+    const p = candidate(id).at && info.points && info.points[candidate(id).at];
+    return p || { at: info.origin };
+  };
+  const isMoment = (id) => !!((correct.get(id) || {}).moment || candidate(id).moment);
+  const drawn = (id, value) => ({ id, label: labelOf(candidate(id)), ...spot(id), ...(isMoment(id) ? { moment: true, sense: value } : { dir: value }) });
   let aiming = false; // finger/mouse is down on the canvas while a ghost is active
 
   // Hide the answer's arrows; the student's own arrows are drawn instead.
@@ -32,8 +47,9 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   ws.extraShapes = () =>
     studentArrows({
       origin: info.origin,
-      placed: [...placed].map(([id, dir]) => ({ id, dir, label: labelOf(candidates.find((c) => c.id === id)) })),
-      ghost: ghost && { ...ghost, label: labelOf(candidates.find((c) => c.id === ghost.id)) },
+      length: info.arrowLength,
+      placed: [...placed].map(([id, v]) => drawn(id, v)),
+      ghost: ghost && drawn(ghost.id, ghost.dir),
     });
 
   // ---- Palette ------------------------------------------------------------------
@@ -63,6 +79,8 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     ghost = { id, dir: [0, 1] }; // starts pointing up until the pointer moves
     refresh();
   }
+  // Snap the shadow arrow toward the pointer, from the point where the force acts.
+  const aim = (p) => (ghost.dir = snapDirection(spot(ghost.id).at, p, info.directions));
 
   function place() {
     if (!ghost) return;
@@ -74,6 +92,15 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   // Dragging from the palette: follow the pointer over the whole window.
   function startFromPalette(id, e) {
     e.preventDefault();
+    if (isMoment(id)) {
+      // A moment has no direction to aim: its button places it (counterclockwise)
+      // or, pressed again, removes it. Clicking it on the picture flips it.
+      if (placed.has(id)) placed.delete(id);
+      else placed.set(id, 1);
+      ghost = null;
+      refresh();
+      return;
+    }
     if (ghost && ghost.id === id) {
       ghost = null; // pressing the same force again cancels
       refresh();
@@ -85,7 +112,7 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     const move = (ev) => {
       if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8) moved = true;
       if (ghost && ctx.canvas.isInside(ev.clientX, ev.clientY)) {
-        ghost.dir = snapDirection(info.origin, ctx.canvas.clientToWorld(ev.clientX, ev.clientY), info.directions);
+        aim(ctx.canvas.clientToWorld(ev.clientX, ev.clientY));
         ws.redraw();
       }
     };
@@ -108,14 +135,20 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     down(p) {
       if (ghost) {
         aiming = true;
-        ghost.dir = snapDirection(info.origin, p, info.directions);
+        aim(p);
         ws.redraw();
         return true;
       }
-      const hit = arrowAt(ws.extraShapes(), p, ctx.canvas.pxToWorld(12));
+      const hit = arrowAt(ws.extraShapes(), p, ctx.canvas.pxToWorld(12), ctx.canvas.pxToWorld);
+      if (hit && placed.has(hit.id) && isMoment(hit.id)) {
+        placed.set(hit.id, -placed.get(hit.id)); // flip which way it turns
+        refresh();
+        return true;
+      }
       if (hit && placed.has(hit.id)) {
+        const dir = placed.get(hit.id);
         startGhost(hit.id); // pick it up to move it
-        ghost.dir = placed.get(hit.id) || snapDirection(info.origin, p, info.directions);
+        ghost.dir = dir;
         aiming = true;
         return true;
       }
@@ -123,7 +156,7 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     },
     move(p) {
       if (!ghost) return;
-      ghost.dir = snapDirection(info.origin, p, info.directions);
+      aim(p);
       ws.redraw();
     },
     up() {
@@ -144,11 +177,11 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   // ---- Checking -----------------------------------------------------------------
   function check() {
     const problems = [];
-    for (const [id, dir] of placed) {
-      const c = candidates.find((x) => x.id === id);
+    for (const [id, v] of placed) {
+      const c = candidate(id);
       const right = correct.get(id);
       if (!right) problems.push(c.feedback || `${labelOf(c)} doesn't act on this point.`);
-      else if (dot(dir, right.dir) < SAME_DIRECTION) problems.push(c.wrongDirection || wrongDirectionText(right));
+      else if (!sameWay(right, v)) problems.push(c.wrongDirection || wrongDirectionText(right));
     }
     for (const f of info.forces) {
       if (!placed.has(f.id)) {
@@ -172,22 +205,10 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
     // "Show answer": place the correct arrows.
     reveal() {
       placed.clear();
-      info.forces.forEach((f) => placed.set(f.id, f.dir));
+      info.forces.forEach((f) => placed.set(f.id, f.moment ? f.sense || 1 : f.dir));
       ghost = null;
       refresh();
       check();
     },
   };
-}
-
-function wrongDirectionText(f) {
-  if (f.kind === "cable") return "A cable can only **pull**: its arrow points away from the point, along the cable.";
-  if (f.kind === "weight") return "Weight always points **straight down**, toward the Earth.";
-  return "One arrow points the wrong way. Compare each arrow's direction with the picture.";
-}
-
-function missingText(f) {
-  if (f.kind === "weight") return "A force is missing. What does gravity do to the hanging object?";
-  if (f.kind === "cable") return "A force is missing. Every cable attached to the point pulls on it.";
-  return "A force is missing. Look at everything touching or pulling on the point.";
 }

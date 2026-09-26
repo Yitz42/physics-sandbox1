@@ -9,7 +9,7 @@ import { clone } from "../../core/paths.js";
 import { boundsOf } from "../../render/canvas.js";
 import { drawScene } from "../../render/diagrams.js";
 import { arrowAt } from "../../render/fbd.js";
-import { renderEquations, highlightTerms } from "../../render/panel.js";
+import { renderEquations, highlightTerms, renderMixed } from "../../render/panel.js";
 import { buildControls, toggle, el, button } from "../../ui/controls.js";
 import { mag, sub } from "../../core/vector.js";
 
@@ -60,7 +60,10 @@ export function createWorkspace(ctx, opts = {}) {
       onTermClick: (id) => ws.setHighlight(ws.highlight === id ? null : id),
     });
     highlightTerms(eqList, ws.highlight);
-    eqStatus.textContent = ws.reveal && ws.result.message ? ws.result.message : "";
+    // The solver's note (e.g. "statically indeterminate"); it may contain $math$.
+    const note = ws.reveal && ws.result.message;
+    if (note) renderMixed(eqStatus, note);
+    else eqStatus.innerHTML = "";
   }
 
   // ---- Picture ---------------------------------------------------------------
@@ -135,7 +138,7 @@ export function createWorkspace(ctx, opts = {}) {
         ws.highlight = h.id;
         return;
       }
-      const hit = arrowAt(ws.shapes, p, cv.pxToWorld(10));
+      const hit = arrowAt(ws.shapes, p, cv.pxToWorld(10), cv.pxToWorld);
       ws.setHighlight(hit && hit.id !== ws.highlight ? hit.id : null);
     },
     move(p, e) {

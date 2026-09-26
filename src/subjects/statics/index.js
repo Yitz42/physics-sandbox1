@@ -2,7 +2,7 @@
 //
 // Loading this file registers every statics solver by name. Stage files then
 // say, for example, solver: "statics.particle", and the core looks it up.
-// Later units add more registrations here (statics.rigidBody, statics.truss …).
+// Later units add more registrations here (statics.truss …).
 
 import { registerSolver } from "../../core/registry.js";
 import { solveParticle, particleQuantities } from "./particle.js";
@@ -22,6 +22,9 @@ import { equivalentMistakes, equivalentSummary } from "./equivalent-tools.js";
 import { solveDistributed, distributedQuantities } from "./distributed.js";
 import { distributedScene } from "./distributed-scene.js";
 import { distributedMistakes, distributedSummary } from "./distributed-tools.js";
+import { solveRigidBody, rigidBodyEquations, rigidBodyQuantities } from "./rigid-body.js";
+import { rigidBodyScene } from "./rigid-body-scene.js";
+import { rigidBodyFbd, rigidBodyMutate, rigidBodyMistakes, rigidBodySummary } from "./rigid-body-tools.js";
 
 // Units 1–2: forces through one point.
 registerSolver("statics.particle", {
@@ -81,4 +84,18 @@ registerSolver("statics.distributed", {
   scene: distributedScene,
   quantities: distributedQuantities,
   mistakes: distributedMistakes,
+});
+
+// Unit 7 on: a rigid body on supports — reactions, ΣF_x = ΣF_y = ΣM = 0,
+// and whether the supports hold it (stable, determinate) or not.
+registerSolver("statics.rigidBody", {
+  solve: solveRigidBody,
+  // Equations of the setup given (a debug stage's wrong FBD has its own).
+  equations: (setup, result) => (result && result.equations) || rigidBodyEquations(setup),
+  summary: rigidBodySummary,
+  scene: rigidBodyScene,
+  quantities: rigidBodyQuantities,
+  mistakes: rigidBodyMistakes,
+  fbd: rigidBodyFbd,
+  mutate: rigidBodyMutate,
 });

@@ -57,6 +57,7 @@ src/
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position
       distributed.js       distributed loads: area and centroid (rectangle, triangle, trapezoid, ∫w dx)
+      supports.js          support types → reactions (pin, roller, smooth, cable, fixed)
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
       truss.js             method of joints and method of sections
       frame.js             frames and machines, multi-body
@@ -147,6 +148,14 @@ export default {
   forces, each with its own explanation.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
+- Distributed loads (Unit 6) cover rectangles, triangles, trapezoids AND curved
+  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 6 takes down as positive.
+- FBD reaction arrows (Unit 7 on), textbook rule: pin and fixed-support components
+  (and the fixed-end moment) may point either way; rollers and smooth surfaces must
+  push, cables must pull, weight points down. Some beams have mass, so the student
+  must remember the weight W at the centre.
+- Unit 7's solve stage goes all the way to the reactions (FBD → equations → answers);
+  Unit 8 then goes deeper (choosing a smart moment point, harder shapes).
 
 ## Physics conventions
 - SI units by default: m, kg, N, N·m, g = 9.81 m/s².

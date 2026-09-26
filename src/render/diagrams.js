@@ -17,6 +17,7 @@
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //   distload, wheel                          see loads.js
+//   supportSymbol                            pin, roller, fixed … see supports.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   divider  { x, frame? }                   soft grey vertical line between two diagrams (frame: the
 //                                            exact view to show; see panels.js);
@@ -32,7 +33,7 @@ import { placeLabels, placeLegend } from "./labels.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "support", "pivot", "wheel", "beam", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "support", "pivot", "wheel", "beam", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 export function drawScene(cv, shapes, opts = {}) {

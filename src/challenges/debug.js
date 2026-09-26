@@ -2,7 +2,8 @@
 //
 // Tests: can they spot mistakes. Two kinds of mistake:
 //   view: "equations"  one term is wrong (sin/cos swapped, wrong sign) or missing
-//   view: "fbd"        an arrow points the wrong way, or a force is missing
+//   view: "fbd"        an arrow points the wrong way, a force is missing, or
+//                      there's an extra one (a reaction the support can't give)
 // Step 1: click the wrong term/arrow (or press "Something is missing").
 // Step 2: choose how to fix it.
 //
@@ -11,6 +12,7 @@
 //                                  one first, then the next one for each new version
 //   missingChoices: [{ id, label, feedback? }]   for "a force is missing"
 //   notes: { forceId: "why this one is actually fine" }  (optional)
+//   mutation.explain: what the mistake was, shown once it's found (optional)
 
 import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
@@ -76,7 +78,7 @@ export function mount(ctx) {
     ws.onPointer = {
       down(p) {
         if (stepNo !== 1) return false;
-        const hit = arrowAt(ws.shapes, p, ctx.canvas.pxToWorld(12));
+        const hit = arrowAt(ws.shapes, p, ctx.canvas.pxToWorld(12), ctx.canvas.pxToWorld);
         if (hit) pick(hit.id);
         return true;
       },
@@ -136,6 +138,13 @@ export function mount(ctx) {
       // One choice per term of the correct equation (only the missing one fixes it).
       return target.terms.map((t) => ({ label: `Add the ${plain(t.symbol)} term`, correct: t.id === mutation.term, feedback: "That term is already there. Which one is missing from this equation?" }));
     }
+    if (mutation.kind === "extra") {
+      return [
+        { label: "Delete it: this support can't give that reaction", correct: true },
+        { label: "Reverse its direction", feedback: "Its direction isn't the problem: look at what this support can and can't stop." },
+        { label: "Move it to the other support", feedback: "No support here needs another reaction. This one simply shouldn't be on the FBD." },
+      ];
+    }
     if (mutation.kind === "reverse") {
       return [
         { label: "Reverse its direction", correct: true },
@@ -161,6 +170,8 @@ export function mount(ctx) {
   }
 
   function describeMistake() {
+    if (mutation.explain) return mutation.explain;
+    if (mutation.kind === "extra") return `${sym(mutation.force)} doesn't belong on the FBD: that support can't provide it.`;
     if (mutation.kind === "remove") return `A force is missing from the FBD. Every force acting on the point must be drawn — here that includes ${sym(mutation.force)}.`;
     if (mutation.kind === "reverse") return `The arrow for ${sym(mutation.force)} points the wrong way. It must be reversed.`;
     if (mutation.kind === "missing") return `The term for ${sym(mutation.term)} is missing from the equation.`;

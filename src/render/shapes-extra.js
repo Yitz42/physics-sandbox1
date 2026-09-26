@@ -4,15 +4,16 @@
 //   dim        { from, to, label, role?, labelSide?, labelOn? }  a dimension / moment-arm
 //              line with end ticks; labelOn puts the label in a break in the middle of the line
 //   rightangle { at, u, v }                    small square marking a 90° corner
-//   moment     { center, rPx, maxR?, sense, label, role, labelMove? } curved arrow: sense +1 CCW, −1 CW;
+//   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
 // Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js;
-// distributed loads and wheels in loads.js.
+// distributed loads and wheels in loads.js; support symbols in supports.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
 import { drawObject } from "./objects.js";
 import { drawLoadShape } from "./loads.js";
+import { drawSupportSymbol } from "./supports.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -145,6 +146,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.setLineDash([6, 4]);
         ctx.globalAlpha = 0.6;
       }
+      if (s.alpha != null) ctx.globalAlpha = s.alpha; // e.g. a faint "shadow" moment the student is placing
       ctx.beginPath();
       ctx.arc(x, y, r, a0, a1, ccw);
       ctx.stroke();
@@ -166,8 +168,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
     }
     default: {
       // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js;
-      // distributed loads and wheels in loads.js.
-      const obj = drawObject(cv, s, env) || drawLoadShape(cv, s, env, roleColor);
+      // distributed loads and wheels in loads.js; support symbols in supports.js.
+      const obj = drawObject(cv, s, env) || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env);
       if (obj) return obj;
     }
   }

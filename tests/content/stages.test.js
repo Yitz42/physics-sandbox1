@@ -36,7 +36,10 @@ for (const { unit, file, stage } of stages) {
 
   test(`${stage.id}: solves, and every asked quantity has a value`, () => {
     const r = solver.solve(stage.setup);
-    ok(["resultant", "determinate"].includes(r.status), `status was ${r.status}: ${r.message}`);
+    // Explore and build stages may START with a structure that can't be solved
+    // (the student fixes it); every other stage must be solvable as given.
+    const fine = ["explore", "build"].includes(stage.challenge) ? ["resultant", "determinate", "unstable", "indeterminate"] : ["resultant", "determinate"];
+    ok(fine.includes(r.status), `status was ${r.status}: ${r.message}`);
     for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]), `no value for ${ask.quantity}`);
   });
 
@@ -56,7 +59,10 @@ for (const { unit, file, stage } of stages) {
     test(`${stage.id}: every debug mutation names a real force/term`, () => {
       const eqs = solver.equations(stage.setup);
       for (const m of stage.debug.mutations) {
-        if (m.force) ok(stage.setup.forces.some((f) => f.id === m.force), `no force ${m.force}`);
+        // A force named by the stage, or one the solver puts on the FBD (a support reaction).
+        const onFbd = (id) => (stage.setup.forces || []).some((f) => f.id === id) || (solver.fbd ? solver.fbd(stage.setup, {}).forces.some((f) => f.id === id) : false);
+        if (m.kind === "extra") ok(m.extra && m.extra.support && !onFbd(m.force), `extra ${m.force} must be a reaction that isn't really there`);
+        else if (m.force) ok(onFbd(m.force), `no force ${m.force}`);
         if (m.equation) {
           const eq = eqs.find((e) => e.id === m.equation);
           ok(eq, `no equation ${m.equation}`);
@@ -307,4 +313,72 @@ test("Unit 6 solve: w = 600(x/4)² gives 800 N at 3.00 m; w = 900(x/5)³ gives 1
   const r3 = solver.solve(s);
   close(r3.values.R, 1125);
   close(r3.values.pos, 4);
+});
+
+test("Unit 7 explore: the start can't hold the beam; pin + roller gives A_x = −480, A_y = 426.7, B_y = 213.3 N", () => {
+  const st = find("07-supports-fbd/1-explore");
+  const solver = getSolver(st.solver);
+  equal(solver.solve(st.setup).status, "unstable");
+  const s = clone(st.setup);
+  setPath(s, "supports.#A.type", "pin");
+  const r = solver.solve(s);
+  equal(r.status, "determinate");
+  close(r.values.A_x, -480);
+  close(r.values.A_y, 426.6667);
+  close(r.values.B_y, 213.3333);
+});
+
+test("Unit 7 predict: every version's counts are pin 2, roller/surface/cable 1, fixed 3", () => {
+  const st = find("07-supports-fbd/2-predict");
+  const solver = getSolver(st.solver);
+  const expected = { pin: 2, roller: 1, smooth: 1, cable: 1, fixed: 3 };
+  for (const pair of st.vary[0].values) {
+    const s = clone(st.setup);
+    s.supports = pair;
+    const v = solver.solve(s).values;
+    equal([v.n_A, v.n_B], [expected[pair[0].type], expected[pair[1].type]], `${pair[0].type} + ${pair[1].type}:`);
+    // Every other count has its own explanation.
+    for (let n = 0; n <= 3; n++) if (n !== v.n_A) ok(solver.mistakes(s, "n_A").some((m) => m.value === n), `no explanation for ${n} at A (${pair[0].type})`);
+  }
+});
+
+test("Unit 7 build: pin + roller (either way round) meets the goal; pin + pin, fixed + roller, roller + roller and fixed + nothing don't", () => {
+  const st = find("07-supports-fbd/3-build");
+  const solver = getSolver(st.solver);
+  const tryPair = (a, b) => {
+    const s = clone(st.setup);
+    setPath(s, "supports.#A.type", a);
+    setPath(s, "supports.#B.type", b);
+    if (a === "fixed") setPath(s, "supports.#A.normal", [1, 0]);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start (pin + pin) must not meet the goal");
+  ok(tryPair("pin", "roller").ok && tryPair("roller", "pin").ok);
+  ok(/grow longer/.test(tryPair("pin", "pin").message));
+  ok(/indeterminate/.test(tryPair("fixed", "roller").message));
+  ok(/moves/.test(tryPair("roller", "roller").message));
+  ok(/both piers/.test(tryPair("fixed", "none").message));
+});
+
+test("Unit 7 debug: T_C = 870.3 N, A_x = 696.2 N, A_y = 372.2 N; each planted mistake changes the FBD as planned", () => {
+  const st = find("07-supports-fbd/4-debug");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.T_C, 870.25);
+  close(r.values.A_x, 696.2);
+  close(r.values.A_y, 372.15);
+  const unknowns = (m) => solver.solve(solver.mutate(st.setup, m)).unknowns.length;
+  const [extraCx, noAx, reversedT, noW, extraMA] = st.debug.mutations;
+  equal([unknowns(extraCx), unknowns(noAx), unknowns(reversedT), unknowns(noW), unknowns(extraMA)], [4, 2, 3, 3, 4]);
+  ok(!solver.solve(solver.mutate(st.setup, noW)).equations[1].terms.some((t) => t.id === "W"), "no W in ΣF_y once it's removed");
+});
+
+test("Unit 7 solve: A_x = −300 N, A_y = 462.9 N, B_y = 329.5 N; every version's roller pushes", () => {
+  const st = find("07-supports-fbd/6-solve");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.A_x, -300);
+  close(r.values.A_y, 462.8667);
+  close(r.values.B_y, 329.5333);
+  for (let i = 0; i < 30; i++) ok(solver.solve(makeVariant(st.setup, st.vary)).values.B_y > 0);
 });

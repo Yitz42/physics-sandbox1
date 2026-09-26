@@ -5,6 +5,7 @@
 // Stage fields used:
 //   ask        { quantity, label?, unit?, precision? }  (precision: ± allowed, default 0.1) or a list of them
 //   hints      shown one at a time
+//   correctMessage  (optional) what to say after a correct prediction
 
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
@@ -49,7 +50,7 @@ export function mount(ctx) {
       delete ws.sceneOpts.guesses;
       testBtn.disabled = true;
       ws.setReveal(true);
-      showMessage(ctx.el.feedback, "good", "Correct!", "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
+      showMessage(ctx.el.feedback, "good", "Correct!", stage.correctMessage || "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
       ctx.explain();
       ctx.finish();
     } else {

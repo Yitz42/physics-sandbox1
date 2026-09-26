@@ -9,7 +9,8 @@
 // "needs practice" and they must finish a new version without help.
 //
 // Stage fields used:
-//   solve: { steps, candidates }   candidates = forces offered in the FBD palette
+//   solve: { steps, candidates, intros? }   candidates = forces offered in the FBD palette;
+//          intros: { fbd: "…" } replaces a step's standard introduction
 //   ask:   what to solve for (as in predict)
 
 import { createWorkspace } from "./common/workspace.js";
@@ -78,7 +79,8 @@ export function mount(ctx) {
     if (index >= steps.length) return; // all done: leave the last step's work on screen
     body.innerHTML = "";
     const step = steps[index];
-    showMessage(intro, "info", `Step ${index + 1}: ${STEP_NAMES[step]}`, STEP_INTRO[step]);
+    // A stage can word a step's introduction itself (solve.intros), e.g. "isolate the beam".
+    showMessage(intro, "info", `Step ${index + 1}: ${STEP_NAMES[step]}`, (stage.solve.intros || {})[step] || STEP_INTRO[step]);
     ctx.el.feedback.innerHTML = "";
 
     if (step === "fbd") {
