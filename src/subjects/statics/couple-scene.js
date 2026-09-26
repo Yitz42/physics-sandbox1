@@ -150,9 +150,14 @@ function separation(setup, c, size) {
   const out = [];
   // The dimension sits c.dimShift from force a's point, measured along the
   // lines' fixed "up" direction (upAlong) — so flipping the couple doesn't
-  // make it jump to the other side. Each line of action is drawn just far
-  // enough to reach it (like extension lines on an engineering drawing).
-  const s = (c.dimShift ?? 0) * dot(upAlong(g.u), g.u); // the same offset, measured along u
+  // make it jump to the other side. If the point P is on that side, it goes
+  // to the other side instead, so it never tangles with P's moment arms.
+  // Each line of action is drawn just far enough to reach it (like extension
+  // lines on an engineering drawing).
+  const w = upAlong(g.u);
+  let shiftUp = c.dimShift ?? 0;
+  if (setup.about && !setup.about.hidden && Math.sign(dot(sub(setup.about.at, g.a.at), w)) === Math.sign(shiftUp)) shiftUp = -shiftUp;
+  const s = shiftUp * dot(w, g.u); // the same offset, measured along u
   const pad = 0.06 * size;
   const extend = (P, t0, t1) => ({ type: "line", from: add(P, scale(g.u, Math.min(t0, t1) - pad)), to: add(P, scale(g.u, Math.max(t0, t1) + pad)), style: "action" });
   out.push(extend(g.a.at, 0, s), extend(g.b.at, 0, dot(g.r, g.u) + s));
@@ -160,7 +165,7 @@ function separation(setup, c, size) {
   const from = add(g.foot, shift), to = add(g.a.at, shift);
   const ds = dSymbolOf(c);
   const angled = isSlanted(g.u); // slanted forces: show how d is found
-  out.push({ type: "dim", id: c.id, from, to, role: "arm", label: angled ? ds : `${ds} = ${format(g.d, "m")}`, labelSide: c.dimSide || 1 });
+  out.push({ type: "dim", id: c.id, from, to, role: "arm", label: angled ? ds : `${ds} = ${format(g.d, "m")}`, labelSide: c.dimSide || 1, labelOn: true });
   out.push({ type: "rightangle", at: from, u: g.u, v: scale(sub(to, from), 1 / g.d), role: "arm" });
   if (angled) {
     // How d is found: r (between the points), the angle φ, and d = r sin φ.

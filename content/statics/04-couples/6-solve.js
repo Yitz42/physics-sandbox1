@@ -20,7 +20,7 @@ export default {
     analysis: "couple",
     plates: [{ from: [0, 0], to: [0.8, 0.4] }],
     couples: [
-      { id: "C1", symbol: "F_1", magnitude: 200, direction: "right", at: [0, 0.4], opposite: [0, 0], pointLabels: ["A", "B"], push: [true, false], dimShift: 0.1 },
+      { id: "C1", symbol: "F_1", magnitude: 200, direction: "right", at: [0, 0.4], opposite: [0, 0], pointLabels: ["A", "B"], push: [true, false], dimShift: -0.16 },
       { id: "C2", symbol: "F_2", magnitude: 150, direction: { angle: 60, from: "+x", toward: "+y" }, at: [0.8, 0], opposite: [0.4, 0], pointLabels: ["D", "C"] },
     ],
     moments: [{ id: "M3", symbol: "M_3", magnitude: 40, sense: -1, at: [0.3, 0.2] }],

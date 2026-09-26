@@ -1,10 +1,13 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
 //   beam       { points, width? }              a bar, bracket or plank (polyline, metres)
 //   pivot      { at }                          triangle support under a pin (seesaw)
-//   dim        { from, to, label, role? }      a dimension / moment-arm line with end ticks
+//   dim        { from, to, label, role?, labelSide?, labelOn? }  a dimension / moment-arm
+//              line with end ticks; labelOn puts the label in a break in the middle of the line
 //   rightangle { at, u, v }                    small square marking a 90° corner
 //   moment     { center, r, sense, label, role } curved arrow: sense +1 CCW, −1 CW
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
+
+import { drawLabel, measureLabel } from "./arrows.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -66,11 +69,26 @@ export function drawExtraShape(cv, s, env, roleColor) {
       const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
       if (len < 2) break;
       const n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]; // perpendicular, for end ticks
+      const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len]; // along the line
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      const weight = s.role ? 600 : 500;
+      // labelOn: the label sits IN the middle of the line, engineering-drawing
+      // style, with the line broken around it (if the line is long enough).
+      let half = 0;
+      if (s.label && s.labelOn) {
+        const tw = measureLabel(ctx, s.label, 13, weight) + 10, th = 20;
+        const h = (Math.abs(u[0]) * tw + Math.abs(u[1]) * th) / 2; // half the label's length along the line
+        if (len > 2 * h + 12) half = h;
+      }
       ctx.strokeStyle = color;
       ctx.lineWidth = s.role ? 2 : 1.2;
       if (s.dashed) ctx.setLineDash([5, 4]);
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);
+      if (half) {
+        ctx.lineTo(mid[0] - u[0] * half, mid[1] - u[1] * half);
+        ctx.moveTo(mid[0] + u[0] * half, mid[1] + u[1] * half);
+      }
       ctx.lineTo(b[0], b[1]);
       ctx.stroke();
       ctx.setLineDash([]);
@@ -81,7 +99,9 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.stroke();
       }
       out.segments.push([a, b]);
-      if (s.label) {
+      if (half) {
+        out.boxes.push(drawLabel(ctx, s.label, mid[0], mid[1], { color, size: 13, weight }));
+      } else if (s.label) {
         // Label beside the middle, on the side the normal points to.
         const side = s.labelSide || 1;
         const pos = [(a[0] + b[0]) / 2 + n[0] * 14 * side, (a[1] + b[1]) / 2 + n[1] * 14 * side];
