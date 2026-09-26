@@ -118,7 +118,6 @@ p { margin: 0 0 8px; }
 /* No picture (e.g. a text-only concept check): use one centred column. */
 .stage-body:has(.figure[hidden]):not(:has(.equations:not(:empty):not([hidden]))) { grid-template-columns: minmax(0, 760px); justify-content: center; }
 .stage-canvas { width: 100%; height: 100%; display: block; touch-action: none; /* lets fingers drag arrows instead of scrolling */ }
-.stage-nav { display: flex; justify-content: space-between; margin-top: 16px; }
 .instructions p:last-child { margin-bottom: 0; }
 .area-title { font-weight: 700; margin: 4px 0 6px; }
 .controls:empty, .area:empty, .feedback:empty, .round-status:empty, .explanation-box:empty, .hints:empty, .finish-actions:empty { display: none; }

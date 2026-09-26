@@ -6,9 +6,7 @@
 //  │  picture (canvas)            │ instructions              │
 //  │                              │ sliders / answers / etc.  │
 //  │  equations                   │ feedback, hints, "why"    │
-//  ├──────────────────────────────┴───────────────────────────┤
-//  │ ← previous stage                          next stage →   │
-//  └──────────────────────────────────────────────────────────┘
+//  └──────────────────────────────┴───────────────────────────┘
 
 import { el } from "./controls.js";
 import { renderMixed } from "../render/panel.js";
@@ -22,7 +20,7 @@ export const CHALLENGE_NAMES = {
 // student it looks the same as not finished yet.
 const STATUS_TEXT = { none: "", practice: "", complete: "Complete ★" };
 
-// links: { course: {href, title}, unit: {href, title}, prev, next }
+// links: { course: {href, title}, unit: {href, title} }
 export function createStageView(root, stage, links) {
   root.innerHTML = "";
   const badge = el("span", { className: "status-badge" });
@@ -39,11 +37,9 @@ export function createStageView(root, stage, links) {
     ]),
   ]);
   const body = el("div", { className: "stage-body" });
-  const footer = el("footer", { className: "stage-nav" }, [
-    links.prev ? el("a", { href: links.prev, className: "btn btn-quiet", textContent: "← Previous stage" }) : el("span"),
-    links.next ? el("a", { href: links.next, className: "btn btn-quiet", textContent: "Next stage →" }) : el("a", { href: links.unit.href, className: "btn btn-quiet", textContent: "Back to unit" }),
-  ]);
-  root.append(header, body, footer);
+  // No previous/next buttons at the bottom (they confused students): moving on
+  // happens from the "Stage complete" card, and the breadcrumbs lead back.
+  root.append(header, body);
 
   return {
     setStatus(status) {

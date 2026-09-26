@@ -38,8 +38,6 @@ async function route() {
     const view = createStageView(app, stage, {
       course: { href: `#/${courseId}`, title: course.title },
       unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitIndex + 1}: ${unit.title}` },
-      prev: i > 0 ? base + unit.stages[i - 1] : null,
-      next,
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
     runStage({ stage, view, key: `${courseId}/${stage.id}`, next });
