@@ -82,19 +82,29 @@ export function coupleScene(setup, result, opts = {}) {
   }
 
   // The point P: its moment arm to every line of action.
+  // The arms are slid apart along the lines of action — the first to one side
+  // of P, the second to the other — each joined to P by a thin line. That
+  // leaves a clear gap around P for the point, its name and the curved moment
+  // arrow, and each arm's label goes on its outer side, away from P.
   const about = setup.about && !setup.about.hidden;
   if (about && showArms) {
     const P = setup.about.at;
+    const gap = setup.about.gap ?? 0.15 * size;
     allForces(setup).filter((f) => !f.replacement).forEach((f, i) => {
       const a = armOf(setup, f, f.at);
       if (a.d < 1e-6) return;
       const u = directionOf(f);
-      // Parallel forces would draw their arms on top of each other, so each
-      // later arm is slid along the lines a little, joined to P by a thin line.
-      const shift = scale(u, (i % 2 ? -1 : 1) * Math.ceil(i / 2) * 0.07 * size);
-      if (i) shapes.push({ type: "line", from: P, to: add(P, shift), style: "reference" });
+      // One common "up" along the lines, so opposite forces still go to opposite sides.
+      const w = u[1] > 1e-9 || (Math.abs(u[1]) <= 1e-9 && u[0] > 0) ? u : scale(u, -1);
+      const out = scale(w, (i % 2 ? -1 : 1) * (1 + Math.floor(i / 2)));
+      const shift = scale(out, gap);
+      const from = add(P, shift), to = add(a.foot, shift);
+      // Which side of the dimension line is "away from P" (dim labels use labelSide ±1).
+      const e = sub(to, from);
+      const side = Math.sign(e[1] * out[0] - e[0] * out[1]) || 1;
+      shapes.push({ type: "line", from: P, to: from, style: "reference" });
       shapes.push({ type: "line", from: add(f.at, scale(u, -0.5 * size)), to: add(f.at, scale(u, 0.5 * size)), style: "action" });
-      shapes.push({ type: "dim", id: f.id, from: add(P, shift), to: add(a.foot, shift), role: "arm", label: `${armSymbolOf(f)} = ${format(a.d, "m")}`, labelSide: i % 2 ? -1 : 1 });
+      shapes.push({ type: "dim", id: f.id, from, to, role: "arm", label: `${armSymbolOf(f)} = ${format(a.d, "m")}`, labelSide: side });
     });
   }
 
@@ -104,8 +114,17 @@ export function coupleScene(setup, result, opts = {}) {
     const center = momentCenter(setup);
     const parts = (setup.couples || []).filter((c) => !c.equivalentTo).length + (setup.moments || []).length;
     const name = about ? `M_${setup.about.label || "P"}` : parts > 1 ? "M_R" : "M";
-    if (Math.abs(M) > 1e-9) shapes.push({ type: "moment", center, sense: Math.sign(M), rPx: 44, role: "resultant", label: `${name} = ${M.toFixed(1)} N·m (${turn(M)})` });
-    else shapes.push({ type: "text", at: add(center, [0, 0.12 * size]), text: `${name} = 0` });
+    const text = Math.abs(M) > 1e-9 ? `${name} = ${M.toFixed(1)} N·m (${turn(M)})` : `${name} = 0`;
+    if (about && !setup.momentAt) {
+      // Around P: a small curved arrow that fits in the gap between the arms,
+      // with its value in a tidy box at the side of the picture.
+      if (Math.abs(M) > 1e-9) shapes.push({ type: "moment", center, sense: Math.sign(M), rPx: 22, role: "resultant" });
+      shapes.push({ type: "note", lines: [{ text, role: "resultant" }] });
+    } else if (Math.abs(M) > 1e-9) {
+      shapes.push({ type: "moment", center, sense: Math.sign(M), rPx: 44, role: "resultant", label: text });
+    } else {
+      shapes.push({ type: "text", at: add(center, [0, 0.12 * size]), text });
+    }
     // A replacement couple, once solved: its own moment, drawn on its own body.
     for (const c of (setup.couples || []).filter((x) => x.equivalentTo && opts.reveal)) {
       const Mc = vals[`M_${c.id}`];

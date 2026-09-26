@@ -25,9 +25,6 @@ export default {
       at: [0.5, 0], opposite: [0, 0], pointLabels: ["B", "A"],
       dimShift: -0.5, // draw d below the bar, clear of the arrows
     }],
-    // A couple's moment is the same about every point, so its curved arrow can
-    // go anywhere: here, off to the side, where it doesn't cover P's moment arms.
-    momentAt: [1.02, -0.3],
   },
   view: { xmin: -0.6, xmax: 1.3, ymin: -0.62, ymax: 0.55 },
   editable: [
