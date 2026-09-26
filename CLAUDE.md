@@ -55,6 +55,7 @@ src/
       particle.js          concurrent forces, ΣF = 0
       moment.js            moments about a point: M = Fd = xFy − yFx, balance ΣM = 0
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
+      equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
       truss.js             method of joints and method of sections
       frame.js             frames and machines, multi-body

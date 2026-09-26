@@ -202,3 +202,46 @@ test("every stage with random numbers has at least 50 different versions (so nei
     ok(versions >= 50, `${stage.id} has only ${versions} versions`);
   }
 });
+
+test("Unit 5 predict: F_R = 1200 N at x̄ = 2.67 m; every version's resultant lands on the beam", () => {
+  const st = find("05-equivalent-systems/2-predict");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 1200);
+  close(r.values.pos, 2.66667);
+  for (let i = 0; i < 30; i++) {
+    const x = solver.solve(makeVariant(st.setup, st.vary)).values.pos;
+    ok(x > 1 && x < 5, `x̄ = ${x}`);
+  }
+});
+
+test("Unit 5 build: start tilts; 10 kg at 2.5, 20 kg at 1.0, 30 kg at 1.5 hangs level; crates too close fail", () => {
+  const st = find("05-equivalent-systems/3-build");
+  const solver = getSolver(st.solver);
+  const place = (a, b, c) => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#B10.at.0", a);
+    setPath(s, "forces.#B20.at.0", b);
+    setPath(s, "forces.#B30.at.0", c);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should not hang level");
+  ok(place(2.5, 1.0, 1.5).ok, "(25 + 20 + 45) / 60 = 1.5 m");
+  ok(/too close/.test(place(1.5, 1.5, 1.5).message), "all at the hook is level but crates overlap");
+});
+
+test("Unit 5 debug: (M_R)_O = −630.4 N·m; F2's arm is 3 sin 60° = 2.598 m", () => {
+  const st = find("05-equivalent-systems/4-debug");
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values.M, -630.385);
+  close(r.values.d_F2, 2.59808);
+  close(r.values["R.y"], -376.795);
+});
+
+test("Unit 5 solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 N·m", () => {
+  const st = find("05-equivalent-systems/6-solve");
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values["R.x"], 240);
+  close(r.values["R.y"], -430);
+  close(r.values.M, -448);
+});

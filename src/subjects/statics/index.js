@@ -16,6 +16,9 @@ import { momentHandles, momentDrag, momentMistakes, momentSummary } from "./mome
 import { solveCouple, coupleQuantities } from "./couple.js";
 import { coupleScene } from "./couple-scene.js";
 import { coupleHandles, coupleDrag, coupleMistakes, coupleSummary } from "./couple-tools.js";
+import { solveEquivalent, equivalentQuantities } from "./equivalent.js";
+import { equivalentScene } from "./equivalent-scene.js";
+import { equivalentMistakes, equivalentSummary } from "./equivalent-tools.js";
 
 // Units 1–2: forces through one point.
 registerSolver("statics.particle", {
@@ -54,4 +57,15 @@ registerSolver("statics.couple", {
   handles: coupleHandles,
   drag: coupleDrag,
   mistakes: coupleMistakes,
+});
+
+// Unit 5: equivalent force systems — replace everything with F_R and (M_R)_O,
+// or with one force at the right spot.
+registerSolver("statics.equivalent", {
+  solve: solveEquivalent,
+  equations: (setup, result) => (result || solveEquivalent(setup)).equations,
+  summary: equivalentSummary,
+  scene: equivalentScene,
+  quantities: (setup) => equivalentQuantities(setup, coupleQuantities(setup)),
+  mistakes: equivalentMistakes,
 });

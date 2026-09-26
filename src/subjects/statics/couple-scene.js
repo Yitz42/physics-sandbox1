@@ -17,7 +17,7 @@ import { coupleShadow, phiOf, momentCenter } from "./couple-tools.js";
 import { spreadPanels } from "../../render/panels.js";
 
 // Overall size of the picture, so arrows scale with it.
-function sizeOf(setup) {
+export function sizeOf(setup) {
   const pts = allForces(setup).map((f) => f.at);
   for (const p of setup.plates || []) pts.push(p.from, p.to);
   if (setup.body) pts.push(...setup.body.points);
@@ -28,7 +28,7 @@ function sizeOf(setup) {
 
 // Picture metres per newton: fixed by setup.forceScale, or the biggest KNOWN
 // force is drawn setup.arrowFraction (default 0.35) of the picture's size.
-function lengthPerNewton(setup, size) {
+export function lengthPerNewton(setup, size) {
   if (setup.forceScale) return 1 / setup.forceScale;
   const known = allForces(setup).map(magnitudeOf).filter((v) => v != null);
   return ((setup.arrowFraction ?? 0.35) * size) / Math.max(1, ...known);
@@ -36,7 +36,8 @@ function lengthPerNewton(setup, size) {
 
 const turn = (M) => (M > 0 ? "counterclockwise" : "clockwise");
 
-// opts: { reveal, arms (show d and the arms from P), hideMoment, guesses }
+// opts: { reveal, arms (show d and the arms from P), hideMoment, hideTotal, guesses, canvasSize }
+// setup.hideArms: never draw the arms from P (e.g. a beam whose distances are dimensioned)
 export function coupleScene(setup, result, opts = {}) {
   const vals = result ? result.values : {};
   const size = sizeOf(setup);
@@ -65,6 +66,11 @@ export function coupleScene(setup, result, opts = {}) {
     // A couple's second force has the same size, so it just gets its name.
     const label = f.second && show ? f.symbol : `${f.symbol} = ${show ? format(F, "N") : "?"}`;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: head, label, role: known ? "known" : "unknown", alpha: show ? undefined : 0.5 });
+    // A weight sits on the body as a box (crate) above the point where it acts.
+    if (f.kind === "weight") {
+      const b = setup.boxSize ?? 0.12 * size;
+      shapes.push({ type: "box", id: f.id, at: add(f.at, [0, b / 2 + 0.02 * size]), w: b, h: b, label: `${+f.mass.toFixed(2)} kg` });
+    }
     arrowSegs.push({ id: f.id, tail, head, u: directionOf(f) });
     if (!setup.hideAngles && !f.push) shapes.push(...angleMarks(f, f.at, len));
     if (f.pointLabel) shapes.push({ type: "point", at: f.at, label: f.pointLabel, style: "dot" });
@@ -96,7 +102,7 @@ export function coupleScene(setup, result, opts = {}) {
   // where the force's label goes) or the bar, it steps further out along the
   // lines of action, or the arms swap sides: the forces and labels stay put.
   const about = setup.about && !setup.about.hidden;
-  if (about && showArms) {
+  if (about && showArms && !setup.hideArms) {
     const P = setup.about.at;
     const gap = setup.about.gap ?? 0.15 * size;
     const clearance = 0.05 * size;
@@ -106,6 +112,7 @@ export function coupleScene(setup, result, opts = {}) {
     const blockers = [
       ...arrowSegs.map((s) => [s.tail, add(s.head, scale(s.u, 0.1 * size))]), // arrow + room for its label
       ...bodySegs,
+      ...(setup.dims || []).map((d) => [d.from, d.to]), // the stage's own dimension lines
     ];
     const arms = allForces(setup).filter((f) => !f.replacement)
       .map((f) => ({ f, a: armOf(setup, f, f.at), u: directionOf(f) }))
@@ -145,7 +152,8 @@ export function coupleScene(setup, result, opts = {}) {
   }
 
   // The total moment: a curved arrow showing which way it turns.
-  if (result && (opts.reveal || (opts.arms && !opts.hideMoment))) {
+  // (opts.hideTotal: the caller draws its own resultant, e.g. Unit 5's F_R.)
+  if (result && !opts.hideTotal && (opts.reveal || (opts.arms && !opts.hideMoment))) {
     const M = vals.M;
     const center = momentCenter(setup);
     const parts = (setup.couples || []).filter((c) => !c.equivalentTo).length + (setup.moments || []).length;
