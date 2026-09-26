@@ -1,12 +1,6 @@
 // Unit 1, stage 1 — explore: drag a force and watch its components change.
 
-// The four ways an angle can be measured from a horizontal axis (textbook style).
-const QUADRANTS = [
-  { label: "above the +x axis", set: { "forces.0.direction.from": "+x", "forces.0.direction.toward": "+y" } },
-  { label: "above the −x axis", set: { "forces.0.direction.from": "-x", "forces.0.direction.toward": "+y" } },
-  { label: "below the −x axis", set: { "forces.0.direction.from": "-x", "forces.0.direction.toward": "-y" } },
-  { label: "below the +x axis", set: { "forces.0.direction.from": "+x", "forces.0.direction.toward": "-y" } },
-];
+import { angleOptions } from "../shared/angle-options.js";
 
 export default {
   id: "01-force-vectors/1-explore",
@@ -15,7 +9,8 @@ export default {
   title: "Pull on the Eyebolt",
   instructions:
     "A force $F$ pulls on an eyebolt at point O. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
-    "The angle $\\theta$ is measured from the nearest x-axis, the way your textbook does it. Click an arrow or an equation term to see how they match.",
+    "The angle $\\theta$ is measured from one axis toward another (e.g. from +x toward +y), the way your textbook does it — pick them in the dropdown, or type exact values into the boxes. " +
+    "Click an arrow or an equation term to see how they match.",
   setup: {
     analysis: "components",
     point: { at: [0, 0], label: "O" },
@@ -28,7 +23,7 @@ export default {
   editable: [
     { path: "forces.0.magnitude", label: "Size F", min: 10, max: 300, step: 10, unit: "N" },
     { path: "forces.0.direction.angle", label: "Angle θ", min: 0, max: 90, step: 1, unit: "deg" },
-    { label: "θ measured", options: QUADRANTS },
+    angleOptions("forces.0"),
   ],
   draggable: ["F"],
   sceneOpts: { components: true },

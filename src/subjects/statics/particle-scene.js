@@ -41,7 +41,9 @@ function arrowLabel(force, m, show) {
 }
 
 // Angle marking between the reference axis and the force (or a slope triangle).
-function angleMarks(force, at, len) {
+// `ring` (0, 1, 2 …) gives each force's arc its own radius, so two angles
+// measured from the same axis don't draw on top of each other.
+function angleMarks(force, at, len, ring = 0) {
   const dir = force.direction;
   if (!dir || typeof dir === "string" || force.kind === "weight" || force.hideAngle) return [];
   const d = directionOf(force);
@@ -52,7 +54,7 @@ function angleMarks(force, at, len) {
     return [{ type: "triangle", at: p0, dx: dx * k, dy: dy * k, labels: [Math.abs(dx), Math.abs(dy), Math.hypot(dx, dy)] }];
   }
   const a0 = AXIS_DEG[dir.from];
-  const r = Math.min(0.55, len * 0.45);
+  const r = Math.min(0.55, len * 0.45) * (1 + 0.45 * ring);
   return [
     { type: "line", from: at, to: add(at, scale(AXIS_VEC[dir.from], r * 1.6)), style: "reference" },
     { type: "arc", center: at, r, start: a0, end: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
@@ -78,7 +80,7 @@ function fbdArrows(setup, result, at, opts) {
       // "wrong" (red) marks an overloaded cable after Play
       role: (opts.flagged || []).includes(f.id) ? "wrong" : known == null ? "unknown" : "known",
     });
-    if (opts.angles !== false) shapes.push(...angleMarks(f, at, len));
+    if (opts.angles !== false) shapes.push(...angleMarks(f, at, len, setup.forces.indexOf(f)));
     // Component arrows carry numbers, so they only appear once values are revealed.
     if (opts.components && opts.reveal && m != null && (opts.components === true || opts.components.includes(f.id))) {
       const v = scale(d, len);
@@ -127,7 +129,7 @@ function spaceDiagram(setup) {
         shapes.push({ type: "support", from: sub(P, t), to: add(P, t), normal: n });
       }
       shapes.push({ type: "point", at: P, label: f.anchor?.label || "", style: "pin" });
-      shapes.push(...angleMarks(f, A, Math.min(1.2, mag(d))));
+      shapes.push(...angleMarks(f, A, Math.min(1.2, mag(d)), setup.forces.indexOf(f)));
     } else if (f.kind === "weight") {
       const top = add(A, [0, -0.7]);
       shapes.push({ type: "line", id: f.id, from: A, to: top, style: "cable" });
@@ -147,17 +149,17 @@ export function particleScene(setup, result, opts = {}) {
   const fs = opts.fbdSetup || setup;
   const hasBodies = setup.forces.some((f) => f.kind === "cable" || f.kind === "weight");
   if (!hasBodies || opts.fbdOnly) {
-    return [{ type: "axes", at: add(A, [-2.6, -1.9]) }, ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
+    return [{ type: "axes" }, ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
   }
   const space = spaceDiagram(setup);
   // Put the FBD to the right of the space diagram, with room to spare.
   const right = Math.max(A[0] + 1, ...space.filter((s) => s.to).map((s) => s.to[0]));
-  const F = [right + 2.4, A[1]];
+  const F = [right + 3.2, A[1]]; // room for FBD arrows and labels pointing left
   return [
     ...space,
     { type: "text", at: add(A, [0, -2.6]), text: "Space diagram" },
     { type: "text", at: add(F, [0, -2.6]), text: `FBD of ${setup.point.label || "the point"}` },
-    { type: "axes", at: add(F, [1.4, -1.6]) },
+    { type: "axes" }, // drawn in the canvas corner
     ...fbdArrows(fs, result, F, opts),
     { type: "point", at: F, label: setup.point.label || "", style: "dot" },
   ];

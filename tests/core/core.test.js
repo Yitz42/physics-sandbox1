@@ -94,3 +94,27 @@ test("equations: mistakes swap sin/cos, flip signs, drop terms", () => {
   ok(kinds.includes("swap") && kinds.includes("sign") && kinds.includes("missing"));
   equal(eqX.terms[0].factor.tex, "\\cos 30^\\circ", "original must stay unchanged:");
 });
+
+// ---- Label placement (render/labels.js) ----
+import { placeLabels } from "../../src/render/labels.js";
+// A pretend canvas: every character is 7 px wide.
+const fakeCtx = { save() {}, restore() {}, font: "", measureText: (t) => ({ width: t.length * 7 }) };
+const overlaps = (a, b) => Math.min(a.x1, b.x1) > Math.max(a.x0, b.x0) && Math.min(a.y1, b.y1) > Math.max(a.y0, b.y0);
+
+test("labels: two labels wanting the same spot end up not overlapping", async () => {
+  const { labelBox } = await import("../../src/render/arrows.js");
+  const want = [
+    { text: "F = 180 N", pos: [100, 100], align: "center", size: 14 },
+    { text: "F_y = -106 N", pos: [100, 100], align: "center", size: 14 },
+  ];
+  const [a, b] = placeLabels(fakeCtx, want, { view: { width: 400, height: 300 } });
+  const box = (l) => labelBox(l.pos[0], l.pos[1], l.text.length * 7, 14, l.align);
+  ok(!overlaps(box(a), box(b)), "labels still overlap");
+  equal(a.pos, [100, 100], "the first label keeps its spot:");
+});
+test("labels: a label moves off an arrow line that runs through it", () => {
+  const [l] = placeLabels(fakeCtx, [{ text: "T = 5 N", pos: [100, 100], align: "center", size: 14 }], {
+    segments: [[[60, 100], [140, 100]]], view: { width: 400, height: 300 },
+  });
+  ok(l.pos[1] !== 100, "label should have moved off the line");
+});

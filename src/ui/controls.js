@@ -27,21 +27,32 @@ export function button(text, onClick, className = "btn") {
 
 // A labelled slider bound to a path in the setup. Calls onChange() after edits.
 //   spec: { path, label, min, max, step, unit }
+// The value can also be typed into the box beside the slider (for exact
+// numbers like 36.5°); typed values are kept within the slider's range.
 export function slider(getSetup, spec, onChange) {
-  const value = el("span", { className: "slider-value" });
   const input = el("input", { type: "range", min: spec.min, max: spec.max, step: spec.step || 1 });
+  const box = el("input", { type: "number", className: "slider-number", min: spec.min, max: spec.max, step: "any", inputMode: "decimal" });
+  const value = el("span", { className: "slider-value" }, [box, spec.unit ? el("span", { className: "slider-unit", textContent: unitLabel(spec.unit) }) : null]);
   const sync = () => {
     const v = getPath(getSetup(), spec.path);
     input.value = v;
-    value.textContent = `${v}${spec.unit ? " " + unitLabel(spec.unit) : ""}`;
+    if (document.activeElement !== box) box.value = +Number(v).toFixed(3); // don't overwrite while typing
   };
-  input.addEventListener("input", () => {
-    setPath(getSetup(), spec.path, Number(input.value));
-    sync();
+  const apply = (v) => {
+    if (!Number.isFinite(v)) return sync(); // not a number: put the old value back
+    setPath(getSetup(), spec.path, Math.min(spec.max, Math.max(spec.min, v)));
     onChange();
+    sync();
+  };
+  input.addEventListener("input", () => apply(Number(input.value)));
+  // Typed values apply when you press Enter or leave the box.
+  box.addEventListener("change", () => {
+    apply(parseFloat(String(box.value).replace("−", "-")));
+    box.value = +Number(getPath(getSetup(), spec.path)).toFixed(3);
   });
+  box.addEventListener("keydown", (e) => e.key === "Enter" && box.blur());
   sync();
-  const row = el("label", { className: "control-row" }, [el("span", { className: "control-label", textContent: spec.label }), input, value]);
+  const row = el("div", { className: "control-row" }, [el("span", { className: "control-label", textContent: spec.label }), input, value]);
   row.sync = sync; // lets the stage refresh the display after a drag
   return row;
 }

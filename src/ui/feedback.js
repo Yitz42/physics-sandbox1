@@ -52,3 +52,38 @@ export function showExplanation(container, text) {
   box.appendChild(body);
   container.appendChild(box);
 }
+
+// "Stage complete" card in the middle of the screen, over a dimmed page.
+// buttons: [{ label, onClick, primary }]. Clicking outside or pressing Esc
+// closes it so the student can look at their finished work.
+export function showCenterCard({ title, body = "", buttons = [] }) {
+  document.querySelector(".center-card-backdrop")?.remove();
+  const backdrop = el("div", { className: "center-card-backdrop" });
+  const card = el("div", { className: "center-card", role: "dialog", "aria-modal": "true", "aria-label": title });
+  const close = () => {
+    backdrop.remove();
+    document.removeEventListener("keydown", onKey);
+  };
+  const onKey = (e) => e.key === "Escape" && close();
+  card.appendChild(el("div", { className: "center-card-star", textContent: "★" }));
+  card.appendChild(el("h2", { textContent: title }));
+  if (body) {
+    const b = el("div", { className: "center-card-body" });
+    renderMixed(b, body);
+    card.appendChild(b);
+  }
+  const row = el("div", { className: "actions center-card-actions" });
+  for (const btn of [...buttons, { label: "Stay here", onClick: () => {} }]) {
+    row.appendChild(el("button", {
+      type: "button", className: btn.primary ? "btn btn-play" : "btn btn-quiet", textContent: btn.label,
+      onclick: () => { close(); btn.onClick(); },
+    }));
+  }
+  card.appendChild(row);
+  backdrop.appendChild(card);
+  backdrop.addEventListener("click", (e) => e.target === backdrop && close());
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(backdrop);
+  row.querySelector("button")?.focus();
+  return close;
+}

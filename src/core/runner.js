@@ -11,7 +11,7 @@ import { getSolver } from "./registry.js";
 import { getStatus, setStatus, STATUS } from "./progress.js";
 import { makeVariant, clone } from "./paths.js";
 import { createCanvas } from "../render/canvas.js";
-import { showExplanation, buildHints, showMessage } from "../ui/feedback.js";
+import { showExplanation, buildHints, showMessage, showCenterCard } from "../ui/feedback.js";
 import { button } from "../ui/controls.js";
 import * as explore from "../challenges/explore.js";
 import * as predict from "../challenges/predict.js";
@@ -52,20 +52,31 @@ export function runStage({ stage, view, key, next }) {
       explain() {
         showExplanation(el.explanation, stage.explanation);
       },
-      finish() {
+      // message: optional extra line for the "Stage complete" card
+      finish({ message = "" } = {}) {
         el.actions.innerHTML = "";
+        el.hints.innerHTML = ""; // finished: hints are no longer needed
         if (ctx.revealed) {
           showMessage(el.status, "warn", "Needs practice",
             "You've seen the answer, so this stage is marked **needs practice**. Solve a new version on your own to complete it.");
           el.actions.appendChild(button("Try a new version →", newRound, "btn btn-play"));
-        } else {
-          setStatus(key, STATUS.COMPLETE);
-          view.setStatus(STATUS.COMPLETE);
-          showMessage(el.status, "good", "Stage complete ★", "");
-          if (next) el.actions.appendChild(button("Next stage →", () => (location.hash = next), "btn btn-play"));
-          el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
+          el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          return;
         }
-        el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        setStatus(key, STATUS.COMPLETE);
+        view.setStatus(STATUS.COMPLETE);
+        const goNext = () => (location.hash = next);
+        // The big centred card; the same buttons stay in the panel after it closes.
+        showCenterCard({
+          title: "Stage complete",
+          body: message,
+          buttons: [
+            ...(next ? [{ label: "Next stage →", onClick: goNext, primary: true }] : []),
+            { label: "Play a new version", onClick: newRound },
+          ],
+        });
+        if (next) el.actions.appendChild(button("Next stage →", goNext, "btn btn-play"));
+        el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
       },
     };
     buildHints(el.hints, stage.hints);

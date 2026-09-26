@@ -74,15 +74,41 @@ export function parseLabel(label) {
   return parts;
 }
 
+// Fonts for each piece of a label: italic for the leading symbol letter
+// (like handwritten physics), smaller for subscripts.
+function styledParts(label, size, weight) {
+  return parseLabel(label).map((p, i) => {
+    const px = p.sub ? size * 0.72 : size;
+    const italic = i === 0 && !p.sub && /^[A-Za-zθαβμ(]/.test(p.text) ? "italic " : "";
+    return { ...p, font: `${italic}${weight} ${px}px system-ui, sans-serif` };
+  });
+}
+
+// Width in pixels of a label, without drawing it.
+export function measureLabel(ctx, label, size = 14, weight = 500) {
+  ctx.save();
+  let width = 0;
+  for (const p of styledParts(label, size, weight)) {
+    ctx.font = p.font;
+    width += ctx.measureText(p.text).width;
+  }
+  ctx.restore();
+  return width;
+}
+
+// The rectangle a label covers: { x0, y0, x1, y1 } in pixels.
+export function labelBox(x, y, width, size = 14, align = "center") {
+  const x0 = align === "center" ? x - width / 2 : align === "right" ? x - width : x;
+  return { x0: x0 - 3, y0: y - size * 0.8, x1: x0 + width + 3, y1: y + size * 0.55 };
+}
+
 // Draw a label with subscripts. align: "left" | "center" | "right".
+// Returns the rectangle it covers (so other labels can keep clear of it).
 export function drawLabel(ctx, label, x, y, opts = {}) {
   const { color = "#222", size = 14, align = "center", background = null, weight = 500 } = opts;
-  const parts = parseLabel(label);
-  const fontFor = (p) => `${p.sub ? "" : "italic "}${weight} ${p.sub ? size * 0.72 : size}px system-ui, sans-serif`;
-  // Italic just for the leading symbol letter, like handwritten physics.
-  const styled = parts.map((p, i) => ({ ...p, font: i === 0 && !p.sub && /^[A-Za-zθαβμ(]/.test(p.text) ? fontFor(p) : `${weight} ${p.sub ? size * 0.72 : size}px system-ui, sans-serif` }));
+  const parts = styledParts(label, size, weight);
   let width = 0;
-  for (const p of styled) {
+  for (const p of parts) {
     ctx.font = p.font;
     p.w = ctx.measureText(p.text).width;
     width += p.w;
@@ -97,13 +123,13 @@ export function drawLabel(ctx, label, x, y, opts = {}) {
   }
   ctx.fillStyle = color;
   ctx.textBaseline = "alphabetic";
-  for (const p of styled) {
+  for (const p of parts) {
     ctx.font = p.font;
     ctx.fillText(p.text, cx, p.sub ? y + size * 0.28 : y + size * 0.35);
     cx += p.w;
   }
   ctx.restore();
-  return width;
+  return labelBox(x, y, width, size, align);
 }
 
 // Where to put an arrow's label. Returns { pos: [x, y], align }.

@@ -16,6 +16,7 @@ const app = document.getElementById("app");
 async function route() {
   const [courseId, unitId, stageFile] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   window.scrollTo(0, 0);
+  document.querySelector(".center-card-backdrop")?.remove(); // close a "Stage complete" card
   try {
     if (!courseId) return renderHome(app, await loadCourseList());
     const course = await loadCourse(courseId);

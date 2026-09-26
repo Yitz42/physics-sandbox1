@@ -56,8 +56,7 @@ export function mount(ctx) {
 
   function finish() {
     finished = true;
-    showMessage(ctx.el.feedback, "good", "All tasks done!", "Nice exploring. Keep playing, or move on to the next stage.");
-    ctx.finish();
+    ctx.finish({ message: tasks.length ? "All tasks done — nice exploring! Keep playing, or move on." : "" });
   }
   // Without tasks, the student decides when they've explored enough.
   if (!tasks.length) ctx.el.area.appendChild(button("I've explored enough ✓", () => !finished && finish(), "btn"));

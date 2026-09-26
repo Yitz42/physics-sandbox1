@@ -1,13 +1,8 @@
 // Unit 1, stage 3 — build: choose a second force so the resultant hits a target.
 
-const TARGET = 400; // N, straight up
+import { angleOptions } from "../shared/angle-options.js";
 
-const QUADRANTS = [
-  { label: "above the +x axis", set: { "forces.#F2.direction.from": "+x", "forces.#F2.direction.toward": "+y" } },
-  { label: "above the −x axis", set: { "forces.#F2.direction.from": "-x", "forces.#F2.direction.toward": "+y" } },
-  { label: "below the −x axis", set: { "forces.#F2.direction.from": "-x", "forces.#F2.direction.toward": "-y" } },
-  { label: "below the +x axis", set: { "forces.#F2.direction.from": "+x", "forces.#F2.direction.toward": "-y" } },
-];
+const TARGET = 400; // N, straight up
 
 export default {
   id: "01-force-vectors/3-build",
@@ -33,7 +28,7 @@ export default {
   editable: [
     { path: "forces.#F2.magnitude", label: "Size F₂", min: 10, max: 500, step: 10, unit: "N" },
     { path: "forces.#F2.direction.angle", label: "Angle of F₂", min: 0, max: 90, step: 1, unit: "deg" },
-    { label: "measured", options: QUADRANTS },
+    angleOptions("forces.#F2", "angle of F₂ measured"),
   ],
   draggable: ["F2"],
   sceneOpts: { resultant: true },
