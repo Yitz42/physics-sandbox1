@@ -61,7 +61,7 @@ export function equationTex(eq, mode = "symbolic", opts = {}) {
   const numeric = mode === "numeric";
   const body = termsTex(eq.terms, { ...opts, numeric });
   if (eq.form === "define") {
-    const end = numeric && eq.result ? ` = ${formatTex(eq.result.value, eq.result.unit || "")}` : "";
+    const end = numeric && eq.result && opts.showResult !== false ? ` = ${formatTex(eq.result.value, eq.result.unit || "")}` : "";
     return `${eq.lhs} = ${body}${end}`;
   }
   return `${eq.lhs} = ${body} = 0`;

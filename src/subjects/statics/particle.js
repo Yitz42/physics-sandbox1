@@ -27,18 +27,30 @@ export function directionOf(force, opts) {
   return force.kind === "weight" ? [0, -1] : directionVector(force.direction, opts);
 }
 
-// Build ΣFx and ΣFy as equation data (see core/equations.js).
+// One force's component along one axis, as an equation term (or null if zero).
+function termFor(f, axis) {
+  const c = f.kind === "weight" ? (axis === "x" ? null : { sign: -1, factor: null }) : componentFactors(f.direction)[axis];
+  return c && { id: f.id, sign: c.sign, symbol: f.symbol, value: magnitudeOf(f), factor: c.factor };
+}
+
+// Build the equations as data (see core/equations.js). setup.analysis picks which:
+//   "components"  F_x = F cos θ, F_y = F sin θ for each force   (Unit 1 basics)
+//   "resultant"   F_Rx = ΣFx, F_Ry = ΣFy                         (Unit 1)
+//   "equilibrium" ΣFx = 0, ΣFy = 0                               (Unit 2)
+// `valueKey` says which entry of result.values a "define" equation equals.
 export function buildEquations(setup) {
-  const resultant = setup.analysis === "resultant";
+  if (setup.analysis === "components") {
+    const names = particleQuantities(setup);
+    return setup.forces.flatMap((f) => ["x", "y"].map((axis) => ({
+      id: `${f.id}.${axis}`, valueKey: `${f.id}.${axis}`, lhs: names[`${f.id}.${axis}`].label,
+      terms: [termFor(f, axis) || { id: f.id, sign: 1, symbol: "0", value: 0, factor: null }],
+      form: "define", result: { value: 0, unit: "N" },
+    })));
+  }
   const make = (axis) => {
-    const terms = [];
-    for (const f of setup.forces) {
-      const c = f.kind === "weight" ? (axis === "x" ? null : { sign: -1, factor: null }) : componentFactors(f.direction)[axis];
-      if (!c) continue; // this force has no component along this axis
-      terms.push({ id: f.id, sign: c.sign, symbol: f.symbol, value: magnitudeOf(f), factor: c.factor });
-    }
-    return resultant
-      ? { id: `R${axis}`, lhs: `F_{R${axis}} = \\Sigma F_${axis}`, terms, form: "define", result: { value: 0, unit: "N" } }
+    const terms = setup.forces.map((f) => termFor(f, axis)).filter(Boolean);
+    return setup.analysis === "resultant"
+      ? { id: `R${axis}`, valueKey: `R.${axis}`, lhs: `F_{R${axis}} = \\Sigma F_${axis}`, terms, form: "define", result: { value: 0, unit: "N" } }
       : { id: `sumF${axis}`, lhs: `\\Sigma F_${axis}`, terms, form: "zero" };
   };
   return [make("x"), make("y")];
@@ -57,8 +69,8 @@ export function solveParticle(setup) {
   const unknowns = setup.forces.filter((f) => magnitudeOf(f) == null).map((f) => f.id);
   let status, message;
 
-  if (setup.analysis === "resultant") {
-    status = "resultant";
+  if (setup.analysis === "resultant" || setup.analysis === "components") {
+    status = "resultant"; // nothing to solve for: just add up components
   } else if (unknowns.length > 2) {
     status = "indeterminate";
     message = `There are ${unknowns.length} unknown forces but only 2 equations (ΣFx = 0, ΣFy = 0). ` +
@@ -104,8 +116,7 @@ export function solveParticle(setup) {
     values["R.y"] = net[1];
     values["R"] = mag(net);
     values["R.angle"] = Math.atan2(Math.abs(net[1]), Math.abs(net[0])) / DEG;
-    equations[0].result.value = net[0];
-    equations[1].result.value = net[1];
+    for (const eq of equations) eq.result.value = values[eq.valueKey];
   } else if (status === "unstable" && mag(net) < 1e-6) {
     // Slack cable: drop the pushing cable and see which way the rest pulls.
     const pulling = setup.forces.filter((f) => !(f.kind === "cable" && values[f.id] < 0));

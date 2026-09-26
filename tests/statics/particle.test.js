@@ -4,6 +4,8 @@ import { directionVector, componentFactors, describe, fromVector, swapTrig, reve
 import { solveParticle } from "../../src/subjects/statics/particle.js";
 import { particleMistakes } from "../../src/subjects/statics/particle-mistakes.js";
 import { particleMutate, particleDrag } from "../../src/subjects/statics/particle-tools.js";
+import { particleScene } from "../../src/subjects/statics/particle-scene.js";
+import { boundsOf } from "../../src/render/canvas.js";
 
 setFile("statics / particle");
 
@@ -153,4 +155,14 @@ test("drag: tip at (−1, 1) with 100 N per unit → 140 N at 45° above −x", 
   particleDrag(s, "F", [-1, 1]);
   equal(s.forces[0].magnitude, 140);
   equal(s.forces[0].direction, { angle: 45, from: "-x", toward: "+y" });
+});
+
+// --- Picture layout ---
+test("scene: FBD is drawn to the right of the space diagram and fits in view", () => {
+  const shapes = particleScene(crate(30, 45, 50), null, {});
+  const dots = shapes.filter((s) => s.type === "point" && s.style === "dot");
+  equal(dots.length, 1);
+  ok(Number.isFinite(dots[0].at[0]) && dots[0].at[0] > 2, "FBD point should sit right of the cables");
+  const b = boundsOf(shapes);
+  ok(b.xmax > dots[0].at[0] && b.xmin < -1, `view ${JSON.stringify(b)} should include both drawings`);
 });

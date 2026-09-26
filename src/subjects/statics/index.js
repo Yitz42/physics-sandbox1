@@ -7,6 +7,7 @@
 import { registerSolver } from "../../core/registry.js";
 import { solveParticle, particleQuantities } from "./particle.js";
 import { particleScene } from "./particle-scene.js";
+import { particleSummary } from "./particle-summary.js";
 import { particleMistakes } from "./particle-mistakes.js";
 import { particleHandles, particleDrag, particleFbd, particleMutate } from "./particle-tools.js";
 
@@ -14,6 +15,7 @@ registerSolver("statics.particle", {
   solve: solveParticle,
   // Equations come from a solved result so "define" lines can show their values.
   equations: (setup, result) => (result || solveParticle(setup)).equations,
+  summary: particleSummary,
   scene: particleScene,
   quantities: particleQuantities,
   handles: particleHandles,

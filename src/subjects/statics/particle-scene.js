@@ -55,7 +55,7 @@ function angleMarks(force, at, len) {
   const r = Math.min(0.55, len * 0.45);
   return [
     { type: "line", from: at, to: add(at, scale(AXIS_VEC[dir.from], r * 1.6)), style: "reference" },
-    { type: "arc", center: at, r, from: a0, to: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
+    { type: "arc", center: at, r, start: a0, end: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
   ];
 }
 
@@ -75,21 +75,28 @@ function fbdArrows(setup, result, at, opts) {
     shapes.push({
       type: "arrow", id: f.id, from: at, to: tip,
       label: arrowLabel(f, m, known != null || opts.reveal),
-      role: f.mutated ? "wrong" : known == null ? "unknown" : "known",
+      // "wrong" (red) marks an overloaded cable after Play
+      role: (opts.flagged || []).includes(f.id) ? "wrong" : known == null ? "unknown" : "known",
     });
     if (opts.angles !== false) shapes.push(...angleMarks(f, at, len));
-    if (opts.components && m != null && (opts.components === true || opts.components.includes(f.id))) {
+    // Component arrows carry numbers, so they only appear once values are revealed.
+    if (opts.components && opts.reveal && m != null && (opts.components === true || opts.components.includes(f.id))) {
       const v = scale(d, len);
       const names = particleQuantities(setup);
       const q = (axis) => `${names[`${f.id}.${axis}`].label} = ${format(m * d[axis === "x" ? 0 : 1], "N")}`;
       shapes.push({ type: "arrow", id: f.id, from: at, to: add(at, [v[0], 0]), role: "component", label: q("x") });
-      shapes.push({ type: "arrow", id: f.id, from: add(at, [v[0], 0]), to: tip, role: "component", label: q("y") });
+      shapes.push({ type: "arrow", id: f.id, from: add(at, [v[0], 0]), to: tip, role: "component", label: q("y"), labelSide: v[0] < 0 ? -1 : 1 });
     }
   }
-  if (opts.resultant && result && result.status === "resultant") {
+  if (opts.resultant && opts.reveal && result && result.status === "resultant") {
     const R = [vals["R.x"], vals["R.y"]];
     const len = setup.forceScale ? mag(R) / setup.forceScale : 1.6;
     if (mag(R) > 1e-9) shapes.push({ type: "arrow", id: "R", from: at, to: add(at, scale(R, len / mag(R))), role: "resultant", label: `F_R = ${format(mag(R), "N")}` });
+  }
+  // Unbalanced force: the point can't stay put. Show which way it gets pushed.
+  if (opts.reveal && result && result.status === "unstable" && mag(result.net) > 1e-6) {
+    const n = result.net;
+    shapes.push({ type: "arrow", id: "net", from: at, to: add(at, scale(n, 1.2 / mag(n))), role: "wrong", label: "ΣF ≠ 0" });
   }
   if (setup.target) {
     const t = setup.target;
@@ -124,7 +131,7 @@ function spaceDiagram(setup) {
     } else if (f.kind === "weight") {
       const top = add(A, [0, -0.7]);
       shapes.push({ type: "line", id: f.id, from: A, to: top, style: "cable" });
-      shapes.push({ type: "box", id: f.id, at: add(top, [0, -0.3]), w: 0.7, h: 0.6, label: f.mass != null ? `${+f.mass.toFixed(2)} kg` : f.symbol });
+      shapes.push({ type: "box", id: f.id, at: add(top, [0, -0.3]), w: 0.95, h: 0.6, label: f.mass != null ? `${+f.mass.toFixed(2)} kg` : f.symbol });
     }
   }
   shapes.push({ type: "point", at: A, label: setup.point.label || "", style: "ring" });
@@ -148,8 +155,8 @@ export function particleScene(setup, result, opts = {}) {
   const F = [right + 2.4, A[1]];
   return [
     ...space,
-    { type: "text", at: add(A, [0, -1.9]), text: "Space diagram" },
-    { type: "text", at: add(F, [0, -1.9]), text: `FBD of ${setup.point.label || "the point"}` },
+    { type: "text", at: add(A, [0, -2.6]), text: "Space diagram" },
+    { type: "text", at: add(F, [0, -2.6]), text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes", at: add(F, [1.4, -1.6]) },
     ...fbdArrows(fs, result, F, opts),
     { type: "point", at: F, label: setup.point.label || "", style: "dot" },

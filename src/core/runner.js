@@ -1,0 +1,82 @@
+// runner.js — plays one stage.
+//
+// It picks the challenge type named in the stage file, gives it a "context"
+// (the stage, its solver, the page areas to draw in, and the setup to use),
+// and handles what happens when the challenge ends:
+//   • solved without help → stage "complete", offer the next stage
+//   • answer was shown     → stage "needs practice", offer a NEW version
+//                            (different numbers from the stage's `vary` rules)
+
+import { getSolver } from "./registry.js";
+import { getStatus, setStatus, STATUS } from "./progress.js";
+import { makeVariant, clone } from "./paths.js";
+import { createCanvas } from "../render/canvas.js";
+import { showExplanation, buildHints, showMessage } from "../ui/feedback.js";
+import { button } from "../ui/controls.js";
+import * as explore from "../challenges/explore.js";
+import * as predict from "../challenges/predict.js";
+import * as build from "../challenges/build.js";
+import * as debug from "../challenges/debug.js";
+import * as conceptCheck from "../challenges/concept-check.js";
+import * as solve from "../challenges/solve.js";
+
+const CHALLENGES = { explore, predict, build, debug, "concept-check": conceptCheck, solve };
+
+// view: the stage page from ui/stage-view.js (it owns the DOM)
+// key:  progress key, e.g. "statics/01-force-vectors/2-predict"
+// next: URL of the next stage, or null
+export function runStage({ stage, view, key, next }) {
+  const challenge = CHALLENGES[stage.challenge];
+  const solver = stage.solver ? getSolver(stage.solver) : null;
+  const memory = {}; // survives new versions during this visit (concept-check uses it)
+  let round = 0;
+  let lastSetup = null;
+
+  function startRound() {
+    // Students who needed help last time start with a fresh version.
+    const fresh = round > 0 || getStatus(key) === STATUS.PRACTICE;
+    let setup = stage.setup ? clone(stage.setup) : null;
+    if (setup && fresh && stage.vary) setup = makeVariant(stage.setup, stage.vary, Math.random, lastSetup);
+    lastSetup = setup;
+
+    const el = view.resetBody(stage);
+    const ctx = {
+      stage, solver, setup, round, memory, el, key,
+      canvas: createCanvas(el.figure),
+      revealed: false,
+      markRevealed() {
+        ctx.revealed = true;
+        setStatus(key, STATUS.PRACTICE);
+        view.setStatus(getStatus(key));
+      },
+      explain() {
+        showExplanation(el.explanation, stage.explanation);
+      },
+      finish() {
+        el.actions.innerHTML = "";
+        if (ctx.revealed) {
+          showMessage(el.status, "warn", "Needs practice",
+            "You've seen the answer, so this stage is marked **needs practice**. Solve a new version on your own to complete it.");
+          el.actions.appendChild(button("Try a new version →", newRound, "btn btn-play"));
+        } else {
+          setStatus(key, STATUS.COMPLETE);
+          view.setStatus(STATUS.COMPLETE);
+          showMessage(el.status, "good", "Stage complete ★", "");
+          if (next) el.actions.appendChild(button("Next stage →", () => (location.hash = next), "btn btn-play"));
+          el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
+        }
+        el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      },
+    };
+    buildHints(el.hints, stage.hints);
+    challenge.mount(ctx);
+  }
+
+  function newRound() {
+    round++;
+    startRound();
+  }
+
+  view.setStatus(getStatus(key));
+  startRound();
+}

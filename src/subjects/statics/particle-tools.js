@@ -80,7 +80,6 @@ export function particleMutate(setup, mutation) {
     } else {
       f.direction = reverse(f.direction);
     }
-    f.mutated = true;
   }
   return s;
 }

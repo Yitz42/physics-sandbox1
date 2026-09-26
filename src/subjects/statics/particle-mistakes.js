@@ -96,6 +96,8 @@ export function particleMistakes(setup, name) {
     if (value == null || !Number.isFinite(value)) continue;
     if (correct != null && Math.abs(value - correct) < 1e-6 * Math.max(1, Math.abs(correct))) continue;
     list.push({ value, message: v.message });
+    // Two slips at once (this one AND a flipped sign) are common too.
+    if (Math.abs(value) > 1e-9) list.push({ value: -value, message: `${v.message} Also check the sign: which way does it point?` });
   }
   if (name === "R.angle" && correct != null) {
     list.push({ value: 90 - correct, message: "That's the angle from the y-axis. θ here is measured from the x-axis." });

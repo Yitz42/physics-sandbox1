@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engineering Mechanics Sandbox</title>
+
+  <!-- Libraries (loaded from a CDN, per CLAUDE.md) -->
+  <!-- math.js: solving linear systems of equations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js"></script>
+  <!-- KaTeX: drawing equations like ΣFx = T cos 30° -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <!-- three.js (3D units) and a dynamics engine will be added here in later phases. -->
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <p class="loading">Loading…</p>
+  </main>
+  <noscript>This game needs JavaScript turned on.</noscript>
+  <!-- type="module" lets the code use import/export. It only works when the
+       page is served by a web server (VS Code's Live Server), not opened as a file. -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

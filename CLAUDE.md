@@ -116,6 +116,22 @@ export default {
 };
 ```
 
+## Teaching decisions (agreed with the owner)
+- **Angles, textbook style**: directions are given as an angle from the nearest axis
+  (`{ angle: 30, from: "-x", toward: "+y" }`), a slope triangle (`{ slope: [-4, 3] }`),
+  or a word (`"down"`). Students pick sin/cos and signs by looking at the picture.
+- **Wrong answers**: unlimited tries with specific feedback. After 2 wrong tries a
+  "Show answer" button appears. Showing the answer marks the stage **needs practice**
+  (no stars) and the student gets a new version with different numbers (the stage's
+  `vary` rules; debug uses the next `mutation`, concept-check the next question).
+  Only solving a version without help marks it **complete**.
+- **Drawing FBDs** (solve challenge): click a force in the palette; a faint shadow
+  arrow follows the pointer, snapping to allowed directions; click to place. Dragging
+  from the palette also works (touchscreens). The palette includes tempting wrong
+  forces, each with its own explanation.
+- Every unit uses all six challenge types: explore → predict → build → debug →
+  concept-check → solve.
+
 ## Physics conventions
 - SI units by default: m, kg, N, N·m, g = 9.81 m/s².
 - +x right, +y up, counterclockwise moments positive. For 3D, right-handed x, y, z.
