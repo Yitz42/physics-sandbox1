@@ -1,5 +1,11 @@
 // answers.js — number boxes for answers, and checking what the student typed.
 //
+// The boxes only take a plain number: digits, one decimal point and a minus
+// sign at the front. Leading zeros are dropped as you type ("090" → "90"),
+// and a number outside the answer's range isn't accepted (ask.min / ask.max,
+// or a sensible range for its unit). Before checking, the number is rounded
+// to the precision asked for, so 346.4102 N is checked as 346.4 N.
+//
 // Used by predict and solve. Checking has three outcomes:
 //   correct     within ± precision of the true value (default ±0.1 in the
 //               answer's unit, e.g. ±0.1 N or ±0.1°; a stage can set ask.precision)
@@ -21,6 +27,31 @@ export function parseNumber(text) {
   return m[2] && m[2].toLowerCase() === "kn" ? v * 1000 : v;
 }
 
+// Clean up what's being typed: keep digits, one "." and a leading "-", and drop
+// leading zeros ("090" → "90", "-007" → "-7", but "0.5" and "-0.5" stay).
+export function cleanNumberText(text) {
+  let t = String(text).replace(/−/g, "-").replace(/[^0-9.-]/g, "");
+  const minus = t.startsWith("-") ? "-" : "";
+  t = t.replace(/-/g, "");
+  const dot = t.indexOf(".");
+  if (dot >= 0) t = t.slice(0, dot + 1) + t.slice(dot + 1).replace(/\./g, "");
+  t = t.replace(/^0+(?=\d)/, "");
+  return minus + t;
+}
+
+// The range an answer may be typed in: ask.min / ask.max, else by unit.
+const UNIT_RANGES = { N: [-100000, 100000], "N·m": [-100000, 100000], m: [-1000, 1000], deg: [0, 360] };
+export function answerRange(ask, unit) {
+  const [lo, hi] = UNIT_RANGES[unit] || [-1000000, 1000000];
+  return [ask.min ?? lo, ask.max ?? hi];
+}
+
+// Round to the precision's decimal places: 0.1 → 1 decimal, 0.01 → 2, 1 → 0.
+export function roundToPrecision(value, precision) {
+  const decimals = Math.max(0, Math.ceil(-Math.log10(precision) - 1e-9));
+  return Number(value.toFixed(decimals));
+}
+
 // The ± label shown beside the unit, e.g. "±0.1 N".
 export function precisionText(precision, unit) {
   const u = unitLabel(unit);
@@ -29,8 +60,9 @@ export function precisionText(precision, unit) {
 
 // Returns { ok, message }.
 export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "" } = {}) {
-  const value = parseNumber(text);
-  if (value == null) return { ok: false, empty: true, message: "Type a number (for example 346.4 or -200.0)." };
+  const typed = parseNumber(text);
+  if (typed == null) return { ok: false, empty: true, message: "Type a number (for example 346.4 or -200.0)." };
+  const value = roundToPrecision(typed, precision); // extra digits beyond the precision don't count
   // Tiny extra allowance so a correctly rounded answer (e.g. 346.4 for 346.4102) always passes.
   if (Math.abs(value - correct) <= precision + 1e-9) return { ok: true };
   // Which common mistake is this answer closest to? (Diagnosis can be looser
@@ -55,6 +87,29 @@ export function answerInputs(container, asks, quantities) {
     renderTex(label, `${ask.label || q.label || ask.quantity} =`);
     const input = el("input", { type: "text", inputMode: "decimal", className: "answer-input", autocomplete: "off", placeholder: "?" });
     const note = el("div", { className: "answer-note" });
+    // Only plain numbers inside the range can be typed (see the top of this file).
+    const [lo, hi] = answerRange(ask, unit);
+    let last = "";
+    const pretty = (v) => v.toLocaleString("en-US").replace("-", "−"); // e.g. "−100,000"
+    const rangeNote = `Answers here are between ${pretty(lo)} and ${pretty(hi)}${unit ? " " + unitLabel(unit) : ""}.`;
+    input.addEventListener("input", () => {
+      const clean = cleanNumberText(input.value);
+      const v = Number(clean);
+      const partial = ["", "-", ".", "-."].includes(clean);
+      if (partial || (Number.isFinite(v) && v >= lo && v <= hi)) {
+        if (clean !== input.value) {
+          // Keep the cursor where it was, less any characters that were removed.
+          const pos = Math.max(0, (input.selectionStart ?? clean.length) - (input.value.length - clean.length));
+          input.value = clean;
+          input.setSelectionRange(pos, pos);
+        }
+        last = clean;
+        if (note.textContent === rangeNote) note.textContent = "";
+      } else {
+        input.value = last; // out of range: undo that keystroke
+        note.textContent = rangeNote;
+      }
+    });
     const row = el("div", { className: "answer-row" }, [
       el("div", { className: "answer-line" }, [
         label, input,

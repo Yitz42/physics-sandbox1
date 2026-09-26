@@ -145,3 +145,29 @@ test("equations: a couple moment term shows its unit, N·m built so KaTeX can dr
   ok(!tex.includes("\\text{N·m}"), "no · inside \\text{}");
   equal(equationTex(eq, "symbolic", { highlight: false }), "M_R = -M_3");
 });
+
+import { cleanNumberText, roundToPrecision, answerRange } from "../../src/challenges/common/answers.js";
+test("answer boxes: no leading zeros, only digits, one point and a leading minus", () => {
+  equal(cleanNumberText("090"), "90");
+  equal(cleanNumberText("09"), "9");
+  equal(cleanNumberText("-007"), "-7");
+  equal(cleanNumberText("0.5"), "0.5");
+  equal(cleanNumberText("-0.5"), "-0.5");
+  equal(cleanNumberText("00.25"), "0.25");
+  equal(cleanNumberText("0"), "0");
+  equal(cleanNumberText("12a.3.4"), "12.34");
+  equal(cleanNumberText("5-3"), "53");
+  equal(cleanNumberText("−68.0"), "-68.0");
+});
+test("answer boxes: extra digits are rounded to the precision before checking", () => {
+  equal(roundToPrecision(346.4102, 0.1), 346.4);
+  equal(roundToPrecision(2.2549, 0.01), 2.25);
+  equal(roundToPrecision(7.6, 1), 8);
+  ok(checkAnswer("346.4102", 346.41).ok);
+  ok(checkAnswer("2.2549", 2.25, { precision: 0.01 }).ok);
+});
+test("answer boxes: range comes from the ask, else from the unit", () => {
+  equal(answerRange({}, "N"), [-100000, 100000]);
+  equal(answerRange({}, "deg"), [0, 360]);
+  equal(answerRange({ min: 0, max: 3 }, "m"), [0, 3]);
+});
