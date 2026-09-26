@@ -136,3 +136,12 @@ test("answers: the ± label reads '±0.1 N' and '±0.1°'", () => {
   equal(precisionText(0.1, "N"), "±0.1 N");
   equal(precisionText(0.1, "deg"), "±0.1°");
 });
+
+test("equations: a couple moment term shows its unit, N·m built so KaTeX can draw it", () => {
+  const eq = { id: "Mc", lhs: "M_R", form: "define", result: { value: -40, unit: "N·m" },
+    terms: [{ id: "M3", sign: -1, symbol: "M_3", value: 40, unit: "N·m" }] };
+  const tex = equationTex(eq, "numeric", { highlight: false });
+  ok(tex.includes("-(40\\,\\text{N}\\!\\cdot\\!\\text{m})"), tex);
+  ok(!tex.includes("\\text{N·m}"), "no · inside \\text{}");
+  equal(equationTex(eq, "symbolic", { highlight: false }), "M_R = -M_3");
+});

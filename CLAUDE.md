@@ -54,6 +54,7 @@ src/
       index.js             registers the statics solvers with the core
       particle.js          concurrent forces, ΣF = 0
       moment.js            moments about a point: M = Fd = xFy − yFx, balance ΣM = 0
+      couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
       truss.js             method of joints and method of sections
       frame.js             frames and machines, multi-body

@@ -47,6 +47,12 @@ export function formatTex(value, unit = "", sig = 3) {
   return u ? `${num}\\,${u}` : num;
 }
 
+// KaTeX for a unit on its own, e.g. unitTex("N·m") → "\text{N}\!\cdot\!\text{m}".
+// (KaTeX can't put the "·" character inside \text{}, so N·m is built from parts.)
+export function unitTex(unit) {
+  return UNITS[unit] ? UNITS[unit].tex : `\\text{${unit}}`;
+}
+
 // Unit label for an input box, e.g. "N" or "°".
 export function unitLabel(unit) {
   return UNITS[unit] ? UNITS[unit].text : unit;

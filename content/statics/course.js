@@ -5,10 +5,11 @@ export default {
   id: "statics",
   title: "Statics",
   subject: "statics",
-  description: "Forces as vectors, equilibrium of a particle, and moments.",
+  description: "Forces as vectors, equilibrium of a particle, moments and couples.",
   units: [
     "01-force-vectors",
     "02-particle-equilibrium",
     "03-moments",
+    "04-couples",
   ],
 };

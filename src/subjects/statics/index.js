@@ -13,6 +13,9 @@ import { particleHandles, particleDrag, particleFbd, particleMutate } from "./pa
 import { solveMoment, momentQuantities } from "./moment.js";
 import { momentScene } from "./moment-scene.js";
 import { momentHandles, momentDrag, momentMistakes, momentSummary } from "./moment-tools.js";
+import { solveCouple, coupleQuantities } from "./couple.js";
+import { coupleScene } from "./couple-scene.js";
+import { coupleHandles, coupleDrag, coupleMistakes, coupleSummary } from "./couple-tools.js";
 
 // Units 1–2: forces through one point.
 registerSolver("statics.particle", {
@@ -39,4 +42,16 @@ registerSolver("statics.moment", {
   handles: momentHandles,
   drag: momentDrag,
   mistakes: momentMistakes,
+});
+
+// Unit 4: couples — equal, opposite, offset forces that only turn.
+registerSolver("statics.couple", {
+  solve: solveCouple,
+  equations: (setup, result) => (result || solveCouple(setup)).equations,
+  summary: coupleSummary,
+  scene: coupleScene,
+  quantities: coupleQuantities,
+  handles: coupleHandles,
+  drag: coupleDrag,
+  mistakes: coupleMistakes,
 });

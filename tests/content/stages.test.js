@@ -46,7 +46,7 @@ for (const { unit, file, stage } of stages) {
         const s = makeVariant(stage.setup, stage.vary);
         const r = solver.solve(s);
         ok(["resultant", "determinate"].includes(r.status), `version ${JSON.stringify(s)} → ${r.status}`);
-        for (const f of s.forces) if (f.kind === "cable") ok(r.values[f.id] > 0, `cable ${f.id} not pulling`);
+        for (const f of s.forces || []) if (f.kind === "cable") ok(r.values[f.id] > 0, `cable ${f.id} not pulling`);
         for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]));
       }
     });
@@ -132,4 +132,64 @@ test("Unit 3 build: the start tips; 10 kg at 0, 20 kg at 1.5 m, 30 kg at 1 m bal
 test("Unit 3 solve: default numbers give M_O = 114.95 N·m", () => {
   const st = find("03-moments/6-solve");
   close(getSolver(st.solver).solve(st.setup).values.M, 114.952);
+});
+
+test("Unit 4 explore: M_P = 50 N·m wherever P is dragged", () => {
+  const st = find("04-couples/1-explore");
+  const solver = getSolver(st.solver);
+  for (const P of [[0.25, 0.3], [-0.45, -0.35], [1.2, 0.45], [0, 0.1], [0.5, -0.2]]) {
+    const s = clone(st.setup);
+    solver.drag(s, "P", P);
+    close(solver.solve(s).values.M, 50, 1e-9, `P = ${P}:`);
+  }
+});
+
+test("Unit 4 predict: F' = 200 N; every new version turns the same way as the original", () => {
+  const st = find("04-couples/2-predict");
+  const solver = getSolver(st.solver);
+  close(solver.solve(st.setup).values.C2, 200);
+  for (let i = 0; i < 25; i++) {
+    const r = solver.solve(makeVariant(st.setup, st.vary));
+    ok(!r.message, r.message);
+    close(r.values.M_C2, r.values.M_C1);
+  }
+});
+
+test("Unit 4 build: start fails; 150 N down/up and 200 N right/left both work; same-way or wrong-sense forces fail", () => {
+  const st = find("04-couples/3-build");
+  const solver = getSolver(st.solver);
+  const tryForces = (F, d1, d2) => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#F_1.magnitude", F);
+    setPath(s, "forces.#F_1.direction", d1);
+    setPath(s, "forces.#F_2.magnitude", F);
+    setPath(s, "forces.#F_2.direction", d2);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting forces should not already work");
+  ok(tryForces(150, "down", "up").ok, "150 N down at A, up at B: 150(0.4) = 60");
+  ok(tryForces(200, "right", "left").ok, "200 N right at A, left at B: 200(0.3) = 60");
+  ok(/not a couple/.test(tryForces(150, "up", "up").message), "both up is not a couple");
+  ok(/clockwise/.test(tryForces(150, "up", "down").message), "reversed pair turns the wrong way");
+});
+
+test("Unit 4 debug: every version's first line (M_P) agrees with M = Fd = +60 N·m", () => {
+  const st = find("04-couples/4-debug");
+  const solver = getSolver(st.solver);
+  for (let i = 0; i < 20; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    const [Mp, Mc] = solver.equations(s);
+    close(Mp.result.value, 60);
+    close(Mc.result.value, 60);
+  }
+});
+
+test("Unit 4 solve: M_R = −68.04 N·m; every version stays clearly clockwise", () => {
+  const st = find("04-couples/6-solve");
+  const solver = getSolver(st.solver);
+  close(solver.solve(st.setup).values.M, -68.0385);
+  for (let i = 0; i < 40; i++) {
+    const M = solver.solve(makeVariant(st.setup, st.vary)).values.M;
+    ok(M <= -30, `M_R = ${M}`);
+  }
 });

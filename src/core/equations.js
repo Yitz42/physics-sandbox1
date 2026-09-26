@@ -22,7 +22,7 @@
 //   form "zero":   ΣFx = T_AB cos30° − … = 0          (equilibrium)
 //   form "define": F_Rx = ΣFx = 200 cos30° + … = 173 N (a resultant)
 
-import { sigFig, fixedTex } from "./units.js";
+import { sigFig, fixedTex, unitTex } from "./units.js";
 import { solveSystem } from "./linear.js";
 
 // CSS class that links a term to its arrow. KaTeX's \htmlClass puts it on the HTML.
@@ -38,9 +38,10 @@ function factorValue(term) {
 function termBody(term, numeric) {
   const known = numeric && term.value != null;
   // Known values are substituted with their unit when the term has one, e.g. "(250\,N)".
-  const unit = term.unit ? `\\,\\text{${term.unit}}` : "";
+  const unit = term.unit ? `\\,${unitTex(term.unit)}` : "";
   const sym = known ? `(${sigFig(term.value, 4)}${unit})` : term.symbol;
-  if (!term.factor) return known ? sigFig(term.value, 4) : sym;
+  // No factor: just the value — with its unit if it has one, e.g. a couple moment "(40 N·m)".
+  if (!term.factor) return known ? (unit ? sym : sigFig(term.value, 4)) : sym;
   // A factor may have its own number form (numTex), e.g. moment arm "d_1" → "(0.25)".
   const ftex = numeric && term.factor.numTex ? term.factor.numTex : term.factor.tex;
   return term.factor.pre ? `${ftex}${sym}` : `${sym}${ftex}`;
