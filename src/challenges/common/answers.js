@@ -3,8 +3,10 @@
 // The boxes only take a plain number: digits, one decimal point and a minus
 // sign at the front. Leading zeros are dropped as you type ("090" → "90"),
 // and a number outside the answer's range isn't accepted (ask.min / ask.max,
-// or a sensible range for its unit). Before checking, the number is rounded
-// to the precision asked for, so 346.4102 N is checked as 346.4 N.
+// or a sensible range for its unit). Where a negative answer is possible, a ±
+// button flips the sign (phone keypads often lack a minus key). Extra digits
+// are rounded to the precision asked for, in the box itself when the student
+// leaves it or presses Test: 346.4102 N becomes (and is checked as) 346.4 N.
 //
 // Used by predict and solve. Checking has three outcomes:
 //   correct     within ± precision of the true value (default ±0.1 in the
@@ -46,10 +48,24 @@ export function answerRange(ask, unit) {
   return [ask.min ?? lo, ask.max ?? hi];
 }
 
-// Round to the precision's decimal places: 0.1 → 1 decimal, 0.01 → 2, 1 → 0.
+// Decimal places a precision needs: 0.1 → 1, 0.01 → 2, 1 → 0.
+export const decimalsFor = (precision) => Math.max(0, Math.ceil(-Math.log10(precision) - 1e-9));
+
+// Round to the precision's decimal places, e.g. 346.4102 → 346.4 for ±0.1.
 export function roundToPrecision(value, precision) {
-  const decimals = Math.max(0, Math.ceil(-Math.log10(precision) - 1e-9));
-  return Number(value.toFixed(decimals));
+  return Number(value.toFixed(decimalsFor(precision)));
+}
+
+// What the box should show once the student is done typing: extra digits
+// rounded away ("430.8812" → "430.9" for ±0.1), so they can see how many
+// decimals the answer needs. Text that already fits is left exactly as typed.
+export function tidyNumberText(text, precision) {
+  const t = cleanNumberText(text);
+  const dot = t.indexOf(".");
+  const places = decimalsFor(precision);
+  if (dot < 0 || t.length - dot - 1 <= places || !Number.isFinite(Number(t))) return t;
+  const r = Number(t).toFixed(places);
+  return Number(r) === 0 ? r.replace("-", "") : r; // no "-0.0"
 }
 
 // The ± label shown beside the unit, e.g. "±0.1 N".
@@ -73,7 +89,7 @@ export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mist
   if (Math.abs(value - correct) <= Math.max(0.03 * Math.abs(correct), 5 * precision)) {
     return { ok: false, message: `Very close, but it needs to be within ${precisionText(precision, unit)}. Keep more digits in the middle of your working and round only at the end.` };
   }
-  return { ok: false, message: "That doesn't match. Re-check each force's components (size and sign) and redo the arithmetic." };
+  return { ok: false, message: "That doesn't match. Re-check each force's components (size and sign)." };
 }
 
 // Build one input row per asked quantity.
@@ -110,16 +126,36 @@ export function answerInputs(container, asks, quantities) {
         note.textContent = rangeNote;
       }
     });
+    // Round extra digits away when the student leaves the box (and before checking).
+    const precision = ask.precision ?? DEFAULT_PRECISION;
+    const tidy = () => {
+      if (input.readOnly) return;
+      input.value = last = tidyNumberText(input.value, precision);
+    };
+    input.addEventListener("blur", tidy);
+    // A ± button, only where a negative answer is possible: phone and tablet
+    // number keypads often have no minus key.
+    const sign = lo < 0 ? el("button", {
+      type: "button", className: "answer-sign", textContent: "±", title: "Switch between positive and negative",
+      onmousedown: (e) => e.preventDefault(), // keep the typing cursor in the box
+      onclick: () => {
+        if (input.readOnly) return;
+        const flipped = input.value.startsWith("-") ? input.value.slice(1) : "-" + input.value;
+        const v = Number(flipped);
+        if (["", "-"].includes(flipped) || (v >= lo && v <= hi)) input.value = last = flipped;
+        input.focus();
+      },
+    }) : null;
     const row = el("div", { className: "answer-row" }, [
       el("div", { className: "answer-line" }, [
-        label, input,
+        label, sign, input,
         // e.g. "±0.1 N": the unit plus how close the answer must be
         el("span", { className: "answer-tol", title: "How close your answer must be", textContent: precisionText(ask.precision ?? DEFAULT_PRECISION, unit) }),
       ]),
       note,
     ]);
     container.appendChild(row);
-    return { ask, input, note, row, unit, done: false };
+    return { ask, input, note, row, unit, tidy, done: false };
   });
   return {
     rows,
@@ -137,7 +173,8 @@ export function answerInputs(container, asks, quantities) {
     // Fill in the correct answers (after "Show answer").
     fill(values) {
       rows.forEach((r) => {
-        r.input.value = values[r.ask.quantity].toFixed(2); // two decimals: inside any ±0.1
+        // Shown to the precision asked for (e.g. one decimal for ±0.1), the way a student would type it.
+        r.input.value = values[r.ask.quantity].toFixed(decimalsFor(r.ask.precision ?? DEFAULT_PRECISION));
         r.input.readOnly = true;
         r.row.classList.remove("is-wrong");
         r.row.classList.add("is-shown");
@@ -152,6 +189,7 @@ export function checkRows(inputs, result, mistakesFor) {
   let allOk = true;
   for (const r of inputs.rows) {
     if (r.done) continue;
+    if (r.tidy) r.tidy(); // show the rounded number that is actually being checked
     const correct = result.values[r.ask.quantity];
     const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity) });
     inputs.mark(r, out.ok, out.ok ? "✓ Correct" : out.message);

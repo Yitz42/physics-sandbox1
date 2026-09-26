@@ -17,7 +17,7 @@ export default {
     { path: "forces.#T_AC.direction.angle", values: [25, 30, 35, 40, 45, 50, 60, 65] },
     { path: "forces.#W.mass", min: 20, max: 120, step: 5 },
   ],
-  ask: [{ quantity: "T_AB" }, { quantity: "T_AC" }],
+  ask: [{ quantity: "T_AB", min: 0 }, { quantity: "T_AC", min: 0 }], // tensions are never negative
   hints: [
     "Draw the FBD of ring A: $T_{AB}$ and $T_{AC}$ pull along the cables, $W = mg$ pulls straight down.",
     "$\\Sigma F_x = 0$: $-T_{AB}\\cos\\theta_{AB} + T_{AC}\\cos\\theta_{AC} = 0$. Use it to write $T_{AC}$ in terms of $T_{AB}$.",

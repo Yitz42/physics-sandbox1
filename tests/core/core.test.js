@@ -171,3 +171,17 @@ test("answer boxes: range comes from the ask, else from the unit", () => {
   equal(answerRange({}, "deg"), [0, 360]);
   equal(answerRange({ min: 0, max: 3 }, "m"), [0, 3]);
 });
+
+import { tidyNumberText } from "../../src/challenges/common/answers.js";
+test("answer boxes: extra digits are rounded in the box, text that fits is left alone", () => {
+  equal(tidyNumberText("430.8812", 0.1), "430.9");
+  equal(tidyNumberText("2.2549", 0.01), "2.25");
+  equal(tidyNumberText("430.9", 0.1), "430.9");
+  equal(tidyNumberText("430", 0.1), "430");
+  equal(tidyNumberText("-0.04", 0.1), "0.0");
+  equal(tidyNumberText("-68.04", 0.1), "-68.0");
+  equal(tidyNumberText("-", 0.1), "-");
+});
+test("answers: the general 'doesn't match' note no longer mentions arithmetic", () => {
+  ok(!/arithmetic/.test(checkAnswer("5", 346.41).message));
+});

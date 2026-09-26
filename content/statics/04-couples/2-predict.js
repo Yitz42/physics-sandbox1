@@ -26,7 +26,7 @@ export default {
   },
   view: { xmin: -0.2, xmax: 2.2, ymin: -0.3, ymax: 0.72 },
   vary: [{ path: "couples.#C1.magnitude", values: [60, 90, 120, 150, 180, 240] }],
-  ask: [{ quantity: "C2" }],
+  ask: [{ quantity: "C2", min: 0 }], // the size of a force is never negative
   hints: [
     "Two couples have the same effect when they have the same moment, turning the same way.",
     "First find the moment of the given couple: $M = Fd$.",

@@ -35,7 +35,7 @@ export default {
       { id: "F_ceiling", symbol: "F_{ceiling}", feedback: "The ceiling doesn't touch A. Its effect reaches A only through the cables — that IS the tension." },
     ],
   },
-  ask: [{ quantity: "T_AB" }, { quantity: "T_AC" }],
+  ask: [{ quantity: "T_AB", min: 0 }, { quantity: "T_AC", min: 0 }], // tensions are never negative
   hints: [
     "Isolate ring A. What is attached to it? Two cables and the lamp.",
     "Cable AB's slope gives its components directly: $-\\tfrac{4}{5}T_{AB}$ in x, $+\\tfrac{3}{5}T_{AB}$ in y.",

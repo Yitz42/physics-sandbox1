@@ -165,6 +165,8 @@ p { margin: 0 0 8px; }
 .answer-label { min-width: 70px; text-align: right; }
 .answer-input { font: inherit; font-size: 17px; width: 130px; padding: 6px 8px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-panel); color: var(--c-ink); }
 .answer-unit { color: var(--c-muted); }
+.answer-sign { font: inherit; font-size: 17px; font-weight: 700; width: 34px; height: 34px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-bg); color: var(--c-ink); cursor: pointer; }
+.answer-sign:hover { border-color: var(--c-force); }
 .answer-tol { font-size: 15px; color: var(--c-ink); background: var(--c-bg); border-radius: 999px; padding: 1px 8px; }
 .status-badge[hidden] { display: none; }
 .answer-note { font-size: 14px; margin-top: 4px; }

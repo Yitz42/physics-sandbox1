@@ -29,7 +29,7 @@ export default {
   ask: [
     { quantity: "R.x" },
     { quantity: "R.y" },
-    { quantity: "R" },
+    { quantity: "R", min: 0 }, // a size is never negative
     { quantity: "R.angle", label: "\\theta" },
   ],
   hints: [
