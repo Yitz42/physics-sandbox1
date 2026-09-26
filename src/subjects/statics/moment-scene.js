@@ -68,17 +68,21 @@ export function momentScene(setup, result, opts = {}) {
       if (a.d > 1e-6) {
         const angled = Math.abs(a.rLen - a.d) > 1e-6; // force not at 90° to OA
         if (angled) {
-          // Show how d is found: r = |OA|, the angle φ at A between OA and the
-          // line of action, and d = r sin φ.
+          // How d is found, kept quiet in the picture: r = |OA| (dashed), a small
+          // "φ" arc at A, and the working in a note box in a free corner.
           const phi = armAngle(setup, f, P);
           const toO = sub(O, P);
           const along = toO[0] * u[0] + toO[1] * u[1] >= 0 ? u : scale(u, -1); // the line's half that leans toward O
-          // r's label goes on the side away from d, so the two labels don't pile up between the lines.
-          const dSide = Math.sign(a.perNewton) || 1; // which side of OA the foot of d is on
+          const dSide = Math.sign(a.perNewton) || 1; // which side of OA d lies on
           shapes.push({ type: "dim", from: O, to: P, label: `r = ${format(a.rLen, "m")}`, dashed: true, labelSide: dSide });
-          shapes.push({ type: "arc", center: P, r: Math.min(0.3 * a.rLen, 0.25 * size), start: angleDeg(toO), end: angleDeg(along), label: `φ = ${phi.toFixed(1)}°` });
+          shapes.push({ type: "arc", center: P, r: Math.min(0.3 * a.rLen, 0.25 * size), start: angleDeg(toO), end: angleDeg(along), label: "φ" });
+          shapes.push({ type: "note", lines: [
+            `${f.symbol === "F" ? "d" : `d (${f.symbol})`} = r sin φ`,
+            `   = (${format(a.rLen, "m")}) sin ${phi.toFixed(1)}°`,
+            `   = ${format(a.d, "m")}`,
+          ] });
         }
-        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: angled ? `d = r sin φ = ${format(a.d, "m")}` : `d = ${format(a.d, "m")}`, labelSide: -(Math.sign(a.perNewton) || 1) });
+        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: `d = ${format(a.d, "m")}`, labelSide: -(Math.sign(a.perNewton) || 1) });
         shapes.push({ type: "rightangle", at: a.foot, u, v: unit(sub(O, a.foot)) });
         shapes.push({ type: "point", at: a.foot, style: "dot" }); // where d meets the line of action
       }

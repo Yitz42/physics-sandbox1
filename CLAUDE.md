@@ -133,6 +133,8 @@ export default {
 - Moments: counterclockwise positive; students type clockwise moments as negative
   numbers. Answer precision: ±0.1 N and ±0.1 N·m for forces and moments, ±0.01 m
   for distances (set per ask with `precision`).
+- Nothing moves on by itself: after a correct step the student presses **Next step →**,
+  and a finished stage shows **Continue →**, which opens the "Stage complete" card.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted
   precision next to the unit. Numeric answers must be within **±0.1** of the true
   value in its unit (±0.1 N, ±0.1°), unless a stage sets `ask.precision`.

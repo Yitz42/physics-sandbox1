@@ -75,8 +75,7 @@ export function runStage({ stage, view, key, next }) {
         setStatus(key, STATUS.COMPLETE);
         view.setStatus(STATUS.COMPLETE);
         const goNext = () => (location.hash = next);
-        // The big centred card; the same buttons stay in the panel after it closes.
-        showCenterCard({
+        const openCard = () => showCenterCard({
           title: "Stage complete",
           body: message,
           explanation: stage.explanation,
@@ -85,8 +84,17 @@ export function runStage({ stage, view, key, next }) {
             { label: "Play a new version", onClick: newRound },
           ],
         });
-        if (next) el.actions.appendChild(button("Next stage →", goNext, "btn btn-play"));
-        el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
+        // Nothing jumps: the student reads the feedback and the picture, and
+        // opens the "Stage complete" card when ready. Afterwards the panel
+        // keeps Next stage / Play a new version.
+        const ready = button("Continue →", () => {
+          el.actions.innerHTML = "";
+          if (next) el.actions.appendChild(button("Next stage →", goNext, "btn btn-play"));
+          el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
+          openCard();
+        }, "btn btn-play");
+        el.actions.appendChild(ready);
+        el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
       },
     };
     ctx.showHints();

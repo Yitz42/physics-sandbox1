@@ -49,6 +49,18 @@ export function mount(ctx) {
     attempts.wrong();
   };
 
+  // After a step is right, let the student read the feedback, then move on
+  // when THEY are ready (no automatic jump).
+  function waitForNext() {
+    actions.innerHTML = "";
+    const b = button("Next step →", () => {
+      actions.innerHTML = "";
+      next();
+    }, "btn btn-play");
+    actions.appendChild(b);
+    b.focus();
+  }
+
   function next() {
     index++;
     attempts.resetCount();
@@ -70,7 +82,7 @@ export function mount(ctx) {
           ws.onPointer = null;
           ws.update();
           showMessage(ctx.el.feedback, "good", "FBD correct ✓", "The unknown forces are shown in orange.");
-          setTimeout(next, 900);
+          waitForNext();
         },
         onWrong: wrong,
       });
@@ -81,7 +93,7 @@ export function mount(ctx) {
         onCorrect: () => {
           ws.showEquations(true);
           showMessage(ctx.el.feedback, "good", "Equations correct ✓", "They're now in the Equations panel. Click a term to see its arrow.");
-          setTimeout(next, 900);
+          waitForNext();
         },
         onWrong: wrong,
       });

@@ -15,6 +15,7 @@
 //   axes     {}                              little x-y axes (bottom-left corner)
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
+//   note     { lines: [text, ...] }          a small working box in a free corner
 //
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
@@ -39,7 +40,12 @@ export function drawScene(cv, shapes, opts = {}) {
   const segments = [];
   const wanted = []; // arrow labels, placed after everything else is drawn
 
+  const notes = []; // "note" shapes: small text boxes placed in a free corner
   for (const s of sorted) {
+    if (s.type === "note") {
+      notes.push(...s.lines);
+      continue;
+    }
     const lit = !!opts.highlight && s.id === opts.highlight;
     const out = drawShape(cv, s, { ...env, lit });
     obstacles.push(...out.boxes);
@@ -60,6 +66,13 @@ export function drawScene(cv, shapes, opts = {}) {
     }
   }
 
+  // Working notes (e.g. how d is found) go in a box in the freest corner.
+  if (notes.length) {
+    const box = placeLegend(ctx, notes.map((text) => ({ text, color: env.ink })), { obstacles, segments, view: cv.view });
+    drawLegend(ctx, box, env);
+    obstacles.push(box.box);
+  }
+
   const layout = { obstacles, segments, view: cv.view };
   let placed = placeLabels(ctx, wanted, layout);
 
@@ -71,7 +84,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const struggled = placed.filter((l) => l.fromArrow && l.cost > 45);
   const crowded = struggled.length >= 2 || struggled.some((l) => l.cost > 150);
   if (crowded && valued.length > 1) {
-    const legend = placeLegend(ctx, valued.map((l) => ({ text: l.text, color: l.color })), layout);
+    const legend = placeLegend(ctx, valued.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles] });
     const shortened = wanted.map((l) => (valued.includes(l) ? { ...l, text: l.text.split(" = ")[0] } : l));
     placed = placeLabels(ctx, shortened, { ...layout, obstacles: [...obstacles, legend.box] });
     drawLegend(ctx, legend, env);
