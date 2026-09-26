@@ -30,7 +30,9 @@ function named(letter, symbol) {
   const m = String(symbol).match(/_\{?([^}]*)\}?$/);
   return m ? `${letter}_{${m[1]}}` : letter;
 }
-const num = (v) => `(${sigFig(Math.abs(v), 3)})`;
+// Numbers substituted into the equations, with units so students see what each is.
+const num = (v) => `(${sigFig(Math.abs(v), 3)}\\,\\text{m})`; // a distance
+const numN = (v) => `(${sigFig(Math.abs(v), 4)}\\,\\text{N})`; // a force
 
 // Where a force acts (null if its position is the unknown and not yet solved).
 export function forcePoint(setup, f, values = {}) {
@@ -71,7 +73,7 @@ export function momentEquations(setup) {
       // Unknown position s along a line through O: its moment is s·(u × F), linear in s.
       const c = cross2(f.along.dir, directionOf(f));
       Md.terms.push({ id: f.id, sign: Math.sign(c) || 1, symbol: f.posSymbol || named("x", f.symbol), value: null,
-        factor: { tex: f.symbol, numTex: num(F), value: Math.abs(c) * F, pre: true } });
+        factor: { tex: f.symbol, numTex: numN(F), value: Math.abs(c) * F, pre: true } });
       continue;
     }
     const a = armOf(setup, f, f.at);
@@ -83,7 +85,7 @@ export function momentEquations(setup) {
       factor.swapLabel = "Use the perpendicular distance d";
       factor.swapReason = "uses the distance to O instead of the perpendicular distance d to the line of action";
     }
-    Md.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value: F, factor });
+    Md.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value: F, unit: "N", factor });
   }
   if (balance) return [Md];
 
@@ -100,7 +102,7 @@ export function momentEquations(setup) {
         value: Math.abs(coord) * (trig ? trig.value : 1),
       };
       if (trig && trig.alt) factor.alt = { tex: `\\,${named(letter, f.symbol)}${trig.alt.tex}`, numTex: `${num(coord)}${trig.alt.tex}`, value: Math.abs(coord) * trig.alt.value };
-      Mxy.terms.push({ id: f.id, sign, symbol: f.symbol, value: magnitudeOf(f), factor });
+      Mxy.terms.push({ id: f.id, sign, symbol: f.symbol, value: magnitudeOf(f), unit: "N", factor });
     };
     if (c.y && Math.abs(x) > 1e-9) term(x, "x", c.y, Math.sign(x) * c.y.sign); // + x·F_y
     if (c.x && Math.abs(y) > 1e-9) term(y, "y", c.x, -Math.sign(y) * c.x.sign); // − y·F_x

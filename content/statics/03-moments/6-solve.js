@@ -10,7 +10,7 @@ export default {
   solver: "statics.moment",
   title: "An Angled Force, Two Ways",
   instructions:
-    "A force $F$ acts on the bracket at A. Find its moment about O. First choose the correct equation for each method — you'll need to work out the moment arm $d$ — then find $M_O$.",
+    "A force $F$ acts on the bracket at A. Find its moment about O. The dashed line is the force's line of action and $d$ is its moment arm. First choose the correct equation for each method, then find $M_O$.",
   setup: {
     analysis: "moment",
     about: { at: [0, 0], label: "O" },
@@ -24,6 +24,8 @@ export default {
     { path: "forces.0.direction.angle", values: [20, 30, 40, 50, 60] },
     { path: "forces.0.at.0", values: [0.3, 0.4, 0.5] },
   ],
+  // Show the line of action and moment arm d (but not M_O, the answer).
+  sceneOpts: { arms: true, hideMoment: true },
   solve: { steps: ["equations", "answer"], equationMode: "numeric" },
   ask: [{ quantity: "M" }],
   hints: [

@@ -33,7 +33,7 @@ function placeholder(setup, f) {
   return add(setup.about.at, scale(f.along.dir, f.along.placeholder ?? 0.6 * sizeOf(setup) / 2));
 }
 
-// opts: { reveal, arms (always show moment arms), guesses }
+// opts: { reveal, arms (always show moment arms), hideMoment, guesses }
 export function momentScene(setup, result, opts = {}) {
   const O = setup.about.at;
   const vals = result ? result.values : {};
@@ -88,7 +88,8 @@ export function momentScene(setup, result, opts = {}) {
   }
 
   // The total moment about O: a curved arrow showing which way it turns.
-  if (result && (opts.reveal || opts.arms)) {
+  // (opts.hideMoment keeps it hidden until reveal, when M_O is the answer.)
+  if (result && (opts.reveal || (opts.arms && !opts.hideMoment))) {
     const M = vals.M;
     if (balance) {
       shapes.push({ type: "text", at: add(O, [0, 0.26 * size]), text: "ΣM_O = 0: balanced" });

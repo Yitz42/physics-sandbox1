@@ -37,7 +37,9 @@ function factorValue(term) {
 // KaTeX for one term (without its leading sign).
 function termBody(term, numeric) {
   const known = numeric && term.value != null;
-  const sym = known ? `(${sigFig(term.value, 4)})` : term.symbol;
+  // Known values are substituted with their unit when the term has one, e.g. "(250\,N)".
+  const unit = term.unit ? `\\,\\text{${term.unit}}` : "";
+  const sym = known ? `(${sigFig(term.value, 4)}${unit})` : term.symbol;
   if (!term.factor) return known ? sigFig(term.value, 4) : sym;
   // A factor may have its own number form (numTex), e.g. moment arm "d_1" → "(0.25)".
   const ftex = numeric && term.factor.numTex ? term.factor.numTex : term.factor.tex;
