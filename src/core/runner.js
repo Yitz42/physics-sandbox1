@@ -24,8 +24,9 @@ const CHALLENGES = { explore, predict, build, debug, "concept-check": conceptChe
 
 // view: the stage page from ui/stage-view.js (it owns the DOM)
 // key:  progress key, e.g. "statics/01-force-vectors/2-predict"
-// next: URL of the next stage, or null
-export function runStage({ stage, view, key, next }) {
+// next: URL of the next stage (or the course page after the last stage)
+// nextLabel: its button text, e.g. "Next stage →"
+export function runStage({ stage, view, key, next, nextLabel = "Next stage →" }) {
   const challenge = CHALLENGES[stage.challenge];
   const solver = stage.solver ? getSolver(stage.solver) : null;
   const memory = {}; // survives new versions during this visit (concept-check uses it)
@@ -80,7 +81,7 @@ export function runStage({ stage, view, key, next }) {
           body: message,
           explanation: stage.explanation,
           buttons: [
-            ...(next ? [{ label: "Next stage →", onClick: goNext, primary: true }] : []),
+            ...(next ? [{ label: nextLabel, onClick: goNext, primary: true }] : []),
             { label: "Play a new version", onClick: newRound },
           ],
         });
@@ -89,7 +90,7 @@ export function runStage({ stage, view, key, next }) {
         // keeps Next stage / Play a new version.
         const ready = button("Continue →", () => {
           el.actions.innerHTML = "";
-          if (next) el.actions.appendChild(button("Next stage →", goNext, "btn btn-play"));
+          if (next) el.actions.appendChild(button(nextLabel, goNext, "btn btn-play"));
           el.actions.appendChild(button("Play a new version", newRound, "btn btn-quiet"));
           openCard();
         }, "btn btn-play");

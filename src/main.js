@@ -34,13 +34,19 @@ async function route() {
     const base = `#/${courseId}/${unitId}/`;
     // Next stage: the next one in this unit, or the first stage of the next unit.
     const nextUnit = units[unitIndex + 1];
-    const next = i + 1 < unit.stages.length ? base + unit.stages[i + 1] : nextUnit ? `#/${courseId}/${nextUnit.id}/${nextUnit.stages[0]}` : null;
+    // After the very last stage, "next" leads back to the course page.
+    let next = i + 1 < unit.stages.length ? base + unit.stages[i + 1] : nextUnit ? `#/${courseId}/${nextUnit.id}/${nextUnit.stages[0]}` : null;
+    let nextLabel = "Next stage →";
+    if (!next) {
+      next = `#/${courseId}`;
+      nextLabel = `Back to ${course.title} →`;
+    }
     const view = createStageView(app, stage, {
       course: { href: `#/${courseId}`, title: course.title },
       unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitIndex + 1}: ${unit.title}` },
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
-    runStage({ stage, view, key: `${courseId}/${stage.id}`, next });
+    runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });
   } catch (err) {
     // Never leave a blank page: show what went wrong and a way back.
     console.error(err);
