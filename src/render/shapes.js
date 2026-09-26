@@ -6,7 +6,7 @@
 //   segments: straight lines ([p, q] in pixels)
 //   labels:   small labels to place later, dodging everything else
 
-import { drawArrow, drawLabel, cssColor } from "./arrows.js";
+import { drawArrow, drawLabel, measureLabel, cssColor } from "./arrows.js";
 import { drawExtraShape } from "./shapes-extra.js";
 
 const ROLE_COLORS = {
@@ -103,7 +103,11 @@ export function drawShape(cv, s, env) {
       ctx.lineWidth = lit ? 3 : 2;
       ctx.fillRect(x - w / 2, y - h / 2, w, h);
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
-      if (s.label) drawLabel(ctx, s.label, x, y, { color: ink, size: 13 });
+      if (s.label) {
+        // Shrink the text to fit inside small boxes (down to 8 px).
+        const size = Math.max(8, Math.min(13, (13 * (w - 6)) / Math.max(1, measureLabel(ctx, s.label, 13))));
+        drawLabel(ctx, s.label, x, y, { color: ink, size });
+      }
       out.boxes.push({ x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2 });
       break;
     }

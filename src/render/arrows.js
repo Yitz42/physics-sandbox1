@@ -99,7 +99,7 @@ export function measureLabel(ctx, label, size = 14, weight = 500) {
 // The rectangle a label covers: { x0, y0, x1, y1 } in pixels.
 export function labelBox(x, y, width, size = 14, align = "center") {
   const x0 = align === "center" ? x - width / 2 : align === "right" ? x - width : x;
-  return { x0: x0 - 3, y0: y - size * 0.8, x1: x0 + width + 3, y1: y + size * 0.55 };
+  return { x0: x0 - 3, y0: y - size * 0.8, x1: x0 + width + 3, y1: y + size * 0.72 };
 }
 
 // Draw a label with subscripts. align: "left" | "center" | "right".
@@ -118,14 +118,15 @@ export function drawLabel(ctx, label, x, y, opts = {}) {
   if (background) {
     ctx.fillStyle = background;
     ctx.globalAlpha = 0.85;
-    ctx.fillRect(cx - 3, y - size * 0.8, width + 6, size * 1.35);
+    ctx.fillRect(cx - 3, y - size * 0.8, width + 6, size * 1.52);
     ctx.globalAlpha = 1;
   }
   ctx.fillStyle = color;
   ctx.textBaseline = "alphabetic";
   for (const p of parts) {
     ctx.font = p.font;
-    ctx.fillText(p.text, cx, p.sub ? y + size * 0.28 : y + size * 0.35);
+    // Subscripts sit below the main text line, like in the equations.
+    ctx.fillText(p.text, cx, p.sub ? y + size * 0.6 : y + size * 0.35);
     cx += p.w;
   }
   ctx.restore();
