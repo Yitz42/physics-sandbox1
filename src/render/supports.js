@@ -42,14 +42,12 @@ export function drawSupportSymbol(cv, s, env) {
     const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
     out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
   };
-  let far = at(0, 12); // where the label goes near
   switch (s.kind) {
     case "pin": {
       poly([p, at(-14, 24), at(14, 24)]);
       hatch(ctx, at(0, 24), t, b, 22);
       ring(p);
       cover([at(-22, 0), at(22, 32)]);
-      far = at(-22, 20);
       break;
     }
     case "roller": {
@@ -59,20 +57,17 @@ export function drawSupportSymbol(cv, s, env) {
       hatch(ctx, at(0, 26), t, b, 20);
       ring(p);
       cover([at(-20, 0), at(20, 34)]);
-      far = at(-20, 18);
       break;
     }
     case "smooth": {
       hatch(ctx, at(0, 7), t, b, 26);
       cover([at(-26, 5), at(26, 15)]);
-      far = at(-26, 12);
       break;
     }
     case "fixed": {
       ctx.lineWidth = 3;
       hatch(ctx, p, t, b, 30);
       cover([at(-30, 0), at(30, 9)]);
-      far = at(-30, 8);
       break;
     }
     case "cable": {
@@ -87,13 +82,17 @@ export function drawSupportSymbol(cv, s, env) {
       const u = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
       hatch(ctx, q, [-u[1], u[0]], u, 16);
       ring(p, 3.5);
-      far = [p[0] + 12 * t[0], p[1] + 12 * t[1]];
       break;
     }
   }
   ctx.restore();
-  // The support's name (A, B …), placed with the other labels so it dodges arrows.
-  if (s.label) out.labels.push({ text: s.label, pos: [far[0] - 8 * Math.sign(t[0] || 1), far[1] + 4], align: "center", size: 14, weight: 700, color: env.ink, plain: true, maxMove: 30 });
+  // The support's name (A, B …) goes centred BELOW the symbol when there's
+  // room; it's placed with the other labels, so it moves if something is there.
+  if (s.label) {
+    const box = out.boxes[0];
+    const pos = box ? [(box.x0 + box.x1) / 2, box.y1 + 12] : [p[0], p[1] + 20];
+    out.labels.push({ text: s.label, pos, align: "center", size: 14, weight: 700, color: env.ink, plain: true, maxMove: 60 });
+  }
   return out;
 }
 

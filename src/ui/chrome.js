@@ -37,16 +37,32 @@ let shownNav = null;
 document.addEventListener("pointerdown", (e) => shownNav && !shownNav.contains(e.target) && shownNav.close());
 
 // The top tab and its menu.
-//   where: { course?, unit?, unitNumber?, stages?: [loaded stage objects], current?: stage file }
+//   where: { course?, unit?, unitNumber?, stages?: [loaded stage objects], current?: stage file,
+//            units?: [loaded units] }
+// On a stage page it offers: Home, back to the unit, the unit's stages.
+// On a unit page (or the course page), given `units`: Home and every unit, to switch unit.
 export function topNav(where = {}) {
-  const { course, unit, unitNumber, stages = [], current } = where;
+  const { course, unit, unitNumber, stages = [], current, units = [] } = where;
   const label = course ? `${course.title} Simulation Lab` : "Engineering Mechanics Sandbox";
   const tab = el("button", { type: "button", className: "topnav-tab", "aria-haspopup": "true", "aria-expanded": "false", textContent: label });
   const menu = el("div", { className: "topnav-menu", role: "menu" });
 
   const link = (href, text, extra = {}) => el("a", { className: "topnav-item", href, role: "menuitem", textContent: text, ...extra });
   menu.appendChild(link("#/", "⌂  Home"));
-  if (course && unit) {
+  if (course && units.length && !current) {
+    menu.appendChild(el("div", { className: "topnav-heading", textContent: `${course.title} units` }));
+    units.forEach((u, i) => {
+      const { done, total } = unitProgress(course, u);
+      const here = unit && u.id === unit.id;
+      const item = el("a", { className: "topnav-item topnav-stage" + (here ? " is-current" : ""), href: `#/${course.id}/${u.id}`, role: "menuitem" }, [
+        el("span", { className: "topnav-tick" + (done === total ? " done" : ""), textContent: done === total ? "✓" : "" }),
+        el("span", { textContent: `${i + 1}. ${u.title}` }),
+        el("span", { className: "topnav-count", textContent: `${done}/${total}` }),
+      ]);
+      if (here) item.setAttribute("aria-current", "page");
+      menu.appendChild(item);
+    });
+  } else if (course && unit) {
     menu.appendChild(link(`#/${course.id}/${unit.id}`, `←  Back to Unit ${unitNumber}: ${unit.title}`));
     if (stages.length) {
       menu.appendChild(el("div", { className: "topnav-heading", textContent: `Unit ${unitNumber} stages` }));

@@ -9,6 +9,25 @@
 
 import { add, scale, dot, distToSegment, mag, sub } from "../core/vector.js";
 
+// The direction of the beam (a polyline, metres) that point P lies on, or null.
+export function beamDirAt(points = [], P) {
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], b = points[i];
+    const l = mag(sub(b, a));
+    if (l > 0 && distToSegment(P, a, b) < 1e-6) return scale(sub(b, a), 1 / l);
+  }
+  return null;
+}
+
+// How many pixels short of a point on a beam's centre line an arrow along
+// `dir` must stop so that it just touches the beam's surface (`half`: half the
+// beam's drawn thickness). A slanted arrow meets the surface further back; one
+// running along the beam meets its rounded end.
+export function surfaceGap(dir, beamDir, half) {
+  const sin = Math.abs(dir[0] * beamDir[1] - dir[1] * beamDir[0]) / (mag(dir) || 1);
+  return sin < 0.3 ? half : Math.min(half / sin, 3 * half);
+}
+
 // Where to draw a force arrow of `length` acting at point `at` in direction
 // `dir`, keeping it OUTSIDE the body: `outward` points away from the body at
 // that point. A force pointing into the body is drawn pushing on it (arrowhead

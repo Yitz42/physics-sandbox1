@@ -264,6 +264,7 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .topnav-item.is-disabled { color: var(--c-faint); cursor: default; }
 .topnav-heading { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted); padding: 8px 10px 2px; }
 .topnav-divider { border-top: 1px solid var(--c-line); margin: 6px 4px; }
+.topnav-count { margin-left: auto; padding-left: 12px; font-size: 13px; color: var(--c-muted); font-variant-numeric: tabular-nums; }
 .topnav-tick { width: 16px; color: var(--c-good); font-weight: 700; text-align: center; flex: none; }
 
 /* Title and the unit's progress bar */

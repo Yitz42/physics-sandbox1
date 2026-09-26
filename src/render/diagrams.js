@@ -2,7 +2,7 @@
 //
 // Subjects describe WHAT to draw (see e.g. subjects/statics/particle-scene.js);
 // render/shapes.js decides HOW each shape looks. Shape types:
-//   arrow    { id, from, to, label, role }   role: known | unknown | resultant |
+//   arrow    { id, from, to, label, role, headGap?, tailGap? }   role: known | unknown | resultant |
 //                                            component | target | wrong | student | shadow
 //   line     { id?, from, to, style }        style: cable | reference | dashed
 //   support  { from, to, normal }            hatched ground/ceiling/wall
@@ -29,6 +29,7 @@
 import { labelPosition, drawLabel, cssColor } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
 import { placeLabels, placeLegend } from "./labels.js";
+import { beamDirAt, surfaceGap } from "./fbd.js";
 
 export { roleColor };
 
@@ -40,6 +41,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const { ctx } = cv;
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
+  shapes = touchBeams(shapes);
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
   const rank = (s) => ORDER.indexOf(s.layer || s.type);
@@ -61,8 +63,8 @@ export function drawScene(cv, shapes, opts = {}) {
     wanted.push(...out.labels);
     if (s.type === "point" && s.label) {
       const [x, y] = cv.toScreen(s.at);
-      // Point names go first, so they get their preferred spot (below-left).
-      wanted.unshift({ text: s.label, pos: [x - 10, y + 17], align: "right", size: 14, weight: 700, color: env.ink, plain: true });
+      // Point names go first, so they get their preferred spot: just below the point.
+      wanted.unshift({ text: s.label, pos: [x, y + 20], align: "center", size: 14, weight: 700, color: env.ink, plain: true });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
@@ -116,6 +118,27 @@ export function drawScene(cv, shapes, opts = {}) {
     const onPlate = l.box && obstacles.some((t) => t.soft && overlaps(l.box, t));
     drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align, background: l.plain || onPlate ? null : env.paper });
   }
+}
+
+// An arrow that ends (or starts) on a beam's centre line stops at the beam's
+// surface instead, so a push reads as pushing ON the beam, not into it.
+// (Shapes that set headGap / tailGap themselves are left alone.)
+function touchBeams(shapes) {
+  const beams = shapes.filter((s) => s.type === "beam");
+  if (!beams.length) return shapes;
+  return shapes.map((s) => {
+    if (s.type !== "arrow" || s.headGap != null || s.tailGap != null) return s;
+    const dir = [s.to[0] - s.from[0], s.to[1] - s.from[1]];
+    const gapAt = (P) => {
+      for (const b of beams) {
+        const d = beamDirAt(b.points, P);
+        if (d) return surfaceGap(dir, d, ((b.width || 12) + 3) / 2); // beams are drawn width + 3 px thick
+      }
+      return 0;
+    };
+    const headGap = gapAt(s.to), tailGap = gapAt(s.from);
+    return headGap || tailGap ? { ...s, headGap, tailGap } : s;
+  });
 }
 
 // The corner list of values: a light box with one coloured line per force.

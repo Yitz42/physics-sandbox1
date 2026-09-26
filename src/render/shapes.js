@@ -37,7 +37,18 @@ export function drawShape(cv, s, env) {
   ctx.save();
   switch (s.type) {
     case "arrow": {
-      const a = S(s.from), b = S(s.to);
+      let a = S(s.from), b = S(s.to);
+      // headGap / tailGap (pixels): stop short of the point, e.g. so an arrow
+      // pushing on a beam ends ON its surface instead of at its centre line.
+      if (s.headGap || s.tailGap) {
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        const hg = s.headGap || 0, tg = s.tailGap || 0;
+        if (len > hg + tg + 12) {
+          const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+          a = [a[0] + u[0] * tg, a[1] + u[1] * tg];
+          b = [b[0] - u[0] * hg, b[1] - u[1] * hg];
+        }
+      }
       drawArrow(ctx, a, b, {
         color: roleColor(s.role), glow: lit,
         width: s.role === "component" ? 1.8 : 2.8,

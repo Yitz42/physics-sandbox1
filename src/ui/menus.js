@@ -49,7 +49,7 @@ export function renderCourse(root, course, units) {
     ]));
   });
   root.append(
-    topNav({ course }),
+    topNav({ course, units }),
     el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), mixed(course.description, "lead")]),
     list,
     el("footer", { className: "page-footer" }, [
@@ -64,7 +64,8 @@ export function renderCourse(root, course, units) {
 }
 
 // stages: loaded stage objects, in order
-export function renderUnit(root, course, unit, unitNumber, stages) {
+// units: every unit of the course (the top menu lets the student switch unit)
+export function renderUnit(root, course, unit, unitNumber, stages, units = []) {
   root.innerHTML = "";
   const goals = el("ul", { className: "goals" }, (unit.goals || []).map((g) => {
     const li = el("li");
@@ -85,7 +86,7 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
   const concept = el("p", { className: "lead" });
   renderMixed(concept, unit.concept);
   root.append(
-    topNav({ course, unit, unitNumber, stages }),
+    topNav({ course, unit, unitNumber, stages, units }),
     el("header", { className: "page-header unit-header" }, [
       el("div", {}, [el("div", { className: "unit-num", textContent: `Unit ${unitNumber}` }), el("h1", { textContent: unit.title })]),
       progressBar(course, unit),

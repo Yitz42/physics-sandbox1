@@ -26,7 +26,7 @@ async function route() {
     const unitIndex = course.units.indexOf(unitId);
     const unit = units[unitIndex];
     if (!unit) throw new Error(`No unit called "${unitId}" in ${course.title}.`);
-    if (!stageFile) return renderUnit(app, course, unit, unitIndex + 1, await loadUnitStages(courseId, unit));
+    if (!stageFile) return renderUnit(app, course, unit, unitIndex + 1, await loadUnitStages(courseId, unit), units);
 
     const i = unit.stages.indexOf(stageFile);
     if (i < 0) throw new Error(`No stage called "${stageFile}" in ${unit.title}.`);
