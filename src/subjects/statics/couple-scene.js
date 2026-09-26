@@ -75,8 +75,11 @@ export function coupleScene(setup, result, opts = {}) {
     shapes.push({ type: "moment", center: m.at, sense: m.sense, rPx: 30, role: "known", label: `${m.symbol} = ${format(m.magnitude, "N·m")}`, labelMove: 0 });
   }
   if (setup.target) {
+    // A goal moment, e.g. a motor's couple: a motor drawing (target.motor) with
+    // the curved arrow around its shaft.
     const t = setup.target;
-    shapes.push({ type: "moment", center: t.at, sense: Math.sign(t.value), rPx: 36, role: "target", label: `goal: ${Math.abs(t.value)} N·m ${turn(t.value)}` });
+    if (t.motor) shapes.push({ type: "motor", at: t.at });
+    shapes.push({ type: "moment", center: t.at, sense: Math.sign(t.value), rPx: t.motor ? 42 : 36, role: "target", label: `goal: ${Math.abs(t.value)} N·m ${turn(t.value)}` });
   }
 
   // Each couple: its two lines of action and the distance d between them.
@@ -173,6 +176,13 @@ export function coupleScene(setup, result, opts = {}) {
 
   if (opts.guesses) shapes.push(...coupleShadow(setup, result, opts.guesses, { k, size, center: momentCenter(setup) }));
   if (about) shapes.push({ type: "point", at: setup.about.at, label: setup.about.label || "P", style: "ring" });
+  // A curved moment arrow drawn on a plate (the student's "your couple", a
+  // revealed couple moment …) stays inside that plate.
+  for (const s of shapes) {
+    if (s.type !== "moment") continue;
+    const p = (setup.plates || []).find((q) => between(s.center[0], q.from[0], q.to[0]) && between(s.center[1], q.from[1], q.to[1]));
+    if (p) s.maxR = 0.4 * Math.min(Math.abs(p.to[0] - p.from[0]), Math.abs(p.to[1] - p.from[1]));
+  }
   return setup.divider != null ? sideBySide(setup, result, shapes, opts) : shapes;
 }
 
@@ -206,6 +216,8 @@ function segmentGap(p1, p2, q1, q2) {
   if (side(p1, p2, q1) * side(p1, p2, q2) < 0 && side(q1, q2, p1) * side(q1, q2, p2) < 0) return 0;
   return Math.min(distToSegment(p1, q1, q2), distToSegment(p2, q1, q2), distToSegment(q1, p1, p2), distToSegment(q2, p1, p2));
 }
+
+const between = (v, a, b) => v >= Math.min(a, b) && v <= Math.max(a, b);
 
 // Lines of action of a couple's two forces and the distance d between them.
 function separation(setup, c, size) {

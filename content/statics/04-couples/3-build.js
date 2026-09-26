@@ -19,7 +19,7 @@ export default {
   solver: "statics.couple",
   title: "Make an Equivalent Couple",
   instructions:
-    "A motor turns the bar with a **60 N·m counterclockwise couple** (the green curved arrow). " +
+    "A motor (left) turns the bar with a **60 N·m counterclockwise couple** (the green curved arrow). " +
     "Replace it with two forces, one at each end of the bar (A and B), that have exactly the same effect. Press **Test** to check.",
   setup: {
     analysis: "couple",
@@ -27,10 +27,10 @@ export default {
     about: { at: [0.2, 0.15], label: "O" }, // the middle of the bar
     body: { points: [[0, 0], [0.4, 0.3]] }, // a bar from A to B
     forceScale: 800,
-    target: { value: TARGET, at: [-0.7, 0.15] },
-    texts: [{ at: [-0.7, -0.05], text: "motor's couple" }],
+    target: { value: TARGET, at: [-0.7, 0.15], motor: true }, // a motor, turning 60 N·m counterclockwise
+    texts: [{ at: [-0.7, -0.13], text: "the motor's couple" }],
     divider: -0.225, // a soft line between the motor's couple and the bar, each centred in its half
-    frameY: [-0.2, 0.45], // the height to show (plus a margin): room for arrows up to 250 N
+    frameY: [-0.25, 0.45], // the height to show (plus a margin): room for arrows up to 250 N and the motor
     dims: [
       { from: [0, -0.1], to: [0.4, -0.1], side: -1 },
       { from: [0.52, 0], to: [0.52, 0.3], side: -1 },

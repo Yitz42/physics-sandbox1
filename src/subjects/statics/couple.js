@@ -30,7 +30,8 @@
 //   line between two side-by-side parts; frameY: [ymin, ymax] the height to
 //   show, frameMargin: space around each part), momentAt (where the
 //   total moment's curved arrow goes), showSeparation / hideSeparation (d between
-//   each couple's lines), target: { value, at } (a goal moment, build stages)
+//   each couple's lines), target: { value, at, motor? } (a goal moment, build stages;
+//   motor: true draws a motor with the curved arrow around its shaft)
 // }
 //
 // result.values:

@@ -32,7 +32,9 @@ export function mount(ctx) {
   const required = Math.min(stage.required || 3, pool.length);
   // ctx.memory survives "new versions", so progress through the pool is kept.
   const mem = ctx.memory;
-  if (!mem.order) Object.assign(mem, { order: shuffle(pool.map((_, i) => i)), pos: 0, correct: 0 });
+  if (!mem.order) Object.assign(mem, { order: shuffle(pool.map((_, i) => i)), pos: 0, correct: 0, goal: required });
+  // Playing again after finishing adds another set: "Question 4 of 6", and so on.
+  if (mem.correct >= mem.goal) mem.goal += required;
 
   const progress = el("div", { className: "cc-progress" });
   const prompt = el("div", { className: "cc-prompt" });
@@ -47,13 +49,13 @@ export function mount(ctx) {
 
   function show() {
     const q = current();
-    progress.textContent = `Question ${mem.correct + 1} of ${required}`;
+    progress.textContent = `Question ${mem.correct + 1} of ${mem.goal}`;
     renderMixed(prompt, q.prompt);
     choices.innerHTML = "";
     actions.innerHTML = "";
     ctx.el.feedback.innerHTML = "";
     ctx.el.explanation.innerHTML = "";
-    if (mem.correct < required) ctx.showHints(); // fresh hints for the new question
+    if (mem.correct < mem.goal) ctx.showHints(); // fresh hints for the new question
     // A picture helps many questions; hide the figure when there isn't one.
     const setup = q.setup || ctx.setup;
     ctx.el.figure.hidden = !setup;
@@ -83,7 +85,7 @@ export function mount(ctx) {
       mem.pos++;
       showMessage(ctx.el.feedback, "good", "Correct ✓", q.explanation || "");
       actions.innerHTML = "";
-      if (mem.correct >= required) {
+      if (mem.correct >= mem.goal) {
         ctx.finish();
       } else {
         actions.appendChild(button("Next question →", show, "btn"));
