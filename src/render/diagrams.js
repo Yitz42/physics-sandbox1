@@ -112,11 +112,11 @@ export function drawScene(cv, shapes, opts = {}) {
     drawLegend(ctx, legend, env);
   }
 
+  // Labels are drawn as plain text, with no box behind them: a box never quite
+  // matches the picture's shaded background, and the placement above already
+  // keeps labels clear of lines and arrows.
   for (const l of placed) {
-    // Labels normally get a white box behind them, but not on top of a plate
-    // (a soft obstacle): there the box would hide the plate, and plain text reads fine.
-    const onPlate = l.box && obstacles.some((t) => t.soft && overlaps(l.box, t));
-    drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align, background: l.plain || onPlate ? null : env.paper });
+    drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align });
   }
 }
 
@@ -154,9 +154,4 @@ function drawLegend(ctx, legend, env) {
   ctx.strokeRect(box.x0 + 0.5, box.y0 + 0.5, box.x1 - box.x0 - 1, box.y1 - box.y0 - 1);
   ctx.restore();
   for (const l of lines) drawLabel(ctx, l.text, l.x, l.y, { color: l.color, size, align: "left" });
-}
-
-// Do two pixel boxes { x0, y0, x1, y1 } overlap?
-function overlaps(a, b) {
-  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 }

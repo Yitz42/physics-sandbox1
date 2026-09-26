@@ -23,7 +23,7 @@ export default {
     forces: [{ id: "P", symbol: "P", magnitude: 500, direction: "down", at: [7, 0] }],
     dims: [{ from: [0, -0.8], to: [7, -0.8] }],
   },
-  view: { xmin: -0.7, xmax: 8.2, ymin: -1.6, ymax: 2.6 },
+  view: { xmin: -0.7, xmax: 8.2, ymin: -1.6, ymax: 3.4 },
   vary: [
     { path: "loads.#w.w.0", min: 200, max: 400, step: 50 },
     { path: "loads.#w.w.1", min: 700, max: 1000, step: 50 },

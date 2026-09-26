@@ -30,7 +30,7 @@ export default {
     loads: [{ id: "g", shape: "linear", from: 0, to: 4, w: [1000, 1000], symbols: ["w_F", "w_B"] }],
     dims: [{ from: [0, -0.62], to: [AXLE, -0.62], label: "axle: 1.6 m" }],
   },
-  view: { xmin: -0.5, xmax: 4.5, ymin: -1.4, ymax: 1.9 },
+  view: { xmin: -0.5, xmax: 4.5, ymin: -1.4, ymax: 2.3 },
   editable: [
     { path: "loads.#g.w.0", label: "w at the front, w_F", min: 0, max: 3000, step: 100, unit: "N/m" },
     { path: "loads.#g.w.1", label: "w at the back, w_B", min: 0, max: 3000, step: 100, unit: "N/m" },

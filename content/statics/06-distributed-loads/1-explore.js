@@ -22,7 +22,7 @@ export default {
     resultantDimOffset: -0.45,
     loads: [{ id: "w", shape: "linear", from: 0, to: 6, w: [200, 600] }],
   },
-  view: { xmin: -0.7, xmax: 6.7, ymin: -0.9, ymax: 2.6 },
+  view: { xmin: -0.7, xmax: 6.7, ymin: -0.9, ymax: 3.0 },
   editable: [
     { path: "loads.#w.w.0", label: "w at the left end", min: 0, max: 1200, step: 100, unit: "N/m" },
     { path: "loads.#w.w.1", label: "w at the right end", min: 0, max: 1200, step: 100, unit: "N/m" },

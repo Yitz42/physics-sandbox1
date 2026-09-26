@@ -18,14 +18,16 @@ export function unitProgress(course, unit) {
 // .refresh() on it after a stage is completed.
 export function progressBar(course, unit) {
   const fill = el("div", { className: "progress-fill" });
-  const text = el("div", { className: "progress-text" });
+  // "67%" and " complete" are separate so small screens can show just "67%".
+  const pct = el("span");
+  const text = el("div", { className: "progress-text" }, [pct, el("span", { className: "progress-word", textContent: "complete" })]);
   const bar = el("div", { className: "progress-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100" }, [fill, text]);
   bar.refresh = () => {
     const { done, total } = unitProgress(course, unit);
-    const pct = total ? Math.round((100 * done) / total) : 0;
-    fill.style.width = `${pct}%`;
-    text.textContent = `${pct}% complete`;
-    bar.setAttribute("aria-valuenow", String(pct));
+    const value = total ? Math.round((100 * done) / total) : 0;
+    fill.style.width = `${value}%`;
+    pct.textContent = `${value}%`;
+    bar.setAttribute("aria-valuenow", String(value));
     bar.title = `${done} of ${total} stages in this unit complete`;
   };
   bar.refresh();

@@ -79,13 +79,13 @@ export function distributedScene(setup, result, opts = {}) {
   const beam = setup.body ? setup.body.points : [[Math.min(O[0], ...ends), y], [Math.max(O[0], ...ends), y]];
   shapes.push({ type: "beam", points: beam });
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });
-  for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(Math.abs(d.to[0] - d.from[0]) || Math.abs(d.to[1] - d.from[1]), "m"), labelSide: d.side || 1 });
+  for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(Math.abs(d.to[0] - d.from[0]) || Math.abs(d.to[1] - d.from[1]), "m"), labelSide: d.side || 1, labelOn: true });
 
   // setup.loadDims: a dimension under each load, e.g. "L = 4 m".
   if (setup.loadDims) {
     for (const l of setup.loads || []) {
       const dy = (l.y ?? 0) + (setup.loadDimOffset ?? -0.08 * size);
-      shapes.push({ type: "dim", from: [l.from, dy], to: [l.to, dy], label: `${l.spanSymbol || "L"} = ${format(l.to - l.from, "m")}`, labelSide: 1 });
+      shapes.push({ type: "dim", from: [l.from, dy], to: [l.to, dy], label: `${l.spanSymbol || "L"} = ${format(l.to - l.from, "m")}`, labelSide: 1, labelOn: true });
     }
   }
   // The pieces a load is split into: always (setup.showParts), or once the answer is shown.
@@ -102,12 +102,21 @@ export function distributedScene(setup, result, opts = {}) {
     shapes.push({ type: "arrow", id: f.id, from: [tip[0], tip[1] + (up ? -1 : 1) * len(F)], to: tip, role: "known", label: `${f.symbol} = ${format(F, "N")}` });
   }
 
-  // The pieces' resultants (grey, dashed), drawn above the load down to the beam.
-  const reach = top - y + 0.14 * size; // how far above the beam resultant arrows start
+  // The pieces' resultants (grey, dashed), from just above the load down to the
+  // beam, and where each acts: a dimension x̃ from O, one row per piece, above
+  // the arrows (dashed guide lines lead up to it from O and from each arrow).
+  let reach = top - y + 0.14 * size; // how far above the beam the resultant starts
   if (showParts && res.parts.length > 1) {
-    for (const p of res.parts) {
-      shapes.push({ type: "arrow", id: p.id, from: [p.x, y + reach], to: [p.x, y], role: "component", label: `${plainSym(p.symbol)} = ${format(p.F, "N")}` });
-    }
+    const tail = top + 0.04 * size;
+    const row = (i) => top + (0.1 + 0.065 * i) * size;
+    res.parts.forEach((p, i) => {
+      shapes.push({ type: "arrow", id: p.id, from: [p.x, tail], to: [p.x, y], role: "component", label: `${plainSym(p.symbol)} = ${format(p.F, "N")}` });
+      shapes.push({ type: "line", from: [p.x, tail], to: [p.x, row(i) + 0.02 * size], style: "reference" });
+      shapes.push({ type: "dim", from: [O[0], row(i)], to: [p.x, row(i)], label: `${plainSym(p.xSymbol.replace("\\tilde{x}", "x̃"))} = ${format(Math.abs(p.x - O[0]), "m")}`, labelOn: true });
+    });
+    const last = row(res.parts.length - 1);
+    shapes.push({ type: "line", from: O, to: [O[0], last + 0.02 * size], style: "reference" });
+    reach = last - y + 0.06 * size; // F_R starts above the dimensions
   }
   // The single resultant, where it must act.
   if ((opts.reveal || setup.showResultant) && v.pos != null) {

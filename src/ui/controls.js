@@ -44,6 +44,8 @@ export function slider(getSetup, spec, onChange) {
   const sync = () => {
     const v = getPath(getSetup(), spec.path);
     input.value = v;
+    // How far along the slider is, for the filled part of its track (style.css).
+    input.style.setProperty("--fill", `${(100 * (v - spec.min)) / (spec.max - spec.min || 1)}%`);
     if (document.activeElement !== box) box.value = +Number(v).toFixed(3); // don't overwrite while typing
   };
   const apply = (v) => {
