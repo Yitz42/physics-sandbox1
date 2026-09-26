@@ -15,13 +15,26 @@ import { directionOf, magnitudeOf } from "./particle.js";
 
 const MAX_LEN = 2.3; // very wrong answers are drawn capped (so they stay in view), still pointing their way
 
-const MIN_LEN = 0.45; // tiny answers still get a visible arrow (the label gives the real size)
+const MIN_LEN = 0.25; // tiny answers still get a visible arrow (the label gives the real size)
 
+// An arrow drawn shorter than its true size says so in its label, so a
+// capped arrow never looks like a smaller answer than the student typed.
 function shadowArrow(at, v, k, label, id, minLen = MIN_LEN) {
   const m = mag(v);
   if (m < 1e-9) return [];
   const len = Math.max(minLen, Math.min(MAX_LEN, m * k));
-  return [{ type: "arrow", id, from: at, to: add(at, scale(v, len / m)), role: "shadow", label }];
+  const note = m * k > MAX_LEN ? " (drawn shorter)" : "";
+  return [{ type: "arrow", id, from: at, to: add(at, scale(v, len / m)), role: "shadow", label: label + note }];
+}
+
+// Smallest angle (degrees) between vector v and any of `others`.
+function nearestAngle(v, others) {
+  let best = 180;
+  for (const w of others) {
+    const c = (v[0] * w[0] + v[1] * w[1]) / (mag(v) * mag(w) || 1);
+    best = Math.min(best, (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI);
+  }
+  return best;
 }
 
 // guesses: { quantityName: number } typed by the student
@@ -64,9 +77,11 @@ export function shadowShapes(setup, result, at, guesses, k) {
     const net = sum(vectors);
     const biggest = Math.max(...vectors.map(mag));
     if (mag(net) > 0.005 * biggest) {
-      // Start it a little to the side, so it isn't hidden under a real arrow.
-      const side = scale([-net[1], net[0]], 0.22 / mag(net));
-      shapes.push(...shadowArrow(add(at, side), net, k, `ΣF ≠ 0 with your numbers (${format(mag(net), "N")})`, "shadow-net"));
+      // It starts at the point like every other force on the FBD — unless it
+      // would lie on top of another arrow; then it starts a little to the side.
+      const hidden = nearestAngle(net, vectors) < 12;
+      const start = hidden ? add(at, scale([-net[1], net[0]], 0.22 / mag(net))) : at;
+      shapes.push(...shadowArrow(start, net, k, `ΣF = ${format(mag(net), "N")} ≠ 0`, "shadow-net"));
     }
   }
 
