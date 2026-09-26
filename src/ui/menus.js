@@ -6,6 +6,14 @@ import { getStatus, resetAll } from "../core/progress.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
 
 // "practice" (answer was shown) is an internal record: students just see "not done yet".
+// A block of content text that may contain math like $\\Sigma F_x = 0$.
+// (Plain textContent would show the dollar signs and backslashes.)
+function mixed(text, className = "") {
+  const div = el("div", { className });
+  renderMixed(div, text || "");
+  return div;
+}
+
 const ICON = { none: "○", practice: "○", complete: "●" };
 const ICON_TITLE = { none: "Not done yet", practice: "Not done yet", complete: "Complete" };
 
@@ -19,7 +27,7 @@ export function renderHome(root, courses) {
     el("div", { className: "card-grid" }, courses.map((c) =>
       el("a", { className: "card" + (c.comingSoon ? " card-disabled" : ""), href: c.comingSoon ? "#/" : `#/${c.id}` }, [
         el("h2", { textContent: c.title }),
-        el("p", { textContent: c.description }),
+        mixed(c.description),
         c.comingSoon ? el("span", { className: "chip", textContent: "Coming later" }) : null,
       ]))),
   );
@@ -34,13 +42,13 @@ export function renderCourse(root, course, units) {
     const done = keys.filter((k) => getStatus(k) === "complete").length;
     list.appendChild(el("a", { className: "unit-card", href: `#/${course.id}/${u.id}` }, [
       el("div", { className: "unit-num", textContent: `Unit ${i + 1}` }),
-      el("div", { className: "unit-text" }, [el("h2", { textContent: u.title }), el("p", { textContent: u.concept })]),
+      el("div", { className: "unit-text" }, [el("h2", { textContent: u.title }), mixed(u.concept)]),
       el("div", { className: "unit-progress", textContent: `${done} / ${keys.length} complete` }),
     ]));
   });
   root.append(
     el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" })]),
-    el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), el("p", { className: "lead", textContent: course.description })]),
+    el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), mixed(course.description, "lead")]),
     list,
     el("footer", { className: "page-footer" }, [
       button("Reset my progress", () => {
