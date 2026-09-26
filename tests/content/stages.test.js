@@ -245,3 +245,17 @@ test("Unit 5 solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 N·m", () =>
   close(r.values["R.y"], -430);
   close(r.values.M, -448);
 });
+
+test("every unit has a textbook chapter to read, with a web link", async () => {
+  for (const c of await loadCourseList()) {
+    if (c.comingSoon) continue;
+    const course = await loadCourse(c.id);
+    if (!course.reading) continue;
+    ok(/^https:\/\//.test(course.reading.book.url), "the book needs an https link");
+    for (const u of course.units) {
+      const r = course.reading.units[u];
+      ok(r && r.chapter, `unit ${u} has no chapter in reading.js`);
+      if (r.url) ok(/^https:\/\//.test(r.url), `unit ${u}: chapter link must be https`);
+    }
+  }
+});

@@ -82,10 +82,23 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
   });
   const concept = el("p", { className: "lead" });
   renderMixed(concept, unit.concept);
+  // "Read more": the matching textbook chapter, if the course names a book
+  // (content/<course>/reading.js). It opens in a new tab, so the game stays put.
+  const reading = course.reading && course.reading.units && course.reading.units[unit.id];
+  const book = course.reading && course.reading.book;
+  const readMore = reading && book ? el("div", { className: "read-more" }, [
+    el("span", { className: "read-more-icon", textContent: "📖" }),
+    el("div", {}, [
+      el("div", { className: "read-more-title", textContent: "Read more in the textbook" }),
+      el("a", { href: reading.url || book.url, target: "_blank", rel: "noopener", textContent: reading.chapter }),
+      el("div", { className: "read-more-book", textContent: `${book.title}, by ${book.authors} (free online)` }),
+    ]),
+  ]) : null;
   root.append(
     el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title })]),
     el("header", { className: "page-header" }, [el("div", { className: "unit-num", textContent: `Unit ${unitNumber}` }), el("h1", { textContent: unit.title }), concept]),
     el("h3", { textContent: "You will be able to:" }), goals,
     el("h3", { textContent: "Stages" }), list,
+    readMore,
   );
 }
