@@ -24,11 +24,11 @@ export default {
       { id: "F1", symbol: "F_1", magnitude: 300, direction: { slope: [4, -3] }, at: [0.8, 0.6], pointLabel: "A" },
       { id: "F2", symbol: "F_2", magnitude: 250, direction: "down", at: [0.4, 0.6], pointLabel: "B", push: true },
     ],
-    moments: [{ id: "M1", symbol: "M", magnitude: 60, sense: -1, at: [0.42, 0.22] }],
+    moments: [{ id: "M1", symbol: "M", magnitude: 60, sense: -1, at: [0, 0.3] }], // a couple moment acting on the upright
     dims: [
       { from: [0, -0.12], to: [0.4, -0.12] },
       { from: [0.4, -0.12], to: [0.8, -0.12] },
-      { from: [-0.16, 0], to: [-0.16, 0.6], side: -1 },
+      { from: [-0.32, 0], to: [-0.32, 0.6], side: -1 },
     ],
   },
   view: { xmin: -0.5, xmax: 1.4, ymin: -0.45, ymax: 1.05 },

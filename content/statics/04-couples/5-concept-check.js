@@ -1,6 +1,7 @@
 // Unit 4, stage 5 — concept check: what a couple is, and what it does.
 
-// A plate with a couple on it, for the picture questions.
+// A plate with a couple on it, for the picture questions. The forces act at
+// opposite corners and point away from the plate, so no arrow lies on its edge.
 const plate = (direction, at, opposite) => ({
   analysis: "couple",
   plates: [{ from: [0, 0], to: [0.5, 0.3] }],
@@ -37,7 +38,7 @@ export default {
     },
     {
       prompt: "In the picture, what is the **net force** of the couple on the plate?",
-      setup: plate("up", [0.5, 0.15], [0, 0.15]),
+      setup: plate("up", [0.5, 0.3], [0, 0]), // up at the top-right corner, down at the bottom-left
       options: [
         { text: "Zero", correct: true },
         { text: "$2F$ = 200 N", feedback: "The two forces point in opposite directions, so they cancel as forces." },
@@ -48,7 +49,7 @@ export default {
     },
     {
       prompt: "In the picture, which way does the couple turn the plate?",
-      setup: plate("left", [0.25, 0.3], [0.25, 0]),
+      setup: plate("left", [0, 0.3], [0.5, 0]), // left at the top-left corner, right at the bottom-right
       options: [
         { text: "Counterclockwise, so $M$ is positive", correct: true },
         { text: "Clockwise, so $M$ is negative", feedback: "The top is pushed left and the bottom right: picture a steering wheel turned that way. It turns counterclockwise." },

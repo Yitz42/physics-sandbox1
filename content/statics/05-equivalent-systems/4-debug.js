@@ -26,7 +26,7 @@ export default {
       { id: "F2", symbol: "F_2", magnitude: 200, direction: { angle: 60, from: "+x", toward: "+y" }, at: [3, 0] },
       { id: "F3", symbol: "F_3", magnitude: 250, direction: "down", at: [5, 0], push: true },
     ],
-    moments: [{ id: "M1", symbol: "M_1", magnitude: 400, sense: 1, at: [4, 0.35] }],
+    moments: [{ id: "M1", symbol: "M_1", magnitude: 400, sense: 1, at: [4, 0] }], // a couple moment acting on the beam at x = 4 m
     dims: [
       { from: [0, -0.3], to: [1, -0.3] },
       { from: [1, -0.3], to: [3, -0.3] },
