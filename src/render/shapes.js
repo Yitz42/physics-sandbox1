@@ -162,7 +162,7 @@ export function drawShape(cv, s, env) {
       // diagrams (e.g. the space diagram and the FBD). Labels stay on their side.
       const [x] = S([s.x, 0]);
       ctx.strokeStyle = faint;
-      ctx.globalAlpha = 0.6;
+      ctx.globalAlpha = 0.3; // very light: it separates, it shouldn't draw the eye
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, 8);

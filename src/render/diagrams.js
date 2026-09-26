@@ -17,7 +17,8 @@
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
-//   divider  { x }                           soft grey vertical line between two diagrams;
+//   divider  { x, from?, to? }               soft grey vertical line between two diagrams (from/to only
+//                                            widen the fitted view, to frame the diagrams evenly);
 //                                            every label stays on its own side of it
 //
 // Arrow labels are placed last, each moved to a free spot if its first

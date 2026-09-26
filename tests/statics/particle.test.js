@@ -185,3 +185,17 @@ test("shadow: tensions that are too small leave ΣF pointing down (the crate wou
   const exact = shadowShapes(s, solveParticle(s), [0, 0], { T_AB: 430.88, T_AC: 527.73 }, 1 / 600);
   ok(!exact.some((x) => x.id === "shadow-net"), "correct tensions should balance");
 });
+
+test("picture: the space diagram and the FBD are each centred in equal halves, split by a divider", async () => {
+  const { particleScene } = await import("../../src/subjects/statics/particle-scene.js");
+  const { crateSetup } = await import("../../content/statics/02-particle-equilibrium/crate.js");
+  const shapes = particleScene(crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }), null, {});
+  const div = shapes.find((s) => s.type === "divider");
+  const fbdPoint = shapes.filter((s) => s.type === "point").pop().at;
+  // Left half from div.from to the divider, right half from the divider to div.to: equal widths.
+  close(div.x - div.from[0], div.to[0] - div.x);
+  close(fbdPoint[0], (div.x + div.to[0]) / 2, 1e-9, "FBD point in the middle of the right half:");
+  // Space diagram: its left- and right-most points are equally far from the middle of the left half.
+  const xs = shapes.filter((s) => s !== div && s.type !== "divider").flatMap((s) => [s.at, s.from, s.to].filter(Boolean)).map((p) => p[0]).filter((x) => x < div.x);
+  close((Math.min(...xs) + Math.max(...xs)) / 2, (div.from[0] + div.x) / 2, 1e-9, "space diagram centred in the left half:");
+});

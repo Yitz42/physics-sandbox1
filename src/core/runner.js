@@ -6,6 +6,8 @@
 //   • solved without help → stage "complete", offer the next stage
 //   • answer was shown     → stage "needs practice", offer a NEW version
 //                            (different numbers from the stage's `vary` rules)
+// Every version — the first one too — gets random numbers from `vary`, so
+// students sitting side by side get different questions and can't copy.
 
 import { getSolver } from "./registry.js";
 import { getStatus, setStatus, STATUS } from "./progress.js";
@@ -34,10 +36,9 @@ export function runStage({ stage, view, key, next, nextLabel = "Next stage →" 
   let lastSetup = null;
 
   function startRound() {
-    // Students who needed help last time start with a fresh version.
-    const fresh = round > 0 || getStatus(key) === STATUS.PRACTICE;
+    // Random numbers for every version (never the same as the last one).
     let setup = stage.setup ? clone(stage.setup) : null;
-    if (setup && fresh && stage.vary) setup = makeVariant(stage.setup, stage.vary, Math.random, lastSetup);
+    if (setup && stage.vary) setup = makeVariant(stage.setup, stage.vary, Math.random, lastSetup);
     lastSetup = setup;
 
     const el = view.resetBody(stage);

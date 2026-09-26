@@ -7,8 +7,8 @@
 // Step 2: choose how to fix it.
 //
 // Stage fields used (inside stage.debug):
-//   view, intro, mutations: [...]   one mutation is used per version; a new
-//                                  version (after "Show answer") uses the next one
+//   view, intro, mutations: [...]   one mutation is used per version: a random
+//                                  one first, then the next one for each new version
 //   missingChoices: [{ id, label, feedback? }]   for "a force is missing"
 //   notes: { forceId: "why this one is actually fine" }  (optional)
 
@@ -26,7 +26,10 @@ const EQ_MUTATORS = { swap: swapFactor, sign: flipSign, missing: removeTerm };
 export function mount(ctx) {
   const { stage, solver } = ctx;
   const dbg = stage.debug;
-  const mutation = dbg.mutations[ctx.round % dbg.mutations.length];
+  // Start on a random mistake (so neighbours get different ones), then take
+  // the next one for each new version. ctx.memory survives new versions.
+  if (ctx.memory.firstMutation == null) ctx.memory.firstMutation = Math.floor(Math.random() * dbg.mutations.length);
+  const mutation = dbg.mutations[(ctx.memory.firstMutation + ctx.round) % dbg.mutations.length];
   const isFbd = dbg.view === "fbd";
   const wrongSetup = isFbd ? solver.mutate(ctx.setup, mutation) : null;
 

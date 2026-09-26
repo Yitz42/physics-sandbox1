@@ -23,9 +23,9 @@ export default {
   },
   // New versions: every combination keeps B on the plank (x_B ≤ 35·2/25 = 2.8 m < 3 m).
   vary: [
-    { path: "forces.#W_A.mass", values: [20, 25, 30, 35] },
-    { path: "forces.#W_A.at.0", values: [-1, -1.25, -1.5, -1.75, -2] },
-    { path: "forces.#W_B.mass", values: [25, 30, 35, 40] },
+    { path: "forces.#W_A.mass", min: 20, max: 35, step: 1 },
+    { path: "forces.#W_A.at.0", min: -2, max: -1, step: 0.05 },
+    { path: "forces.#W_B.mass", min: 25, max: 50, step: 1 },
   ],
   ask: [{ quantity: "W_B.pos", precision: 0.01 }],
   hints: [

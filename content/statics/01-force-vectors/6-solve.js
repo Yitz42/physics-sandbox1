@@ -21,7 +21,7 @@ export default {
   },
   vary: [
     { path: "forces.0.magnitude", min: 400, max: 800, step: 50 },
-    { path: "forces.0.direction.angle", values: [30, 40, 45, 50, 60] },
+    { path: "forces.0.direction.angle", min: 25, max: 65, step: 5 },
     { path: "forces.1.magnitude", min: 200, max: 500, step: 50 },
     { path: "forces.2.magnitude", min: 100, max: 300, step: 50 },
   ],

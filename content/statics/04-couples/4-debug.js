@@ -26,8 +26,8 @@ export default {
   view: { xmin: -0.35, xmax: 1.0, ymin: -0.4, ymax: 0.8 },
   // New versions move P, so the arms change but the answer M doesn't.
   vary: [
-    { path: "about.at.0", values: [0.5, 0.6, 0.7] },
-    { path: "about.at.1", values: [-0.1, -0.2, -0.3] },
+    { path: "about.at.0", min: 0.45, max: 0.8, step: 0.05 },
+    { path: "about.at.1", min: -0.35, max: -0.05, step: 0.05 },
   ],
   sceneOpts: { arms: true, hideMoment: true },
   debug: {

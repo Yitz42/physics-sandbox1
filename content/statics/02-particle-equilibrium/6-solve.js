@@ -21,8 +21,8 @@ export default {
     ],
   },
   vary: [
-    { path: "forces.#T_AC.direction.angle", values: [30, 35, 40, 45, 50, 55, 60] },
-    { path: "forces.#W.mass", min: 10, max: 40, step: 2 },
+    { path: "forces.#T_AC.direction.angle", min: 30, max: 60, step: 1 },
+    { path: "forces.#W.mass", min: 10, max: 40, step: 1 },
   ],
   solve: {
     steps: ["fbd", "equations", "answer"],

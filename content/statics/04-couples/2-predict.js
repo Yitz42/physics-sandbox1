@@ -25,7 +25,7 @@ export default {
     momentAt: [0.25, 0.15], // the original couple's moment is drawn on its own plate
   },
   view: { xmin: -0.2, xmax: 2.2, ymin: -0.3, ymax: 0.72 },
-  vary: [{ path: "couples.#C1.magnitude", values: [60, 90, 120, 150, 180, 240] }],
+  vary: [{ path: "couples.#C1.magnitude", min: 50, max: 300, step: 5 }],
   ask: [{ quantity: "C2", min: 0 }], // the size of a force is never negative
   hints: [
     "Two couples have the same effect when they have the same moment, turning the same way.",

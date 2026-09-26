@@ -166,13 +166,22 @@ export function particleScene(setup, result, opts = {}) {
     return [{ type: "axes" }, ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
   }
   const space = spaceDiagram(setup);
-  // Put the FBD to the right of the space diagram, with room to spare.
-  const right = Math.max(A[0] + 1, ...space.filter((s) => s.to).map((s) => s.to[0]));
-  const F = [right + 3.2, A[1]]; // room for FBD arrows and labels pointing left
-  const divider = right + 1.6; // halfway between the two diagrams
+  // Two side-by-side halves of equal width, each diagram centred in its own
+  // half, with a soft line between them:
+  //   | margin  space diagram  margin | margin  FBD  margin |
+  // The FBD's arrows reach up to FBD_REACH from its point in any direction
+  // (the biggest force is drawn 1.7 m long; labels need room past the tips).
+  const FBD_REACH = 2.3;
+  const PAD = 0.7; // clear space between a diagram and the line (or the edge)
+  const xs = space.flatMap((s) => [s.at, s.from, s.to].filter(Boolean).map((p) => p[0]));
+  const x0 = Math.min(A[0] - 1, ...xs), x1 = Math.max(A[0] + 1, ...xs);
+  const half = Math.max(x1 - x0, 2 * FBD_REACH) / 2 + PAD; // half the width of one half
+  const divider = (x0 + x1) / 2 + half;
+  const F = [divider + half, A[1]];
   return [
     ...space,
-    { type: "divider", x: divider },
+    // from/to span both halves, so the picture is framed around them evenly.
+    { type: "divider", x: divider, from: [divider - 2 * half, A[1]], to: [divider + 2 * half, A[1]] },
     { type: "text", at: add(A, [0, -3.0]), text: "Space diagram" },
     { type: "text", at: add(F, [0, -3.0]), text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner

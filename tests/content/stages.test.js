@@ -193,3 +193,12 @@ test("Unit 4 solve: M_R = −68.04 N·m; every version stays clearly clockwise",
     ok(M <= -30, `M_R = ${M}`);
   }
 });
+
+test("every stage with random numbers has at least 50 different versions (so neighbours rarely match)", () => {
+  const count = (rule) => (rule.values ? rule.values.length : Math.floor((rule.max - rule.min) / rule.step + 1e-9) + 1);
+  for (const { stage } of stages) {
+    if (!stage.vary) continue;
+    const versions = stage.vary.reduce((n, r) => n * count(r), 1);
+    ok(versions >= 50, `${stage.id} has only ${versions} versions`);
+  }
+});

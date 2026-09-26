@@ -33,10 +33,10 @@ export default {
   },
   view: { xmin: -0.5, xmax: 1.35, ymin: -0.35, ymax: 0.65 },
   vary: [
-    { path: "couples.#C1.magnitude", values: [150, 200, 250] },
-    { path: "couples.#C2.magnitude", values: [100, 150, 200] },
-    { path: "couples.#C2.direction.angle", values: [30, 45, 60] },
-    { path: "moments.#M3.magnitude", values: [40, 50, 60, 80] },
+    { path: "couples.#C1.magnitude", min: 150, max: 250, step: 10 },
+    { path: "couples.#C2.magnitude", min: 100, max: 200, step: 10 },
+    { path: "couples.#C2.direction.angle", min: 30, max: 60, step: 5 },
+    { path: "moments.#M3.magnitude", min: 40, max: 80, step: 5 },
   ],
   // A button under the picture shows the distances d (never M_R, the answer).
   sceneOpts: { hideMoment: true },

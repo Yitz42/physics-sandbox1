@@ -20,8 +20,8 @@ export default {
   },
   view: { xmin: -0.22, xmax: 0.78, ymin: -0.2, ymax: 0.65 },
   vary: [
-    { path: "forces.0.magnitude", min: 150, max: 400, step: 50 },
-    { path: "forces.0.direction.angle", values: [20, 30, 40, 50, 60] },
+    { path: "forces.0.magnitude", min: 150, max: 400, step: 10 },
+    { path: "forces.0.direction.angle", min: 15, max: 65, step: 5 },
     { path: "forces.0.at.0", values: [0.3, 0.4, 0.5] },
   ],
   // A button under the picture shows how the moment arm d is found (never M_O, the answer).
