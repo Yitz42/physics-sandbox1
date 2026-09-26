@@ -9,10 +9,10 @@ export default {
   solver: "statics.particle",
   title: "Resultant of Three Forces",
   instructions:
-    "Three forces act on the eyebolt at O. Find their resultant: its components, its magnitude $F_R$, and the angle $\\theta$ it makes with the x-axis.",
+    "Three forces act on the eyebolt. Find their resultant: its components, its magnitude $F_R$, and the angle $\\theta$ it makes with the x-axis.",
   setup: {
     analysis: "resultant",
-    point: { at: [0, 0], label: "O" },
+    point: { at: [0, 0], label: "" },
     forces: [
       { id: "F1", symbol: "F_1", magnitude: 600, direction: { angle: 45, from: "+x", toward: "+y" } },
       { id: "F2", symbol: "F_2", magnitude: 400, direction: { slope: [-4, 3] } },

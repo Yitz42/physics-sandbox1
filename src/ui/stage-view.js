@@ -18,7 +18,9 @@ export const CHALLENGE_NAMES = {
   debug: "Debug", "concept-check": "Concept check", solve: "Solve",
 };
 
-const STATUS_TEXT = { none: "Not started", practice: "Needs practice", complete: "Complete ★" };
+// Only "complete" is shown. "practice" is an internal record, so to the
+// student it looks the same as not finished yet.
+const STATUS_TEXT = { none: "", practice: "", complete: "Complete ★" };
 
 // links: { course: {href, title}, unit: {href, title}, prev, next }
 export function createStageView(root, stage, links) {
@@ -45,8 +47,9 @@ export function createStageView(root, stage, links) {
 
   return {
     setStatus(status) {
-      badge.textContent = STATUS_TEXT[status] || STATUS_TEXT.none;
+      badge.textContent = STATUS_TEXT[status] || "";
       badge.className = `status-badge status-${status}`;
+      badge.hidden = !badge.textContent;
     },
     // Fresh, empty areas for a new round (a new version of the problem).
     resetBody() {

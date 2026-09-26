@@ -5,15 +5,16 @@ import { renderMixed } from "../render/panel.js";
 import { getStatus, resetAll } from "../core/progress.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
 
-const ICON = { none: "○", practice: "◐", complete: "●" };
-const ICON_TITLE = { none: "Not started", practice: "Needs practice", complete: "Complete" };
+// "practice" (answer was shown) is an internal record: students just see "not done yet".
+const ICON = { none: "○", practice: "○", complete: "●" };
+const ICON_TITLE = { none: "Not done yet", practice: "Not done yet", complete: "Complete" };
 
 export function renderHome(root, courses) {
   root.innerHTML = "";
   root.append(
     el("header", { className: "page-header" }, [
       el("h1", { textContent: "Engineering Mechanics Sandbox" }),
-      el("p", { className: "lead", textContent: "Build it, load it, press Play — and see how forces become equations." }),
+      el("p", { className: "lead", textContent: "Build it, load it, press Test — and see how forces become equations." }),
     ]),
     el("div", { className: "card-grid" }, courses.map((c) =>
       el("a", { className: "card" + (c.comingSoon ? " card-disabled" : ""), href: c.comingSoon ? "#/" : `#/${c.id}` }, [
@@ -64,11 +65,10 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
   stages.forEach((s, i) => {
     const status = getStatus(`${course.id}/${s.id}`);
     list.appendChild(el("li", {}, [
-      el("a", { className: `stage-link status-${status}`, href: `#/${course.id}/${unit.id}/${unit.stages[i]}` }, [
+      el("a", { className: `stage-link status-${status === "complete" ? "complete" : "none"}`, href: `#/${course.id}/${unit.id}/${unit.stages[i]}` }, [
         el("span", { className: "stage-icon", title: ICON_TITLE[status], textContent: ICON[status] }),
         el("span", { className: `chip chip-${s.challenge}`, textContent: CHALLENGE_NAMES[s.challenge] }),
         el("span", { className: "stage-name", textContent: s.title }),
-        status === "practice" ? el("span", { className: "practice-note", textContent: "needs practice" }) : null,
       ]),
     ]));
   });

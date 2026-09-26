@@ -90,7 +90,7 @@ Each unit tests one concept several ways. Stages are built from these reusable t
 | Type | What the student does | What it tests |
 |---|---|---|
 | explore | Free sandbox with sliders; equations update live | Intuition |
-| predict | Enters a number (e.g. a reaction) before pressing Play; Play reveals the answer | Can they compute it |
+| predict | Enters a number (e.g. a reaction) before pressing Test; Test reveals the answer | Can they compute it |
 | build | Meets a goal with limited parts (e.g. "support this load using 2 supports") | Can they design with it |
 | debug | Given a wrong free-body diagram or equation; must find and fix the error | Can they spot mistakes |
 | concept-check | Multiple choice or "which one is true", with explanation after | Do they understand why |
@@ -121,10 +121,13 @@ export default {
   (`{ angle: 30, from: "-x", toward: "+y" }`), a slope triangle (`{ slope: [-4, 3] }`),
   or a word (`"down"`). Students pick sin/cos and signs by looking at the picture.
 - **Wrong answers**: unlimited tries with specific feedback. After 2 wrong tries a
-  "Show answer" button appears. Showing the answer marks the stage **needs practice**
-  (no stars) and the student gets a new version with different numbers (the stage's
-  `vary` rules; debug uses the next `mutation`, concept-check the next question).
-  Only solving a version without help marks it **complete**.
+  "Show answer" button appears. Showing the answer records the stage as
+  **needs practice** — an internal record only, never shown to the student — and
+  the student gets a new version with different numbers (the stage's `vary` rules;
+  debug uses the next `mutation`, concept-check the next question). Only solving a
+  version without help marks it **complete** (shown as a centred "Stage complete" card).
+- The check button is called **Test** (not "Play"). Answer boxes show the accepted
+  precision next to the unit (e.g. "N ±2%").
 - **Drawing FBDs** (solve challenge): click a force in the palette; a faint shadow
   arrow follows the pointer, snapping to allowed directions; click to place. Dragging
   from the palette also works (touchscreens). The palette includes tempting wrong

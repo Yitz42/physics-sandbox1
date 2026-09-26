@@ -44,10 +44,12 @@ export function runStage({ stage, view, key, next }) {
       stage, solver, setup, round, memory, el, key,
       canvas: createCanvas(el.figure),
       revealed: false,
+      // "Needs practice" is kept as an internal record only (never shown to the
+      // student): it makes the stage start with fresh numbers next time, and
+      // a future instructor dashboard can use it.
       markRevealed() {
         ctx.revealed = true;
         setStatus(key, STATUS.PRACTICE);
-        view.setStatus(getStatus(key));
       },
       explain() {
         showExplanation(el.explanation, stage.explanation);
@@ -57,8 +59,7 @@ export function runStage({ stage, view, key, next }) {
         el.actions.innerHTML = "";
         el.hints.innerHTML = ""; // finished: hints are no longer needed
         if (ctx.revealed) {
-          showMessage(el.status, "warn", "Needs practice",
-            "You've seen the answer, so this stage is marked **needs practice**. Solve a new version on your own to complete it.");
+          showMessage(el.status, "info", "Your turn", "Now try one on your own, with new numbers.");
           el.actions.appendChild(button("Try a new version →", newRound, "btn btn-play"));
           el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
           return;

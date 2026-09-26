@@ -56,7 +56,7 @@ function angleMarks(force, at, len, ring = 0) {
   const a0 = AXIS_DEG[dir.from];
   const r = Math.min(0.55, len * 0.45) * (1 + 0.45 * ring);
   return [
-    { type: "line", from: at, to: add(at, scale(AXIS_VEC[dir.from], r * 1.6)), style: "reference" },
+    { type: "line", from: at, to: add(at, scale(AXIS_VEC[dir.from], r * 1.1)), style: "reference" }, // ends just past the arc
     { type: "arc", center: at, r, start: a0, end: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
   ];
 }
@@ -77,7 +77,7 @@ function fbdArrows(setup, result, at, opts) {
     shapes.push({
       type: "arrow", id: f.id, from: at, to: tip,
       label: arrowLabel(f, m, known != null || opts.reveal),
-      // "wrong" (red) marks an overloaded cable after Play
+      // "wrong" (red) marks an overloaded cable after Test
       role: (opts.flagged || []).includes(f.id) ? "wrong" : known == null ? "unknown" : "known",
     });
     if (opts.angles !== false) shapes.push(...angleMarks(f, at, len, setup.forces.indexOf(f)));

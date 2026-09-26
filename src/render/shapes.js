@@ -53,7 +53,7 @@ export function drawShape(cv, s, env) {
       ctx.moveTo(a[0], a[1]);
       ctx.lineTo(b[0], b[1]);
       ctx.stroke();
-      if (s.style === "cable") out.segments.push([a, b]);
+      out.segments.push([a, b]); // labels keep off cables and dashed reference lines
       break;
     }
     case "support": {
@@ -114,7 +114,7 @@ export function drawShape(cv, s, env) {
       ctx.stroke();
       const mid = ((s.start + diff / 2) * Math.PI) / 180;
       // The angle's number is placed with the other labels, so it can dodge arrows.
-      out.labels.push({ text: s.label, pos: [x + Math.cos(mid) * (r + 16), y - Math.sin(mid) * (r + 16)], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 20 });
+      out.labels.push({ text: s.label, pos: [x + Math.cos(mid) * (r + 20), y - Math.sin(mid) * (r + 20)], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 26 });
       break;
     }
     case "triangle": {

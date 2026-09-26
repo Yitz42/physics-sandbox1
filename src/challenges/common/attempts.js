@@ -38,7 +38,8 @@ export function createAttempts(ctx, holder, onReveal) {
     reveal() {
       if (btn) btn.remove();
       btn = null;
-      ctx.markRevealed(); // stage becomes "needs practice"
+      ctx.markRevealed(); // stage becomes "needs practice" (internal record only)
+      ctx.el.feedback.innerHTML = ""; // the red "Not yet" box no longer applies
       onReveal();
     },
   };

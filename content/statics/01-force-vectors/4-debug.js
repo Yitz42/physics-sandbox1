@@ -11,7 +11,7 @@ export default {
     "A student is finding the resultant of $F_1$ and $F_2$. Compare their equations with the picture — look carefully at **which axis each angle is measured from**.",
   setup: {
     analysis: "resultant",
-    point: { at: [0, 0], label: "O" },
+    point: { at: [0, 0], label: "" },
     forces: [
       { id: "F1", symbol: "F_1", magnitude: 300, direction: { angle: 30, from: "+x", toward: "+y" } },
       { id: "F2", symbol: "F_2", magnitude: 200, direction: { angle: 40, from: "+y", toward: "-x" } },

@@ -8,10 +8,10 @@ export default {
   solver: "statics.particle",
   title: "Components of an Angled Force",
   instructions:
-    "The force $F$ on the bracket is shown in the picture, with its angle. Predict its components $F_x$ and $F_y$ — **including their signs** — then press **Play**.",
+    "The force $F$ on the bracket is shown in the picture, with its angle. Predict its components $F_x$ and $F_y$ — **including their signs** — then press **Test**.",
   setup: {
     analysis: "components",
-    point: { at: [0, 0], label: "O" },
+    point: { at: [0, 0], label: "" },
     forces: [{ id: "F", symbol: "F", magnitude: 400, direction: { angle: 30, from: "+y", toward: "-x" } }],
   },
   // "Try a new version" picks new numbers from these lists.

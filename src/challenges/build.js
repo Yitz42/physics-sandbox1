@@ -1,10 +1,10 @@
 // build.js — design something that meets a goal with limited parts.
 //
 // Tests: can they design with it. The student adjusts the parts they're
-// allowed to change (sliders / dragging), then presses Play. Results stay
-// hidden until Play, so they have to reason rather than just wiggle sliders.
+// allowed to change (sliders / dragging), then presses Test. Results stay
+// hidden until Test, so they have to reason rather than just wiggle sliders.
 // Design problems have many right answers, so there's no "Show answer" —
-// instead each Play explains what's still wrong.
+// instead each Test explains what's still wrong.
 //
 // Stage fields used:
 //   editable, draggable        what the student may change
@@ -19,7 +19,7 @@ export function mount(ctx) {
   const { stage } = ctx;
   const goal = stage.goal;
   let solved = false;
-  let playing = false; // true while Play itself is updating the picture
+  let playing = false; // true while Test itself is updating the picture
   let ws = null;
 
   ws = createWorkspace(ctx, {
@@ -29,7 +29,7 @@ export function mount(ctx) {
     reveal: false,
     sceneOpts: stage.sceneOpts,
     onChange: () => {
-      // Any edit after Play hides the results again until the next Play.
+      // Any edit after Test hides the results again until the next Test.
       if (ws && ws.reveal && !solved && !playing) {
         ws.sceneOpts.flagged = [];
         ws.setReveal(false);
@@ -42,10 +42,10 @@ export function mount(ctx) {
   const goalText = el("div");
   renderMixed(goalText, goal.text);
   goalBox.appendChild(goalText);
-  const play = button("▶ Play", onPlay, "btn btn-play");
-  ctx.el.area.append(goalBox, el("div", { className: "actions" }, [play]));
+  const testBtn = button("Test", onTest, "btn btn-play");
+  ctx.el.area.append(goalBox, el("div", { className: "actions" }, [testBtn]));
 
-  function onPlay() {
+  function onTest() {
     playing = true;
     const out = goal.check(ws.result, ws.setup);
     ws.sceneOpts.flagged = out.flagged || [];
@@ -53,11 +53,11 @@ export function mount(ctx) {
     playing = false;
     if (out.ok) {
       solved = true;
-      showMessage(ctx.el.feedback, "good", "Goal met! ▶", out.message || "");
+      showMessage(ctx.el.feedback, "good", "Goal met!", out.message || "");
       ctx.explain();
       ctx.finish();
     } else {
-      showMessage(ctx.el.feedback, "bad", "Not yet", out.message || "The goal isn't met yet. Adjust and press Play again.");
+      showMessage(ctx.el.feedback, "bad", "Not yet", out.message || "The goal isn't met yet. Adjust and press Test again.");
     }
   }
 }

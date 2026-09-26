@@ -10,7 +10,7 @@ export default {
   solver: "statics.particle",
   title: "Predict the Tensions",
   instructions:
-    "The crate hangs at rest. Using the angles and mass in the picture, predict the tension in each cable, then press **Play**.",
+    "The crate hangs at rest. Using the angles and mass in the picture, predict the tension in each cable, then press **Test**.",
   setup: crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }),
   vary: [
     { path: "forces.#T_AB.direction.angle", values: [20, 25, 30, 35, 40, 50, 55, 60] },

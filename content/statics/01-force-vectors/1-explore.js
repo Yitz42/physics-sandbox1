@@ -8,12 +8,12 @@ export default {
   solver: "statics.particle",
   title: "Pull on the Eyebolt",
   instructions:
-    "A force $F$ pulls on an eyebolt at point O. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
+    "A force $F$ pulls on an eyebolt. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
     "The angle $\\theta$ is measured from one axis toward another (e.g. from +x toward +y), the way your textbook does it — pick them in the dropdown, or type exact values into the boxes. " +
     "Click an arrow or an equation term to see how they match.",
   setup: {
     analysis: "components",
-    point: { at: [0, 0], label: "O" },
+    point: { at: [0, 0], label: "" },
     forceScale: 100, // arrows drawn 1 m long per 100 N, so dragging sets the size
     dragStep: 10,
     dragMax: 300,

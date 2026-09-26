@@ -11,7 +11,7 @@ export default {
   questions: [
     {
       prompt: "The force in the picture points down and to the left. What are the signs of its components?",
-      setup: { analysis: "components", point: { at: [0, 0], label: "O" }, forces: [{ id: "F", symbol: "F", magnitude: 250, direction: { angle: 35, from: "-x", toward: "-y" } }] },
+      setup: { analysis: "components", point: { at: [0, 0], label: "" }, forces: [{ id: "F", symbol: "F", magnitude: 250, direction: { angle: 35, from: "-x", toward: "-y" } }] },
       options: [
         { text: "$F_x < 0$ and $F_y < 0$", correct: true },
         { text: "$F_x > 0$ and $F_y < 0$", feedback: "Left is the −x direction, so a force pointing left has a negative x-component." },
@@ -22,7 +22,7 @@ export default {
     },
     {
       prompt: "A force's angle $\\theta$ is measured from the **y**-axis (as in the picture). Which expression gives the size of $F_y$?",
-      setup: { analysis: "components", point: { at: [0, 0], label: "O" }, forces: [{ id: "F", symbol: "F", magnitude: 300, direction: { angle: 25, from: "+y", toward: "+x" } }] },
+      setup: { analysis: "components", point: { at: [0, 0], label: "" }, forces: [{ id: "F", symbol: "F", magnitude: 300, direction: { angle: 25, from: "+y", toward: "+x" } }] },
       options: [
         { text: "$F\\cos\\theta$", correct: true },
         { text: "$F\\sin\\theta$", feedback: "$\\sin\\theta$ goes with the axis the angle is NOT measured from. Here that's x." },

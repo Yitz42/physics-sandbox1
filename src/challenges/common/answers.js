@@ -41,6 +41,8 @@ export function checkAnswer(text, correct, { tolerance = 0.02, mistakes = [] } =
 //   asks: [{ quantity, label?, unit?, tolerance? }]
 //   quantities: solver.quantities(setup) — supplies labels and units
 export function answerInputs(container, asks, quantities) {
+  // Tell students up front how exact they need to be.
+  container.appendChild(el("div", { className: "answer-precision", textContent: "Answers within the ± shown next to each unit count as correct — 3 significant figures is plenty." }));
   const rows = asks.map((ask) => {
     const q = quantities[ask.quantity] || {};
     const unit = ask.unit || q.unit || "";
@@ -49,7 +51,11 @@ export function answerInputs(container, asks, quantities) {
     const input = el("input", { type: "text", inputMode: "decimal", className: "answer-input", autocomplete: "off", placeholder: "?" });
     const note = el("div", { className: "answer-note" });
     const row = el("div", { className: "answer-row" }, [
-      el("div", { className: "answer-line" }, [label, input, el("span", { className: "answer-unit", textContent: unitLabel(unit) })]),
+      el("div", { className: "answer-line" }, [
+        label, input,
+        el("span", { className: "answer-unit", textContent: unitLabel(unit) }),
+        el("span", { className: "answer-tol", title: "How close your answer must be", textContent: `±${+((ask.tolerance ?? 0.02) * 100).toFixed(1)}%` }),
+      ]),
       note,
     ]);
     container.appendChild(row);
