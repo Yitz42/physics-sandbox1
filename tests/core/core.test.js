@@ -5,6 +5,7 @@ import { sigFig, format } from "../../src/core/units.js";
 import { getPath, setPath, makeVariant, pickValue } from "../../src/core/paths.js";
 import { solveSystem, rank } from "../../src/core/linear.js";
 import { solveEquations, equationTex, swapFactor, flipSign, mistakesOf } from "../../src/core/equations.js";
+import { stageParts, checkStage } from "../../src/core/content.js";
 
 setFile("core");
 
@@ -184,4 +185,45 @@ test("answer boxes: extra digits are rounded in the box, text that fits is left 
 });
 test("answers: the general 'doesn't match' note no longer mentions arithmetic", () => {
   ok(!/arithmetic/.test(checkAnswer("5", 346.41).message));
+});
+
+test("vary: a rule with several paths puts the same value at each; later rules change parts of earlier ones", () => {
+  const base = { at: [0, 0], line: { points: [[0, 0], [1, 1]] }, dir: { angle: 30, from: "+x", toward: "+y" } };
+  for (let i = 0; i < 10; i++) {
+    const v = makeVariant(base, [
+      { paths: ["at", "line.points.0"], values: [[1, 2], [3, 4]] },
+      { path: "dir", values: [{ from: "-y", toward: "+x" }] },
+      { path: "dir.angle", values: [50] },
+    ]);
+    equal(v.at, v.line.points[0]);
+    v.at[0] = 99; // separate copies, not one shared array
+    ok(v.line.points[0][0] !== 99);
+    equal(v.dir, { from: "-y", toward: "+x", angle: 50 });
+  }
+});
+
+// ---- Stages with several parts -----------------------------------------------
+
+const twoParts = {
+  id: "u/2-predict", challenge: "predict", title: "Two Things", solver: "statics.particle",
+  parts: [
+    { title: "First", instructions: "Do one.", setup: { forces: [] }, ask: { quantity: "R" } },
+    { title: "Second", instructions: "Do two.", solver: "statics.moment", setup: { forces: [] }, ask: { quantity: "M" } },
+  ],
+};
+
+test("parts: each part keeps the stage's id, type and title, and takes its solver unless it names one", () => {
+  const [a, b] = stageParts(twoParts);
+  equal([a.id, a.challenge, a.title, a.partTitle, a.solver], ["u/2-predict", "predict", "Two Things", "First", "statics.particle"]);
+  equal([b.partTitle, b.solver, b.instructions], ["Second", "statics.moment", "Do two."]);
+  equal([a.part, b.part], [{ index: 0, count: 2 }, { index: 1, count: 2 }]);
+});
+
+test("parts: a stage without parts is one part; checkStage names the part with a problem", () => {
+  const one = stageParts({ id: "x", challenge: "explore", title: "t" });
+  equal(one.length, 1);
+  equal(one[0].part, { index: 0, count: 1 });
+  equal(checkStage(twoParts), []);
+  const broken = { ...twoParts, parts: [twoParts.parts[0], { title: "No ask", instructions: "x", setup: {} }] };
+  equal(checkStage(broken), ["part 2: predict stages need \"ask\""]);
 });

@@ -205,3 +205,54 @@ test("picture: space diagram and FBD are centred in their halves of the canvas, 
     ok(px(ring.at[0]) > 0 && px(ring.at[0]) < size.width / 2, "ring A is in the left half");
   }
 });
+
+// ---- Cartesian vectors and forces along a line (Unit 1) ------------------------
+
+test("unit vector: 300 N at 30° above +x → u = 0.866 i + 0.5 j; F = {259.8 i + 150 j} N", () => {
+  const r = solveParticle({ analysis: "components", forces: [{ id: "F", symbol: "F", magnitude: 300, direction: { angle: 30, from: "+x", toward: "+y" } }] });
+  close(r.values["F.ux"], 0.86603);
+  close(r.values["F.uy"], 0.5);
+  close(r.values["F.x"], 259.808);
+  close(r.values["F.y"], 150);
+});
+
+test("force along a line: A(1, 2) → B(−2, 6), 250 N → r_AB = {−3 i + 4 j} m, r = 5 m, u = −0.6 i + 0.8 j, F = {−150 i + 200 j} N", () => {
+  const f = { id: "F", symbol: "F", magnitude: 250, kind: "cable", direction: { points: [[1, 2], [-2, 6]], names: ["A", "B"] } };
+  const r = solveParticle({ analysis: "components", point: { at: [1, 2], label: "A" }, forces: [f] });
+  close(r.values["F.rx"], -3);
+  close(r.values["F.ry"], 4);
+  close(r.values["F.r"], 5);
+  close(r.values["F.ux"], -0.6);
+  close(r.values["F.uy"], 0.8);
+  close(r.values["F.x"], -150);
+  close(r.values["F.y"], 200);
+  equal(describe(f.direction), "along the line from A to B");
+  equal(reverse(f.direction).points, [[-2, 6], [1, 2]]);
+});
+
+test("force along a line: equation factors are the fractions (x_B − x_A)/r and (y_B − y_A)/r, with signs", () => {
+  const c = componentFactors({ points: [[1, 2], [-2, 6]] });
+  equal([c.x.sign, c.y.sign], [-1, 1]);
+  close(c.x.factor.value, 0.6);
+  close(c.y.factor.value, 0.8);
+});
+
+test("force along a line: mistakes caught — B's coordinates alone, B→A, not dividing by r", () => {
+  const setup = { analysis: "components", point: { at: [1, 2], label: "A" }, forces: [{ id: "F", symbol: "F", magnitude: 250, kind: "cable", direction: { points: [[1, 2], [-2, 6]] } }] };
+  const has = (name, value, re) => ok(particleMistakes(setup, name).some((m) => Math.abs(m.value - value) < 0.05 && re.test(m.message)), `${name} = ${value} should be explained (${re})`);
+  // Used B = (−2, 6) alone: u = (−2, 6)/√40 → u_x = −0.316, F_x = −79.1 N
+  has("F.ux", -0.3162, /subtract/);
+  has("F.x", -79.06, /subtract/);
+  has("F.x", 150, /order|sign/);         // B→A reverses it
+  has("F.ux", -3, /Divide/);             // forgot to divide by r = 5
+  has("F.x", -750, /divide/);            // 250 × (−3)
+  has("F.r", Math.hypot(2, 6), /subtract/);
+});
+
+test("force along a line: a cable to B ends exactly at B in the space diagram, with coordinates labelled", () => {
+  const setup = { analysis: "resultant", point: { at: [1, 2], label: "A" }, forces: [{ id: "T", symbol: "T", magnitude: 100, kind: "cable", direction: { points: [[1, 2], [4, 6]], names: ["A", "B"] } }] };
+  const shapes = particleScene(setup, solveParticle(setup), {});
+  ok(shapes.some((s) => s.type === "point" && s.label === "B (4, 6)"), "B should be labelled with its coordinates");
+  ok(shapes.some((s) => s.type === "point" && s.label === "A (1, 2)"), "A should be labelled with its coordinates");
+  ok(shapes.some((s) => s.type === "point" && s.label === "O (0, 0)"), "the origin should be shown");
+});

@@ -2,7 +2,7 @@
 // the answers it asks for exist, "new versions" stay solvable, and the build
 // goals can actually be met. This catches typos in content files.
 import { test, ok, equal, close, setFile } from "../harness.js";
-import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage } from "../../src/core/content.js";
+import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts } from "../../src/core/content.js";
 import { getSolver } from "../../src/core/registry.js";
 import { makeVariant, clone, setPath } from "../../src/core/paths.js";
 
@@ -15,20 +15,27 @@ async function allStages() {
     const course = await loadCourse(c.id);
     for (const unitId of course.units) {
       const unit = await loadUnit(c.id, unitId);
-      for (const file of unit.stages) out.push({ course, unit, file, stage: await loadStage(c.id, unitId, file) });
+      for (const file of unit.stages) {
+        const whole = await loadStage(c.id, unitId, file);
+        // A stage with several parts is checked part by part.
+        for (const stage of stageParts(whole)) out.push({ course, unit, file, whole, stage });
+      }
     }
   }
   return out;
 }
 const stages = await allStages();
-const find = (id) => stages.find((s) => s.stage.id === id).stage;
+// find("01-force-vectors/2-predict") → its first part; find(id, 2) → part 2.
+const find = (id, part = 1) => stages.find((s) => s.stage.id === id && s.stage.part.index === part - 1).stage;
 
-test(`found ${stages.length} stages (6 per unit)`, () => ok(stages.length >= 12));
+test(`found ${stages.length} stage parts (6 stages per unit)`, () => ok(stages.length >= 12));
 
-for (const { unit, file, stage } of stages) {
-  test(`${stage.id}: stage file is valid`, () => {
-    equal(checkStage(stage), []);
-    equal(stage.id, `${unit.id}/${file}`, "id must be <unit folder>/<file name>:");
+for (const { unit, file, whole, stage: part } of stages) {
+  // Name each part in the test list: "…/2-predict part 2".
+  const stage = { ...part, id: part.part.count > 1 ? `${part.id} part ${part.part.index + 1}` : part.id };
+  if (part.part.index === 0) test(`${part.id}: stage file is valid`, () => {
+    equal(checkStage(whole), []);
+    equal(whole.id, `${unit.id}/${file}`, "id must be <unit folder>/<file name>:");
   });
 
   if (!stage.setup) continue;
@@ -258,4 +265,39 @@ test("every unit has a textbook chapter to read, with a web link", async () => {
       if (r.url) ok(/^https:\/\//.test(r.url), `unit ${u}: chapter link must be https`);
     }
   }
+});
+
+// ---- New parts: Unit 1 Cartesian vectors --------------------------------------
+
+test("Unit 1 predict part 3: every version's cable has a length and components (A never on B)", () => {
+  const st = find("01-force-vectors/2-predict", 3);
+  const solver = getSolver(st.solver);
+  for (let i = 0; i < 40; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    equal(s.point.at, s.forces[0].direction.points[0], "the ring and the start of the cable must be the same point:");
+    ok(solver.solve(s).values["F.r"] > 1, "cable length");
+  }
+});
+
+test("Unit 1 build part 2: start fails; B at (0, 4) or (1.5, 2) pulls with {−120 i + 160 j} N; (6, −4) direction fails", () => {
+  const st = find("01-force-vectors/3-build", 2);
+  const solver = getSolver(st.solver);
+  const at = (B) => {
+    const s = clone(st.setup);
+    s.forces[0].direction.points[1] = B;
+    return st.goal.check(solver.solve(s), s).ok;
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should not already work");
+  ok(at([0, 4]), "(0, 4): 3 left, 4 up");
+  ok(at([1.5, 2]), "(1.5, 2): half as far, same direction");
+  ok(!at([6, 4]), "(6, 4) pulls right");
+});
+
+test("Unit 1 solve part 2: F_R = {20 i + 390 j} N, 390.5 N at 87.1°", () => {
+  const st = find("01-force-vectors/6-solve", 2);
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values["R.x"], 20);
+  close(r.values["R.y"], 390);
+  close(r.values.R, 390.512, 1e-3);
+  close(r.values["R.angle"], 87.0643, 1e-3);
 });

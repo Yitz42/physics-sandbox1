@@ -13,6 +13,7 @@
 import { add, scale, sub, mag, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { directionOf, magnitudeOf, particleQuantities } from "./particle.js";
+import { pointsDelta } from "./directions.js";
 import { shadowShapes } from "./particle-shadow.js";
 import { spreadPanels } from "../../render/panels.js";
 
@@ -22,6 +23,8 @@ const AXIS_VEC = { "+x": [1, 0], "+y": [0, 1], "-x": [-1, 0], "-y": [0, -1] };
 // Where the end of a cable is fixed.
 export function anchorPoint(setup, force) {
   const A = setup.point.at;
+  // A cable given by two points ends exactly at the second point.
+  if (force.direction && force.direction.points) return add(A, pointsDelta(force.direction));
   const d = directionOf(force);
   const a = force.anchor || {};
   const ceilingY = setup.ceiling ? setup.ceiling.y : a.y;
@@ -56,6 +59,7 @@ function arrowLabel(force, m, show) {
 export function angleMarks(force, at, len, ring = 0) {
   const dir = force.direction;
   if (!dir || typeof dir === "string" || force.kind === "weight" || force.hideAngle) return [];
+  if (dir.points) return []; // its direction comes from the coordinates (space diagram)
   const d = directionOf(force);
   if (dir.slope) {
     const [dx, dy] = dir.slope;
@@ -145,10 +149,19 @@ function mountShapes(setup, A) {
   return [{ type: kind, at: A, dir: [dir[0] / m, dir[1] / m] }];
 }
 
+// Coordinates as a label, e.g. "B (4, 3)" (in m; the caption says so).
+const coord = (v) => String(+v.toFixed(2)).replace("-", "−"); // a real minus sign
+const coordLabel = (name, p) => `${name} (${coord(p[0])}, ${coord(p[1])})`;
+const usesPoints = (setup) => setup.forces.some((f) => f.direction && f.direction.points);
+
 // The real setup: ring, cables to supports, hanging crate.
 function spaceDiagram(setup) {
   const A = setup.point.at;
   const shapes = [];
+  // Forces given by coordinates: mark the origin O (unless A is the origin),
+  // so students can see the coordinates are measured from there. (The x-y
+  // axes icon in the corner shows which way is +x and +y.)
+  if (usesPoints(setup) && mag(A) > 1e-9) shapes.push({ type: "point", at: [0, 0], label: "O (0, 0)", style: "dot" });
   if (setup.ceiling) {
     const c = setup.ceiling;
     shapes.push({ type: "support", from: [c.from, A[1] + c.y], to: [c.to, A[1] + c.y], normal: [0, -1] });
@@ -164,7 +177,15 @@ function spaceDiagram(setup) {
         const t = [n[1] * 0.35, n[0] * 0.35];
         shapes.push({ type: "support", from: sub(P, t), to: add(P, t), normal: n });
       }
-      shapes.push({ type: "point", at: P, label: f.anchor?.label || "", style: "pin" });
+      if (f.direction.points) {
+        // Faint legs of the right triangle: across, then up (no numbers —
+        // students work them out from the coordinates).
+        const corner = [P[0], A[1]];
+        shapes.push({ type: "line", from: A, to: corner, style: "reference" }, { type: "line", from: corner, to: P, style: "reference" });
+        shapes.push({ type: "point", at: P, label: coordLabel((f.direction.names || [])[1] || "B", f.direction.points[1]), style: "pin" });
+      } else {
+        shapes.push({ type: "point", at: P, label: f.anchor?.label || "", style: "pin" });
+      }
       shapes.push(...angleMarks(f, A, Math.min(1.2, mag(d)), setup.forces.indexOf(f)));
     } else if (f.kind === "weight") {
       const top = add(A, [0, -0.7]);
@@ -175,7 +196,8 @@ function spaceDiagram(setup) {
       else shapes.push({ type: "box", id: f.id, at: add(top, [0, -0.3]), w: 0.95, h: 0.6, label });
     }
   }
-  shapes.push({ type: "point", at: A, label: setup.point.label || "", style: "ring" });
+  const pointLabel = usesPoints(setup) ? coordLabel(setup.point.label || "A", A) : setup.point.label || "";
+  shapes.push({ type: "point", at: A, label: pointLabel, style: "ring" });
   return shapes;
 }
 
@@ -201,11 +223,14 @@ export function particleScene(setup, result, opts = {}) {
   const x0 = Math.min(A[0] - 1, ...pts.map((p) => p[0])), x1 = Math.max(A[0] + 1, ...pts.map((p) => p[0]));
   const divider = x1 + 0.7;
   const F = [divider + 0.7 + FBD_REACH, A[1]];
-  const ys = [...pts.map((p) => p[1]), A[1] - 3.2, A[1] + FBD_REACH, A[1] - FBD_REACH]; // captions sit 3 m below A
+  // Captions sit 3 m below A, or lower if the drawing reaches further down;
+  // the space diagram's is centred under it.
+  const capY = Math.min(A[1] - 3.0, ...pts.map((p) => p[1] - 1.1));
+  const ys = [...pts.map((p) => p[1]), capY - 0.2, A[1] + FBD_REACH, A[1] - FBD_REACH];
   const shapes = [
     ...space,
-    { type: "text", at: add(A, [0, -3.0]), text: "Space diagram" },
-    { type: "text", at: add(F, [0, -3.0]), text: `FBD of ${setup.point.label || "the point"}` },
+    { type: "text", at: [(x0 + x1) / 2, capY], text: usesPoints(setup) ? "Space diagram (coordinates in m)" : "Space diagram" },
+    { type: "text", at: [F[0], capY], text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner
     // Wrong-answer arrows pointing left stop at the FBD's side of its half.
     ...fbdArrows(fs, result, F, { ...opts, minX: F[0] - FBD_REACH }),

@@ -42,7 +42,20 @@ export function setStatus(key, status) {
   const data = load();
   // Never downgrade: once complete, a later "Show answer" doesn't undo it.
   if (data[key] && data[key].status === STATUS.COMPLETE && status !== STATUS.COMPLETE) return;
-  data[key] = { status, updated: new Date().toISOString() };
+  data[key] = { ...data[key], status, updated: new Date().toISOString() };
+  save(data);
+}
+
+// Stages with several parts: how many parts the student has finished, so a
+// student who leaves halfway comes back to the part they were on.
+export function getPartsDone(key) {
+  const entry = load()[key];
+  return (entry && entry.partsDone) || 0;
+}
+
+export function setPartsDone(key, n) {
+  const data = load();
+  data[key] = { status: STATUS.NONE, ...data[key], partsDone: n, updated: new Date().toISOString() };
   save(data);
 }
 

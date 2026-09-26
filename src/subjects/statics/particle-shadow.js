@@ -7,6 +7,8 @@
 //     plus the unbalanced force they'd leave (ΣF ≠ 0) — so the student
 //     can SEE that their numbers don't hold the ring still
 //   • typed resultant (F_Rx, F_Ry, F_R, θ) → the resultant they'd get
+//   • typed unit vector (u_x, u_y)  → F times their u: too long or too short
+//     if their u doesn't have length 1
 // Shadows use the same scale as the real arrows (k = picture metres per newton).
 
 import { add, scale, mag, sum, DEG } from "../../core/vector.js";
@@ -40,7 +42,14 @@ export function shadowShapes(setup, result, at, guesses, k, minX = -Infinity) {
 
   for (const f of setup.forces) {
     const gx = g(`${f.id}.x`), gy = g(`${f.id}.y`), gm = g(f.id);
-    if (gx != null || gy != null) {
+    const gux = g(`${f.id}.ux`), guy = g(`${f.id}.uy`);
+    if ((gux != null || guy != null) && magnitudeOf(f) != null) {
+      // Their unit vector, scaled by the force's size.
+      const u = [gux ?? vals[`${f.id}.ux`], guy ?? vals[`${f.id}.uy`]];
+      const v = scale(u, magnitudeOf(f));
+      shapes.push(...shadowArrow(at, v, k, `your ${f.symbol}·u (|u| = ${+mag(u).toFixed(2)})`, `shadow-${f.id}`, MIN_LEN, minX));
+      vectors.push(v);
+    } else if (gx != null || gy != null) {
       // Their components → the force they describe, plus its dashed components.
       const v = [gx ?? vals[`${f.id}.x`], gy ?? vals[`${f.id}.y`]];
       const main = shadowArrow(at, v, k, `your ${f.symbol} = ${format(mag(v), "N")}`, `shadow-${f.id}`, MIN_LEN, minX);

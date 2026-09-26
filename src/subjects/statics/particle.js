@@ -9,11 +9,13 @@
 // A force in setup.forces looks like:
 //   { id: "T_AB", symbol: "T_{AB}", magnitude: null, direction: {...}, kind: "cable" }
 //   kind: "applied" (default), "cable" (can only pull), "weight" (uses mass, points down)
+//   direction: see directions.js — an angle, a slope, a word, or two points
+//              { points: [A, B], names: ["A", "B"] } (a force along the line A→B)
 
 import { scale, sum, mag, DEG } from "../../core/vector.js";
 import { solveEquations } from "../../core/equations.js";
 import { format } from "../../core/units.js";
-import { directionVector, componentFactors } from "./directions.js";
+import { directionVector, componentFactors, pointsDelta } from "./directions.js";
 
 export const G = 9.81; // m/s², gravitational acceleration
 
@@ -61,6 +63,9 @@ export function buildEquations(setup) {
 //   status: "resultant" | "determinate" | "indeterminate" | "unstable"
 //   values: every number a stage might ask about, by name:
 //           "<id>" magnitude, "<id>.x", "<id>.y" components,
+//           "<id>.ux", "<id>.uy" the unit vector along the force (Cartesian form
+//           F = F(u_x i + u_y j)); for a force from point A to B also the position
+//           vector r_AB = r_B − r_A: "<id>.rx", "<id>.ry" and its length "<id>.r" (m),
 //           and for resultants "R.x", "R.y", "R", "R.angle" (acute angle from the x-axis)
 //   net:    unbalanced force [Fx, Fy] (non-zero means the point accelerates)
 export function solveParticle(setup) {
@@ -103,11 +108,23 @@ export function solveParticle(setup) {
   for (const f of setup.forces) {
     const m = magnitudeOf(f) ?? values[f.id];
     if (m == null) continue;
-    const v = scale(directionOf(f), m);
+    const u = directionOf(f);
+    const v = scale(u, m);
     values[f.id] = m;
     values[`${f.id}.x`] = v[0];
     values[`${f.id}.y`] = v[1];
+    values[`${f.id}.ux`] = u[0];
+    values[`${f.id}.uy`] = u[1];
     vectors.push(v);
+  }
+  // Position vectors of forces given by two points (they're known even when
+  // the force's size isn't).
+  for (const f of setup.forces) {
+    if (!(f.direction && f.direction.points)) continue;
+    const r = pointsDelta(f.direction);
+    values[`${f.id}.rx`] = r[0];
+    values[`${f.id}.ry`] = r[1];
+    values[`${f.id}.r`] = mag(r);
   }
   const net = status === "indeterminate" ? [0, 0] : sum(vectors);
 
@@ -139,6 +156,17 @@ export function particleQuantities(setup) {
     q[f.id] = { label: f.symbol, unit: "N" };
     q[`${f.id}.x`] = { label: comp(f.symbol, "x"), unit: "N" };
     q[`${f.id}.y`] = { label: comp(f.symbol, "y"), unit: "N" };
+    // Unit vector u (no unit: it's a pure direction, length 1). Named after
+    // the line (u_AB) when the force is given by two points, else the force (u_F).
+    const u = unitVectorSymbol(f);
+    q[`${f.id}.ux`] = { label: `(${u})_x`, unit: "" };
+    q[`${f.id}.uy`] = { label: `(${u})_y`, unit: "" };
+    if (f.direction && f.direction.points) {
+      const r = `r_{${lineName(f)}}`;
+      q[`${f.id}.rx`] = { label: `(${r})_x`, unit: "m" };
+      q[`${f.id}.ry`] = { label: `(${r})_y`, unit: "m" };
+      q[`${f.id}.r`] = { label: r, unit: "m" };
+    }
   }
   Object.assign(q, {
     "R.x": { label: "F_{Rx}", unit: "N" },
@@ -147,4 +175,12 @@ export function particleQuantities(setup) {
     "R.angle": { label: "\\theta", unit: "deg" },
   });
   return q;
+}
+
+// "AB" for a force along the line from A to B.
+export const lineName = (f) => ((f.direction && f.direction.names) || ["A", "B"]).join("");
+
+// KaTeX name of a force's unit vector: u_{AB} along a line A→B, else u_{F}.
+export function unitVectorSymbol(f) {
+  return f.direction && f.direction.points ? `u_{${lineName(f)}}` : `u_{${f.symbol}}`;
 }

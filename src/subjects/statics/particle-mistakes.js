@@ -7,15 +7,16 @@
 
 import { clone } from "../../core/paths.js";
 import { solveParticle, magnitudeOf, G } from "./particle.js";
-import { swapTrig, reverse } from "./directions.js";
+import { swapTrig, reverse, pointsDelta } from "./directions.js";
 
 const pretty = (symbol) => symbol.replace(/[{}]/g, "").replace(/_/g, "");
 
 // Each builder returns a changed copy of the setup (or null if it doesn't apply)
 // and the explanation to show if the student's answer matches it.
 function variants(setup) {
-  const out = [];
-  const angled = setup.forces.filter((f) => f.direction && typeof f.direction === "object");
+  const out = [...lineVariants(setup)];
+  // Forces given by two points have their own slips (lineVariants).
+  const angled = setup.forces.filter((f) => f.direction && typeof f.direction === "object" && !f.direction.points);
 
   if (angled.length) {
     const s = clone(setup);
@@ -78,6 +79,40 @@ function variants(setup) {
   return out;
 }
 
+// Slips with a force along a line from A to B (position vectors).
+function lineVariants(setup) {
+  const out = [];
+  for (const f of setup.forces.filter((x) => x.direction && x.direction.points)) {
+    const [A, B] = f.direction.points;
+    const [nA, nB] = f.direction.names || ["A", "B"];
+    const change = (edit) => {
+      const s = clone(setup);
+      edit(s.forces.find((x) => x.id === f.id));
+      return s;
+    };
+    const [dx, dy] = pointsDelta(f.direction);
+    // Used B's coordinates as if they were r_AB (forgot to subtract A's).
+    if (Math.hypot(...A) > 1e-9 && Math.hypot(...B) > 1e-9) {
+      out.push({ setup: change((g) => (g.direction = { points: [[0, 0], B] })), message: `Did you use ${nB}'s coordinates on their own? The position vector from ${nA} to ${nB} is r_${nA}${nB} = r_${nB} − r_${nA}: subtract ${nA}'s coordinates from ${nB}'s.` });
+    }
+    // Subtracted the wrong way round (from B to A).
+    out.push({ setup: change((g) => (g.direction = reverse(g.direction))), message: `Check the order: r_${nA}${nB} goes FROM ${nA} TO ${nB}, so it is (${nB}'s coordinates) − (${nA}'s coordinates).` });
+    // x and y parts mixed up.
+    if (Math.abs(Math.abs(dx) - Math.abs(dy)) > 1e-9) {
+      out.push({ setup: change((g) => (g.direction = { points: [A, [A[0] + dy, A[1] + dx]] })), message: `It looks like the x and y parts are swapped: the x part uses the change in x, (x_${nB} − x_${nA}) / r_${nA}${nB}.` });
+    }
+    // One component's sign.
+    if (Math.abs(dx) > 1e-9) out.push({ setup: change((g) => (g.direction = { points: [A, [A[0] - dx, B[1]]] })), message: `Check the sign of the x part: x_${nB} − x_${nA} is negative when ${nB} is to the left of ${nA}.` });
+    if (Math.abs(dy) > 1e-9) out.push({ setup: change((g) => (g.direction = { points: [A, [B[0], A[1] - dy]] })), message: `Check the sign of the y part: y_${nB} − y_${nA} is negative when ${nB} is below ${nA}.` });
+    // Multiplied F by r_AB itself instead of the unit vector (forgot to divide by the length).
+    if (magnitudeOf(f) != null) {
+      const r = Math.hypot(dx, dy);
+      if (Math.abs(r - 1) > 1e-6) out.push({ setup: change((g) => (g.magnitude = magnitudeOf(f) * r)), message: `Did you forget to divide by the length r_${nA}${nB} = ${+r.toFixed(3)} m? The unit vector u = r / r has length 1; only then does F·u have size F.` });
+    }
+  }
+  return out;
+}
+
 // Solve with degrees misread as radians (only affects the component factors).
 function solveRadians(setup) {
   const s = clone(setup);
@@ -105,6 +140,13 @@ export function particleMistakes(setup, name) {
     list.push({ value, message: v.message });
     // Two slips at once (this one AND a flipped sign) are common too.
     if (Math.abs(value) > 1e-9) list.push({ value: -value, message: `${v.message} Also check the sign: which way does it point?` });
+  }
+  // A unit vector component given as the plain change in coordinates.
+  const u = name.match(/^(.+)\.u([xy])$/);
+  const uf = u && setup.forces.find((x) => x.id === u[1]);
+  if (uf && uf.direction && uf.direction.points) {
+    const [nA, nB] = uf.direction.names || ["A", "B"];
+    list.push({ value: pointsDelta(uf.direction)[u[2] === "x" ? 0 : 1], message: `That's the change in ${u[2]} from ${nA} to ${nB}. Divide it by the length r_${nA}${nB} to get the unit vector, whose parts are always between −1 and 1.` });
   }
   if (name === "R.angle" && correct != null) {
     list.push({ value: 90 - correct, message: "That's the angle from the y-axis. θ here is measured from the x-axis." });

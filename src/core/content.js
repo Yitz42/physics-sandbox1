@@ -37,9 +37,53 @@ export async function loadUnitStages(courseId, unit) {
 
 const CHALLENGES = ["explore", "predict", "build", "debug", "concept-check", "solve"];
 
+// ---- Stages with several parts ------------------------------------------------
+//
+// A stage can be split into PARTS, so one stage can test several ideas the same
+// way (e.g. a Predict stage: part 1 components, part 2 the unit vector, part 3 a
+// force along a cable). The stage file then looks like
+//   { id, challenge, title, solver, explanation, parts: [ {...}, {...} ] }
+// Each part is written like a whole stage (title, instructions, setup, vary,
+// ask, hints, explanation …) and runs one after another. A part takes only
+// these from the stage itself, unless it sets its own: the stage's id,
+// challenge type and title (always), and its solver (as a default).
+// The part's own `title` becomes its `partTitle` (shown as "Part 2 of 3: …").
+const SHARED = ["solver"];
+
+// Every part of a stage, each ready to play like a one-part stage. A stage
+// without parts is one part: itself (with part = { index: 0, count: 1 }).
+export function stageParts(stage) {
+  if (!stage.parts) return [{ ...stage, part: { index: 0, count: 1 } }];
+  const shared = {};
+  for (const k of SHARED) if (stage[k] !== undefined) shared[k] = stage[k];
+  return stage.parts.map((p, i) => ({
+    ...shared,
+    ...p,
+    id: stage.id,
+    challenge: stage.challenge,
+    title: stage.title,
+    partTitle: p.title || "",
+    part: { index: i, count: stage.parts.length },
+  }));
+}
+
 // Catch typos in stage files early, with a readable message.
 // Returns a list of problems (empty = fine). Also used by the test page.
 export function checkStage(stage) {
+  if (stage && Array.isArray(stage.parts)) {
+    const p = [];
+    for (const f of ["id", "challenge", "title"]) if (!stage[f]) p.push(`missing "${f}"`);
+    if (!stage.parts.length) p.push(`"parts" is empty`);
+    if (p.length) return p;
+    stageParts(stage).forEach((part, i) => {
+      for (const msg of checkOne(part)) p.push(`part ${i + 1}: ${msg}`);
+    });
+    return p;
+  }
+  return checkOne(stage);
+}
+
+function checkOne(stage) {
   const p = [];
   if (!stage || typeof stage !== "object") return ["the file must `export default { ... }`"];
   for (const f of ["id", "challenge", "title", "instructions"]) if (!stage[f]) p.push(`missing "${f}"`);

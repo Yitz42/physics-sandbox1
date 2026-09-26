@@ -94,6 +94,21 @@ p { margin: 0 0 8px; }
 .status-complete .stage-icon { color: var(--c-good); }
 .status-practice .stage-icon { color: var(--c-warn); }
 .stage-name { font-weight: 600; }
+.stage-parts { margin-left: auto; font-size: 0.85rem; color: var(--c-muted); white-space: nowrap; }
+
+/* "Part 2 of 3: …" above a multi-part stage's instructions */
+.part-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--c-line);
+}
+.part-label { font-weight: 600; color: var(--c-accent); font-size: 0.95rem; }
+.part-dots { display: flex; gap: 5px; flex-shrink: 0; }
+.part-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--c-faint); box-sizing: border-box;
+}
+.part-dot.done { background: var(--c-accent); border-color: var(--c-accent); }
+.part-dot.now { border-color: var(--c-accent); box-shadow: 0 0 0 2px var(--c-info-bg); }
 .stage-link .chip { min-width: 108px; text-align: center; } /* keeps titles lined up */
 .practice-note { margin-left: auto; font-size: 13px; color: var(--c-warn); font-weight: 600; }
 

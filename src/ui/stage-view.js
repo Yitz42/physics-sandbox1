@@ -20,6 +20,21 @@ export const CHALLENGE_NAMES = {
 // student it looks the same as not finished yet.
 const STATUS_TEXT = { none: "", practice: "", complete: "Complete ★" };
 
+// "Part 2 of 3: Unit vectors", with a dot per part (done ● / now ◉ / to do ○).
+// Nothing for a stage with only one part.
+function partBar({ index, count, titles }) {
+  if (count < 2) return null;
+  const dots = el("span", { className: "part-dots", "aria-hidden": "true" });
+  for (let i = 0; i < count; i++) {
+    dots.appendChild(el("span", { className: `part-dot ${i < index ? "done" : i === index ? "now" : ""}`, title: titles[i] || `Part ${i + 1}` }));
+  }
+  const title = titles[index] ? `: ${titles[index]}` : "";
+  return el("div", { className: "part-bar" }, [
+    el("span", { className: "part-label", textContent: `Part ${index + 1} of ${count}${title}` }),
+    dots,
+  ]);
+}
+
 // links: { course: {href, title}, unit: {href, title} }
 export function createStageView(root, stage, links) {
   root.innerHTML = "";
@@ -48,7 +63,9 @@ export function createStageView(root, stage, links) {
       badge.hidden = !badge.textContent;
     },
     // Fresh, empty areas for a new round (a new version of the problem).
-    resetBody() {
+    // stage: the part being played; partInfo: { index, count, titles } when
+    // the stage has several parts (see stageParts in core/content.js).
+    resetBody(stage, partInfo = { index: 0, count: 1, titles: [] }) {
       body.innerHTML = "";
       const parts = {
         figure: el("div", { className: "figure" }),
@@ -66,6 +83,7 @@ export function createStageView(root, stage, links) {
       body.append(
         el("section", { className: "stage-left" }, [parts.figure, parts.equations]),
         el("aside", { className: "stage-right" }, [
+          partBar(partInfo),
           parts.instructions, parts.controls, parts.area, parts.feedback,
           parts.status, parts.actions, parts.explanation, parts.hints,
         ]),

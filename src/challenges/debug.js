@@ -119,6 +119,7 @@ export function mount(ctx) {
     const target = correctEqs.find((e) => e.id === mutation.equation);
     const term = target && target.terms.find((t) => t.id === mutation.term);
     const swapLabel = (term && term.factor && term.factor.swapLabel) || "Swap cos ↔ sin";
+    const trig = !(term && term.factor && term.factor.swapLabel); // a sin/cos factor (not a distance or fraction)
     if (mutation.kind === "remove") {
       return dbg.missingChoices.map((c) => ({ label: c.label, correct: c.id === mutation.force, feedback: c.feedback || "That force doesn't act on this point." }));
     }
@@ -134,8 +135,8 @@ export function mount(ctx) {
     }
     return [
       // The term's factor can name its own fix (e.g. "Use the perpendicular distance d").
-      { label: swapLabel, correct: mutation.kind === "swap", feedback: swapLabel.startsWith("Swap") ? "The trig function is right here. Look at the sign instead." : "That part is right here. Look at the sign instead." },
-      { label: "Flip the sign (+ ↔ −)", correct: mutation.kind === "sign", feedback: swapLabel.startsWith("Swap") ? "The sign is right. Which axis is the angle measured from? That one gets cos." : "The sign is right. Check the number against the picture." },
+      { label: swapLabel, correct: mutation.kind === "swap", feedback: trig ? "The trig function is right here. Look at the sign instead." : "That part is right here. Look at the sign instead." },
+      { label: "Flip the sign (+ ↔ −)", correct: mutation.kind === "sign", feedback: trig ? "The sign is right. Which axis is the angle measured from? That one gets cos." : "The sign is right. Check the number against the picture." },
       { label: "Delete this term", feedback: "This force does have a component along this axis, so its term belongs." },
     ];
   }
@@ -150,7 +151,11 @@ export function mount(ctx) {
     if (mutation.kind === "remove") return `A force is missing from the FBD. Every force acting on the point must be drawn — here that includes ${sym(mutation.force)}.`;
     if (mutation.kind === "reverse") return `The arrow for ${sym(mutation.force)} points the wrong way. It must be reversed.`;
     if (mutation.kind === "missing") return `The term for ${sym(mutation.term)} is missing from the equation.`;
-    return mutation.kind === "swap" ? `The ${sym(mutation.term)} term has sin and cos swapped.` : `The ${sym(mutation.term)} term has the wrong sign.`;
+    if (mutation.kind !== "swap") return `The ${sym(mutation.term)} term has the wrong sign.`;
+    const target = correctEqs.find((e) => e.id === mutation.equation);
+    const term = target && target.terms.find((t) => t.id === mutation.term);
+    const reason = term && term.factor && term.factor.swapReason;
+    return `The ${sym(mutation.term)} term ${reason || "has sin and cos swapped"}.`;
   }
 
   // ---- Done: show the corrected work -----------------------------------------

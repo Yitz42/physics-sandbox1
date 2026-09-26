@@ -8,6 +8,10 @@
 //   { angle: 30, from: "-x", toward: "-y" }   30° measured from the −x axis,
 //                                              rotating toward the −y axis
 //   { slope: [-4, 3] }                         a 3-4-5 slope triangle: 4 left, 3 up
+//   { points: [[1, 2], [5, 5]], names: ["A", "B"] }
+//                                              along the line from point A to point B
+//                                              (coordinates in m): the direction of
+//                                              the position vector r_AB = r_B − r_A
 //
 // From that description we compute:
 //   • the unit vector (which way it really points),
@@ -24,10 +28,18 @@ const isX = (axis) => axis === "+x" || axis === "-x";
 const signOf = (axis) => (axis[0] === "-" ? -1 : 1);
 const pretty = (axis) => axis.replace("-", "−"); // real minus sign for display
 
+// A direction from A to B works exactly like a slope triangle whose sides are
+// the differences in coordinates: x_B − x_A across and y_B − y_A up.
+export const pointsDelta = (dir) => [dir.points[1][0] - dir.points[0][0], dir.points[1][1] - dir.points[0][1]];
+const asSlope = (dir) => (dir && Array.isArray(dir.points) ? { slope: pointsDelta(dir) } : dir);
+
 // Check a direction is written correctly; throws a helpful message if not.
 function check(dir) {
   if (typeof dir === "string" && WORDS[dir]) return;
   if (dir && Array.isArray(dir.slope)) return;
+  // (Two points on top of each other give no direction: a zero force, which
+  // can happen for a moment while a student slides B onto A.)
+  if (dir && Array.isArray(dir.points) && dir.points.length === 2) return;
   if (dir && AXES[dir.from] && AXES[dir.toward] && isX(dir.from) !== isX(dir.toward)) return;
   throw new Error(`Bad direction ${JSON.stringify(dir)}: "from" and "toward" must be one x-axis and one y-axis`);
 }
@@ -36,8 +48,9 @@ function check(dir) {
 // angle as radians — that is how we predict the "calculator in RAD mode" mistake.
 export function directionVector(dir, { radians = false } = {}) {
   check(dir);
+  dir = asSlope(dir);
   if (typeof dir === "string") return WORDS[dir].slice();
-  if (dir.slope) return unit(dir.slope);
+  if (dir.slope) return Math.hypot(...dir.slope) < 1e-12 ? [0, 0] : unit(dir.slope);
   const a = radians ? dir.angle : dir.angle * DEG;
   const u = AXES[dir.from];
   const w = AXES[dir.toward];
@@ -49,6 +62,7 @@ export function directionVector(dir, { radians = false } = {}) {
 // { sign, factor } where factor = { tex, value, pre, alt } (see core/equations.js).
 export function componentFactors(dir) {
   check(dir);
+  dir = asSlope(dir);
   if (typeof dir === "string") {
     const [vx, vy] = WORDS[dir];
     return {
@@ -59,8 +73,11 @@ export function componentFactors(dir) {
   if (dir.slope) {
     const [dx, dy] = dir.slope;
     const h = Math.hypot(dx, dy);
+    if (h < 1e-12) return { x: null, y: null };
     const frac = (n) => ({ tex: `\\tfrac{${sigFig(Math.abs(n), 4)}}{${sigFig(h, 4)}}`, value: Math.abs(n) / h, pre: true });
-    const make = (n, other) => (n === 0 ? null : { sign: Math.sign(n), factor: { ...frac(n), alt: frac(other) } });
+    // Mixing up the two fractions is this direction's "sin/cos swap".
+    const swap = { swapLabel: "Swap the fractions (x ↔ y)", swapReason: "has the two fractions swapped — the x-component uses the side along x, the y-component the side along y" };
+    const make = (n, other) => (n === 0 ? null : { sign: Math.sign(n), factor: { ...frac(n), alt: frac(other), ...swap } });
     return { x: make(dx, dy), y: make(dy, dx) };
   }
   const deg = sigFig(dir.angle, 4);
@@ -75,6 +92,7 @@ export function componentFactors(dir) {
 // Plain-language description, e.g. "30° above the +x axis".
 export function describe(dir) {
   check(dir);
+  if (dir.points) return `along the line from ${(dir.names || ["A", "B"]).join(" to ")}`;
   if (typeof dir === "string") return `straight ${dir}`;
   if (dir.slope) {
     const [dx, dy] = dir.slope;
@@ -99,6 +117,7 @@ export function fromVector(v, step = 1) {
 export function reverse(dir) {
   check(dir);
   if (typeof dir === "string") return { up: "down", down: "up", left: "right", right: "left" }[dir];
+  if (dir.points) return { ...dir, points: [dir.points[1], dir.points[0]], names: dir.names && [dir.names[1], dir.names[0]] };
   if (dir.slope) return { slope: [-dir.slope[0], -dir.slope[1]] };
   const flip = (a) => (a[0] === "-" ? "+" : "-") + a[1];
   return { ...dir, from: flip(dir.from), toward: flip(dir.toward) };
@@ -108,6 +127,7 @@ export function reverse(dir) {
 // other axis instead. Used to predict the classic sin/cos mistake.
 export function swapTrig(dir) {
   check(dir);
+  dir = asSlope(dir);
   if (typeof dir === "string") return dir;
   if (dir.slope) {
     const [dx, dy] = dir.slope;

@@ -44,6 +44,10 @@ export function setPath(obj, path, value) {
 // Pick one random value for a "vary" rule. A rule is either
 //   { path, values: [20, 30, 45] }            → one of the listed values
 //   { path, min: 200, max: 600, step: 50 }    → a random multiple of step
+// Values may be whole objects, e.g. { path: "forces.0.direction", values: [{...}, {...}] }.
+// Rules apply in order, so a later rule can change part of what an earlier one set.
+// { paths: [a, b], ... } puts the SAME value at several paths (e.g. a point
+// that two things share).
 export function pickValue(rule, random = Math.random) {
   if (rule.values) return rule.values[Math.floor(random() * rule.values.length)];
   const count = Math.floor((rule.max - rule.min) / rule.step + 1e-9) + 1;
@@ -58,7 +62,10 @@ export function makeVariant(setup, rules = [], random = Math.random, avoid = nul
   let out = clone(setup);
   for (let attempt = 0; attempt < 10; attempt++) {
     out = clone(setup);
-    for (const rule of rules) setPath(out, rule.path, pickValue(rule, random));
+    for (const rule of rules) {
+      const value = pickValue(rule, random);
+      for (const path of rule.paths || [rule.path]) setPath(out, path, clone(value));
+    }
     if (!avoid || JSON.stringify(out) !== JSON.stringify(avoid)) break;
   }
   return out;

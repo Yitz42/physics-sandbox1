@@ -77,6 +77,7 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
         el("span", { className: "stage-icon", title: ICON_TITLE[status], textContent: ICON[status] }),
         el("span", { className: `chip chip-${s.challenge}`, textContent: CHALLENGE_NAMES[s.challenge] }),
         el("span", { className: "stage-name", textContent: s.title }),
+        s.parts && s.parts.length > 1 ? el("span", { className: "stage-parts", textContent: `${s.parts.length} parts` }) : null,
       ]),
     ]));
   });

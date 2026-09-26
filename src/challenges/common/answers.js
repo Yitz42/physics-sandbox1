@@ -74,8 +74,18 @@ export function precisionText(precision, unit) {
   return `±${precision}${u === "°" ? "°" : u ? " " + u : ""}`;
 }
 
+// When a wrong answer matches no known slip: a nudge that fits the kind of
+// quantity (a stage can give its own with ask.otherwise).
+const OTHERWISE = {
+  N: "That doesn't match. Re-check each force's components (size and sign).",
+  m: "That doesn't match. Re-check the distance: which two points it runs between, and the differences in their coordinates.",
+  "N·m": "That doesn't match. Re-check each moment: force × perpendicular distance, with + for counterclockwise and − for clockwise.",
+  "": "That doesn't match. Each part of a unit vector is a component divided by the size, so it lies between −1 and 1 (and u_x² + u_y² = 1).",
+  deg: "That doesn't match. Re-check the angle: which axis it is measured from, and tan⁻¹ of which components.",
+};
+
 // Returns { ok, message }.
-export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "" } = {}) {
+export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "", otherwise } = {}) {
   const typed = parseNumber(text);
   if (typed == null) return { ok: false, empty: true, message: "Type a number (for example 346.4 or -200.0)." };
   const value = roundToPrecision(typed, precision); // extra digits beyond the precision don't count
@@ -89,7 +99,7 @@ export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mist
   if (Math.abs(value - correct) <= Math.max(0.03 * Math.abs(correct), 5 * precision)) {
     return { ok: false, message: `Very close, but it needs to be within ${precisionText(precision, unit)}. Keep more digits in the middle of your working and round only at the end.` };
   }
-  return { ok: false, message: "That doesn't match. Re-check each force's components (size and sign)." };
+  return { ok: false, message: otherwise || OTHERWISE[unit] || OTHERWISE.N };
 }
 
 // Build one input row per asked quantity.
@@ -195,7 +205,7 @@ export function checkRows(inputs, result, mistakesFor) {
     if (r.done) continue;
     if (r.tidy) r.tidy(); // show the rounded number that is actually being checked
     const correct = result.values[r.ask.quantity];
-    const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity) });
+    const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise });
     inputs.mark(r, out.ok, out.ok ? "✓ Correct" : out.message);
     if (!out.ok) allOk = false;
   }
