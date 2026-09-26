@@ -1,6 +1,6 @@
 // Moments about a point (Unit 3), with answers worked out by hand.
 import { test, ok, equal, close, setFile } from "../harness.js";
-import { solveMoment, momentEquations } from "../../src/subjects/statics/moment.js";
+import { solveMoment, momentEquations, armAngle } from "../../src/subjects/statics/moment.js";
 import { momentMistakes, momentShadow } from "../../src/subjects/statics/moment-tools.js";
 import { evaluate } from "../../src/core/equations.js";
 
@@ -77,4 +77,13 @@ test("shadow: a wrong seesaw position shows the moment left over", () => {
   const shapes = momentShadow(s, solveMoment(s), { "W_B.pos": 1 }, { k: 0.001, size: 6 });
   const m = shapes.find((x) => x.type === "moment");
   ok(m && m.sense > 0, "with B too close, A wins: it tips counterclockwise");
+});
+
+test("moment arm working: d = r sin φ (r = 0.5 m, φ = 66.87°, d = 0.4598 m)", () => {
+  // OA is a 3-4-5 line at 36.87° above +x; the force line is at 150°.
+  // The acute angle between them is 180° − (150° − 36.87°) = 66.87°.
+  const s = one(250, { angle: 30, from: "-x", toward: "+y" }, [0.4, 0.3]);
+  const phi = armAngle(s, s.forces[0], [0.4, 0.3]);
+  close(phi, 66.8699);
+  close(0.5 * Math.sin((phi * Math.PI) / 180), solveMoment(s).values.d_F);
 });

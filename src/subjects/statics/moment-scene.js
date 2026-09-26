@@ -5,11 +5,11 @@
 // when asked — each force's line of action with its moment arm d, plus a
 // curved arrow showing the total moment M_O and which way it turns.
 
-import { add, sub, scale, mag, unit } from "../../core/vector.js";
+import { add, sub, scale, mag, unit, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { angleMarks } from "./particle-scene.js";
-import { forcePoint, armOf } from "./moment.js";
+import { forcePoint, armOf, armAngle } from "./moment.js";
 import { momentShadow } from "./moment-tools.js";
 
 // Overall size of the body, so arrows and boxes scale with the picture.
@@ -66,8 +66,21 @@ export function momentScene(setup, result, opts = {}) {
       const a = armOf(setup, f, P);
       shapes.push({ type: "line", from: add(P, scale(u, -0.45 * size)), to: add(P, scale(u, 0.45 * size)), style: "reference" });
       if (a.d > 1e-6) {
-        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: `d = ${format(a.d, "m")}` });
+        const angled = Math.abs(a.rLen - a.d) > 1e-6; // force not at 90° to OA
+        if (angled) {
+          // Show how d is found: r = |OA|, the angle φ at A between OA and the
+          // line of action, and d = r sin φ.
+          const phi = armAngle(setup, f, P);
+          const toO = sub(O, P);
+          const along = toO[0] * u[0] + toO[1] * u[1] >= 0 ? u : scale(u, -1); // the line's half that leans toward O
+          // r's label goes on the side away from d, so the two labels don't pile up between the lines.
+          const dSide = Math.sign(a.perNewton) || 1; // which side of OA the foot of d is on
+          shapes.push({ type: "dim", from: O, to: P, label: `r = ${format(a.rLen, "m")}`, dashed: true, labelSide: dSide });
+          shapes.push({ type: "arc", center: P, r: Math.min(0.3 * a.rLen, 0.25 * size), start: angleDeg(toO), end: angleDeg(along), label: `φ = ${phi.toFixed(1)}°` });
+        }
+        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: angled ? `d = r sin φ = ${format(a.d, "m")}` : `d = ${format(a.d, "m")}`, labelSide: -(Math.sign(a.perNewton) || 1) });
         shapes.push({ type: "rightangle", at: a.foot, u, v: unit(sub(O, a.foot)) });
+        shapes.push({ type: "point", at: a.foot, style: "dot" }); // where d meets the line of action
       }
     }
   });

@@ -18,7 +18,7 @@ export default {
     forces: [{ id: "F", symbol: "F", magnitude: 250, direction: { angle: 30, from: "-x", toward: "+y" }, at: [0.4, 0.3], pointLabel: "A" }],
     dims: [{ force: "F", offset: -0.1 }, { force: "F", axis: "y", offset: -0.12 }],
   },
-  view: { xmin: -0.3, xmax: 0.85, ymin: -0.25, ymax: 0.72 },
+  view: { xmin: -0.22, xmax: 0.78, ymin: -0.2, ymax: 0.65 },
   vary: [
     { path: "forces.0.magnitude", min: 150, max: 400, step: 50 },
     { path: "forces.0.direction.angle", values: [20, 30, 40, 50, 60] },

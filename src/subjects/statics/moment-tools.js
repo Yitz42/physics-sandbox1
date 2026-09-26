@@ -7,7 +7,7 @@ import { clone } from "../../core/paths.js";
 import { fixedTex, format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { fromVector, swapTrig } from "./directions.js";
-import { solveMoment, armOf, momentQuantities } from "./moment.js";
+import { solveMoment, armOf, armAngle, momentQuantities } from "./moment.js";
 
 // ---- Dragging arrow tips (explore/build) ---------------------------------------
 
@@ -148,7 +148,13 @@ export function momentSummary(setup, result, { mode = "symbolic", reveal = true 
     const names = momentQuantities(setup);
     for (const f of setup.forces) {
       const d = result.values[`d_${f.id}`];
-      if (d != null && d > 1e-9) lines.push(`${names[`d_${f.id}`].label} = ${fixedTex(d, "m", 3)}`);
+      if (d == null || d < 1e-9) continue;
+      const r = result.values[`r_${f.id}`];
+      const dl = names[`d_${f.id}`].label;
+      // Angled force: show the working, d = r sin φ.
+      lines.push(Math.abs(r - d) > 1e-6
+        ? `${dl} = r\\sin\\varphi = ${fixedTex(r, "m", 3)}\\,\\sin ${armAngle(setup, f, f.at).toFixed(1)}^\\circ = ${fixedTex(d, "m", 3)}`
+        : `${dl} = ${fixedTex(d, "m", 3)}`);
     }
   }
   return lines;

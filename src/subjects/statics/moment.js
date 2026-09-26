@@ -53,6 +53,18 @@ export function armOf(setup, f, P) {
   return { r, rLen: mag(r), d: Math.abs(perNewton), perNewton, foot: add(P, scale(u, along)) };
 }
 
+// The angle φ (degrees, 0–90) between the line OA (O to where the force acts)
+// and the force's line of action. It shows HOW the moment arm is found:
+// d = r·sin φ, with r = |OA|.
+export function armAngle(setup, f, P) {
+  const r = sub(P, setup.about.at);
+  const rl = mag(r);
+  if (rl < 1e-12) return 0;
+  const u = directionOf(f);
+  const c = Math.min(1, Math.abs(r[0] * u[0] + r[1] * u[1]) / rl);
+  return (Math.acos(c) * 180) / Math.PI;
+}
+
 // Moment of one force about O. `setup._armMode = "r"` deliberately uses the
 // straight-line distance |r| instead of d — used only to predict that mistake.
 function momentOf(setup, f, P) {
