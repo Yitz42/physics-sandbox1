@@ -146,9 +146,11 @@ export function answerInputs(container, asks, quantities) {
         input.focus();
       },
     }) : null;
+    // The unit sits inside the box, at its right end, so it's clear what is being typed.
+    const box = el("span", { className: "answer-box" }, [input, unit ? el("span", { className: "answer-box-unit", textContent: unitLabel(unit) }) : null]);
     const row = el("div", { className: "answer-row" }, [
       el("div", { className: "answer-line" }, [
-        label, sign, input,
+        label, sign, box,
         // e.g. "±0.1 N": the unit plus how close the answer must be
         el("span", { className: "answer-tol", title: "How close your answer must be", textContent: precisionText(ask.precision ?? DEFAULT_PRECISION, unit) }),
       ]),

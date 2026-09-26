@@ -165,6 +165,10 @@ p { margin: 0 0 8px; }
 .answer-label { min-width: 70px; text-align: right; }
 .answer-input { font: inherit; font-size: 17px; width: 130px; padding: 6px 8px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-panel); color: var(--c-ink); }
 .answer-unit { color: var(--c-muted); }
+/* The unit shown inside the answer box, at its right end ("  346.4      N ") */
+.answer-box { position: relative; display: inline-block; }
+.answer-box .answer-input { padding-right: 3.2em; }
+.answer-box-unit { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--c-muted); font-size: 16px; pointer-events: none; }
 .answer-sign { font: inherit; font-size: 17px; font-weight: 700; width: 34px; height: 34px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-bg); color: var(--c-ink); cursor: pointer; }
 .answer-sign:hover { border-color: var(--c-force); }
 .answer-tol { font-size: 15px; color: var(--c-ink); background: var(--c-bg); border-radius: 999px; padding: 1px 8px; }
