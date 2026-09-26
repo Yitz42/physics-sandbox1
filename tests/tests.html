@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tests — Engineering Mechanics Sandbox</title>
+  <!-- Same libraries as the game, so the tests check the real thing. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js"></script>
+  <style>
+    body { font: 15px/1.45 system-ui, sans-serif; margin: 24px auto; max-width: 900px; padding: 0 16px; color: #1d2330; background: #f6f7f9; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    #summary { font-size: 18px; font-weight: 600; margin: 12px 0 18px; padding: 12px 16px; border-radius: 8px; }
+    .all-pass { background: #dff5e3; color: #17692b; }
+    .some-fail { background: #fde2e1; color: #9b1c1c; }
+    h2 { font-size: 15px; margin: 20px 0 6px; color: #555; text-transform: uppercase; letter-spacing: .04em; }
+    .row { padding: 5px 10px; border-radius: 6px; margin: 2px 0; background: #fff; }
+    .pass::before { content: "✔ "; color: #17692b; font-weight: 700; }
+    .fail { background: #fff1f0; }
+    .fail::before { content: "✘ "; color: #b42318; font-weight: 700; }
+    .err { font-family: ui-monospace, monospace; font-size: 13px; color: #b42318; margin: 2px 0 0 22px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Engineering Mechanics Sandbox — tests</h1>
+  <p>Every solver is checked against textbook problems with hand-worked answers,
+     and every stage file is checked to make sure it loads and solves.</p>
+  <div id="summary">Running…</div>
+  <div id="results"></div>
+
+  <script type="module">
+    import { runAll } from "./harness.js";
+
+    // Add new test files to this list.
+    const files = [
+      "./core/core.test.js",
+      "./statics/particle.test.js",
+      "./content/stages.test.js",
+    ];
+
+    const summary = document.getElementById("summary");
+    const out = document.getElementById("results");
+    try {
+      for (const f of files) await import(f);
+      const results = await runAll();
+      const failed = results.filter((r) => !r.passed);
+      summary.textContent = failed.length
+        ? `${failed.length} of ${results.length} tests FAILED`
+        : `All ${results.length} tests passed`;
+      summary.className = failed.length ? "some-fail" : "all-pass";
+      let file = null;
+      for (const r of results) {
+        if (r.file !== file) {
+          file = r.file;
+          out.insertAdjacentHTML("beforeend", `<h2></h2>`);
+          out.lastElementChild.textContent = file;
+        }
+        const row = document.createElement("div");
+        row.className = "row " + (r.passed ? "pass" : "fail");
+        row.textContent = r.name;
+        if (!r.passed) {
+          const e = document.createElement("div");
+          e.className = "err";
+          e.textContent = r.error;
+          row.appendChild(e);
+        }
+        out.appendChild(row);
+      }
+      // Machine-readable result (used for automated checking).
+      window.testResults = { total: results.length, failed: failed.length };
+    } catch (err) {
+      summary.textContent = "Tests could not load: " + err.message;
+      summary.className = "some-fail";
+      window.testResults = { total: 0, failed: 1, error: err.message };
+      console.error(err);
+    }
+  </script>
+</body>
+</html>
