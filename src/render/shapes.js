@@ -49,8 +49,9 @@ export function drawShape(cv, s, env) {
     }
     case "line": {
       const a = S(s.from), b = S(s.to);
-      ctx.strokeStyle = s.style === "cable" ? (lit ? roleColor("known") : ink) : faint;
+      ctx.strokeStyle = s.style === "cable" ? (lit ? roleColor("known") : ink) : s.style === "action" ? roleColor("known") : faint;
       ctx.lineWidth = s.style === "cable" ? (lit ? 3.5 : 2) : 1.2;
+      if (s.style === "action") ctx.globalAlpha = 0.55; // a force's line of action: faint, dashed, force colour
       if (s.style !== "cable") ctx.setLineDash([5, 4]);
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);

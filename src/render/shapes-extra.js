@@ -93,8 +93,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
       const [x, y] = S(s.at);
       const k = 9;
       const u = [s.u[0], -s.u[1]], v = [s.v[0], -s.v[1]]; // screen y flipped
-      ctx.strokeStyle = faint;
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = s.role ? roleColor(s.role) : faint;
+      ctx.lineWidth = s.role ? 1.6 : 1.2;
       ctx.beginPath();
       ctx.moveTo(x + u[0] * k, y + u[1] * k);
       ctx.lineTo(x + (u[0] + v[0]) * k, y + (u[1] + v[1]) * k);

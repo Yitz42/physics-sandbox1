@@ -10,7 +10,7 @@ import { boundsOf } from "../../render/canvas.js";
 import { drawScene } from "../../render/diagrams.js";
 import { arrowAt } from "../../render/fbd.js";
 import { renderEquations, highlightTerms } from "../../render/panel.js";
-import { buildControls, toggle, el } from "../../ui/controls.js";
+import { buildControls, toggle, el, button } from "../../ui/controls.js";
 import { mag, sub } from "../../core/vector.js";
 
 // opts:
@@ -146,6 +146,26 @@ export function createWorkspace(ctx, opts = {}) {
       if (ws.onPointer && ws.onPointer.up) ws.onPointer.up(p, e);
     },
   });
+
+  // ---- Show/hide buttons under the picture (stage.toggles) --------------------
+  // e.g. toggles: [{ key: "arms", label: "how d is found" }] adds a button
+  // "Show how d is found" that switches sceneOpts.arms on and off.
+  const old = ctx.el.figure.parentNode.querySelector(".figure-tools");
+  if (old) old.remove();
+  if (ctx.stage.toggles && ctx.stage.toggles.length) {
+    const bar = el("div", { className: "figure-tools" });
+    for (const t of ctx.stage.toggles) {
+      const b = button("", () => {
+        ws.sceneOpts[t.key] = !ws.sceneOpts[t.key];
+        label();
+        ws.redraw();
+      }, "btn btn-quiet btn-small");
+      const label = () => (b.textContent = `${ws.sceneOpts[t.key] ? "Hide" : "Show"} ${t.label}`);
+      label();
+      bar.appendChild(b);
+    }
+    ctx.el.figure.after(bar);
+  }
 
   ws.fit();
   ws.update();

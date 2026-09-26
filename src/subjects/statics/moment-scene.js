@@ -64,27 +64,28 @@ export function momentScene(setup, result, opts = {}) {
     // moment arms are just the distances along the plank, already dimensioned.)
     if (!ghost && !balance && !setup.hideArms && (opts.arms || opts.reveal)) {
       const a = armOf(setup, f, P);
-      shapes.push({ type: "line", from: add(P, scale(u, -0.45 * size)), to: add(P, scale(u, 0.45 * size)), style: "reference" });
+      // The line of action belongs to the force, so it's dashed in the force's colour.
+      shapes.push({ type: "line", from: add(P, scale(u, -0.45 * size)), to: add(P, scale(u, 0.45 * size)), style: "action" });
       if (a.d > 1e-6) {
         const angled = Math.abs(a.rLen - a.d) > 1e-6; // force not at 90° to OA
+        const dSide = Math.sign(a.perNewton) || 1; // which side of OA the moment arm lies on
         if (angled) {
-          // How d is found, kept quiet in the picture: r = |OA| (dashed), a small
-          // "φ" arc at A, and the working in a note box in a free corner.
+          // How d is found. The picture only gets short labels (r, φ, d); the
+          // numbers go in a colour-coded key in a free corner, so it stays readable.
           const phi = armAngle(setup, f, P);
           const toO = sub(O, P);
           const along = toO[0] * u[0] + toO[1] * u[1] >= 0 ? u : scale(u, -1); // the line's half that leans toward O
-          const dSide = Math.sign(a.perNewton) || 1; // which side of OA d lies on
-          shapes.push({ type: "dim", from: O, to: P, label: `r = ${format(a.rLen, "m")}`, dashed: true, labelSide: dSide });
+          const name = setup.forces.length > 1 ? ` (${f.symbol})` : "";
+          shapes.push({ type: "dim", from: O, to: P, label: "r", dashed: true, labelSide: dSide });
           shapes.push({ type: "arc", center: P, r: Math.min(0.3 * a.rLen, 0.25 * size), start: angleDeg(toO), end: angleDeg(along), label: "φ" });
           shapes.push({ type: "note", lines: [
-            `${f.symbol === "F" ? "d" : `d (${f.symbol})`} = r sin φ`,
-            `   = (${format(a.rLen, "m")}) sin ${phi.toFixed(1)}°`,
-            `   = ${format(a.d, "m")}`,
+            { text: `d${name} = r sin φ = ${format(a.d, "m")}`, role: "arm" },
+            { text: `r = OA = ${format(a.rLen, "m")}` },
+            { text: `φ = ${phi.toFixed(1)}° (between r and F)` },
           ] });
         }
-        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: `d = ${format(a.d, "m")}`, labelSide: -(Math.sign(a.perNewton) || 1) });
-        shapes.push({ type: "rightangle", at: a.foot, u, v: unit(sub(O, a.foot)) });
-        shapes.push({ type: "point", at: a.foot, style: "dot" }); // where d meets the line of action
+        shapes.push({ type: "dim", id: f.id, from: O, to: a.foot, role: "arm", label: angled ? "d" : `d = ${format(a.d, "m")}`, labelSide: -dSide });
+        shapes.push({ type: "rightangle", at: a.foot, u, v: unit(sub(O, a.foot)), role: "arm" });
       }
     }
   });

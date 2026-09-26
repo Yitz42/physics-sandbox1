@@ -114,6 +114,7 @@ p { margin: 0 0 8px; }
 .stage-right { background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 16px; }
 .figure { background: var(--c-canvas); border: 1px solid var(--c-line); border-radius: var(--radius); height: 440px; overflow: hidden; }
 .figure[hidden] { display: none; }
+.figure-tools { display: flex; gap: 8px; margin-top: -4px; }
 .equations:empty { display: none; }
 /* No picture (e.g. a text-only concept check): use one centred column. */
 .stage-body:has(.figure[hidden]):not(:has(.equations:not(:empty):not([hidden]))) { grid-template-columns: minmax(0, 760px); justify-content: center; }

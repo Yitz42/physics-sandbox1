@@ -15,7 +15,7 @@
 //   axes     {}                              little x-y axes (bottom-left corner)
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
-//   note     { lines: [text, ...] }          a small working box in a free corner
+//   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
@@ -68,7 +68,9 @@ export function drawScene(cv, shapes, opts = {}) {
 
   // Working notes (e.g. how d is found) go in a box in the freest corner.
   if (notes.length) {
-    const box = placeLegend(ctx, notes.map((text) => ({ text, color: env.ink })), { obstacles, segments, view: cv.view });
+    // A line is plain text, or { text, role } to colour it like the matching drawing.
+    const items = notes.map((n) => (typeof n === "string" ? { text: n, color: env.ink } : { text: n.text, color: n.role ? roleColor(n.role) : env.ink }));
+    const box = placeLegend(ctx, items, { obstacles, segments, view: cv.view });
     drawLegend(ctx, box, env);
     obstacles.push(box.box);
   }
