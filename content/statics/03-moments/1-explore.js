@@ -6,6 +6,7 @@ export default {
   challenge: "explore",
   solver: "statics.moment",
   title: "Turn the Wrench",
+  mission: "Push on the wrench and discover what makes the moment about the bolt bigger.",
   instructions:
     "You push on a wrench at point A to turn the bolt at O. **Drag the arrow's tip**, or use the controls, and watch the moment $M_O$ change.\n\n" +
     "The orange line is the **moment arm** $d$: the perpendicular distance from O to the force's line of action (the dashed line). $M_O = Fd$, and counterclockwise is positive.",

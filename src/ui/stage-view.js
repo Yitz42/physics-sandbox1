@@ -1,51 +1,41 @@
 // stage-view.js — the page layout for one stage.
 //
-//  ┌ breadcrumbs ─────────────────────────────────────────────┐
-//  │ [Predict]  Stage title                     status badge  │
-//  ├──────────────────────────────┬───────────────────────────┤
-//  │  picture (canvas)            │ instructions              │
-//  │                              │ sliders / answers / etc.  │
-//  │  equations                   │ feedback, hints, "why"    │
-//  └──────────────────────────────┴───────────────────────────┘
+//              [ STATICS SIMULATION LAB ]  ← menu tab (chrome.js)
+//  Stage title                                   [████████──  67% COMPLETE]
+//  ┌──────────────────────────────┬───────────────────────────┐
+//  │  picture (canvas)            │ MISSION: one-line goal     │
+//  │                              │ instructions               │
+//  ├──────────────────────────────┤ sliders / objectives / …   │
+//  │  equations                   │ feedback, "why", hints     │
+//  └──────────────────────────────┤ [💡 Show a hint]  [ Test ] │  ← the dock
+//                                 └───────────────────────────┘
+// The dock at the bottom of the panel holds the hint button (left) and the
+// stage's main button (right): Test, then Continue → when the stage is done.
 
 import { el } from "./controls.js";
 import { renderMixed } from "../render/panel.js";
+import { topNav, progressBar } from "./chrome.js";
 
 export const CHALLENGE_NAMES = {
   explore: "Explore", predict: "Predict", build: "Build",
   debug: "Debug", "concept-check": "Concept check", solve: "Solve",
 };
 
-// Only "complete" is shown. "practice" is an internal record, so to the
-// student it looks the same as not finished yet.
-const STATUS_TEXT = { none: "", practice: "", complete: "Complete ★" };
-
-// links: { course: {href, title}, unit: {href, title} }
-export function createStageView(root, stage, links) {
+// where: { course, unit, unitNumber, stages (the unit's loaded stages), current (stage file) }
+export function createStageView(root, stage, where) {
   root.innerHTML = "";
-  const badge = el("span", { className: "status-badge" });
+  const bar = progressBar(where.course, where.unit);
   const header = el("header", { className: "stage-header" }, [
-    el("nav", { className: "crumbs" }, [
-      el("a", { href: "#/", textContent: "Courses" }), " › ",
-      el("a", { href: links.course.href, textContent: links.course.title }), " › ",
-      el("a", { href: links.unit.href, textContent: links.unit.title }),
-    ]),
-    el("div", { className: "stage-title-row" }, [
-      el("span", { className: `chip chip-${stage.challenge}`, textContent: CHALLENGE_NAMES[stage.challenge] }),
-      el("h1", { textContent: stage.title }),
-      badge,
-    ]),
+    el("h1", { textContent: stage.title }),
+    bar,
   ]);
   const body = el("div", { className: "stage-body" });
-  // No previous/next buttons at the bottom (they confused students): moving on
-  // happens from the "Stage complete" card, and the breadcrumbs lead back.
-  root.append(header, body);
+  root.append(topNav(where), header, body);
 
   return {
-    setStatus(status) {
-      badge.textContent = STATUS_TEXT[status] || "";
-      badge.className = `status-badge status-${status}`;
-      badge.hidden = !badge.textContent;
+    // A stage was just completed (or needs practice): refresh the unit's progress bar.
+    setStatus() {
+      bar.refresh();
     },
     // Fresh, empty areas for a new round (a new version of the problem).
     resetBody() {
@@ -53,21 +43,31 @@ export function createStageView(root, stage, links) {
       const parts = {
         figure: el("div", { className: "figure" }),
         equations: el("div", { className: "equations" }),
+        mission: el("div", { className: "mission" }),
         instructions: el("div", { className: "instructions" }),
         controls: el("div", { className: "controls" }),
         area: el("div", { className: "area" }),
         feedback: el("div", { className: "feedback", "aria-live": "polite" }),
         status: el("div", { className: "round-status" }),
-        actions: el("div", { className: "actions finish-actions" }),
         explanation: el("div", { className: "explanation-box" }),
-        hints: el("div", { className: "hints" }),
+        hintList: el("div", { className: "hint-box" }), // hints the student has opened
+        hints: el("div", { className: "hints" }), // the "Show a hint" button
+        actions: el("div", { className: "actions finish-actions" }), // Test, Continue →
       };
+      // MISSION: the stage's goal in one line (stage.mission), then the details.
+      if (stage.mission) {
+        parts.mission.appendChild(el("span", { className: "mission-label", textContent: "Mission: " }));
+        const m = el("span", { className: "mission-text" });
+        renderMixed(m, stage.mission);
+        parts.mission.appendChild(m);
+      }
       renderMixed(parts.instructions, stage.instructions);
       body.append(
         el("section", { className: "stage-left" }, [parts.figure, parts.equations]),
         el("aside", { className: "stage-right" }, [
-          parts.instructions, parts.controls, parts.area, parts.feedback,
-          parts.status, parts.actions, parts.explanation, parts.hints,
+          parts.mission, parts.instructions, parts.controls, parts.area, parts.feedback,
+          parts.status, parts.explanation, parts.hintList,
+          el("div", { className: "dock" }, [parts.hints, parts.actions]),
         ]),
       );
       return parts;

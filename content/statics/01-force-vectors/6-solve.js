@@ -8,6 +8,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "Resultant of Three Forces",
+  mission: "Find the resultant of three forces on the eyebolt: its size and direction.",
   instructions:
     "Three forces act on the eyebolt. Find their resultant: its components, its magnitude $F_R$, and the angle $\\theta$ it makes with the x-axis.",
   setup: {

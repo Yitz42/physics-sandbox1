@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.moment",
   title: "Balance the Seesaw",
+  mission: "Predict where child B must sit to balance the seesaw.",
   instructions:
     "Child A sits on the left of a light seesaw pivoted at O. Where must child B sit, to the right of O, so the seesaw balances? Predict $x_B$, then press **Test**.",
   setup: {

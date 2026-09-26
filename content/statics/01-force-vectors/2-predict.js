@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "Components of an Angled Force",
+  mission: "Predict the x and y components of the force on the bracket, signs included.",
   instructions:
     "The force $F$ on the bracket is shown in the picture, with its angle. Predict its components $F_x$ and $F_y$ — **including their signs** — then press **Test**.",
   setup: {

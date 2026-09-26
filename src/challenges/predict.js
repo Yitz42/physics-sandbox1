@@ -10,7 +10,7 @@
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
-import { el, button } from "../ui/controls.js";
+import { el, testButton } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
 export function mount(ctx) {
@@ -21,10 +21,12 @@ export function mount(ctx) {
 
   ctx.el.area.appendChild(el("div", { className: "area-title", textContent: "Your prediction:" }));
   const inputs = answerInputs(ctx.el.area, asks, quantities);
-  const actions = el("div", { className: "actions" });
-  const testBtn = button("Test", onTest, "btn btn-play");
-  actions.appendChild(testBtn);
+  const actions = el("div", { className: "actions" }); // "Show answer" appears here after 2 wrong tries
   ctx.el.area.appendChild(actions);
+  // Test sits at the bottom right of the panel; when the stage is done it
+  // makes way for "Continue →".
+  const testBtn = testButton(onTest);
+  ctx.el.actions.appendChild(testBtn);
 
   const attempts = createAttempts(ctx, actions, () => {
     delete ws.sceneOpts.guesses; // the real answer replaces the shadow

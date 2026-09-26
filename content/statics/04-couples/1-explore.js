@@ -11,6 +11,7 @@ export default {
   challenge: "explore",
   solver: "statics.couple",
   title: "Move the Point",
+  mission: "Move point P and see that a couple's moment is the same about every point.",
   instructions:
     "Two equal and opposite forces $F$ act on the bar at A and B. Together they make a **couple**. " +
     "**Drag point P** anywhere, or use the sliders, and watch $M_P$: the couple's moment about P.\n\n" +

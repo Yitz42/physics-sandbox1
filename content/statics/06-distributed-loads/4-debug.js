@@ -8,6 +8,7 @@ export default {
   challenge: "debug",
   solver: "statics.distributed",
   title: "Find the Mistake",
+  mission: "Find the mistake in a student's replacement of a trapezoidal load.",
   instructions:
     "A student split this load into a rectangle ($F_1$) and a triangle ($F_2$), then combined them with the point load $P$ into one resultant. " +
     "One term in their work is wrong. Find it and fix it.",

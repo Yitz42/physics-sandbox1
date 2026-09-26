@@ -12,6 +12,7 @@ export default {
   challenge: "solve",
   solver: "statics.rigidBody",
   title: "Pin and Roller",
+  mission: "Draw the beam's free-body diagram and find the support reactions.",
   instructions:
     "This beam (its mass is shown) is held by a pin at A and a roller at B, and a slanted force $P$ pushes on it. " +
     "Draw its free-body diagram, choose the equations, then find the reactions. ($A_x$ and $A_y$ are positive if they point right and up.)",

@@ -12,6 +12,7 @@ export default {
   challenge: "build",
   solver: "statics.moment",
   title: "Balance the Plank",
+  mission: "Place the boxes so the plank balances on its pivot.",
   instructions:
     "A 60 kg adult sits 1 m left of the pivot. Place the three boxes (10, 20 and 30 kg) on the plank so it balances. " +
     "Boxes can go on either side, but need at least 0.5 m between them. Press **Test** to see if it balances.",

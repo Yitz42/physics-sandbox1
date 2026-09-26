@@ -7,6 +7,7 @@ export default {
   challenge: "explore",
   solver: "statics.particle",
   title: "Pull on the Eyebolt",
+  mission: "Apply a force $F$ to the eyebolt and split it into components to meet the objectives.",
   instructions:
     "A force $F$ pulls on an eyebolt at point O. **Drag the round handle at the arrow's tip** (or use the sliders) and watch its components $F_x$ and $F_y$ — the dashed arrows — change.\n\n" +
     "The angle $\\theta$ is measured from the x-axis, the way your textbook does it; the dropdown sets which way the force points from O (e.g. **From O to −x,+y** is up and to the left). You can also type exact values into the boxes. " +

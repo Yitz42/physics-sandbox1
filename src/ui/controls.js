@@ -25,6 +25,14 @@ export function button(text, onClick, className = "btn") {
   return el("button", { type: "button", className, textContent: text, onclick: onClick });
 }
 
+// The big "Test" button (predict and build stages), with a clipboard-and-tick icon.
+export function testButton(onClick, text = "Test") {
+  const b = el("button", { type: "button", className: "btn btn-play btn-test", onclick: onClick });
+  b.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 4h6v3H9zM8 5.5H6.5A1.5 1.5 0 0 0 5 7v12.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H16M8.5 14l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  b.append(el("span", { textContent: text }));
+  return b;
+}
+
 // A labelled slider bound to a path in the setup. Calls onChange() after edits.
 //   spec: { path, label, min, max, step, unit }
 // The value can also be typed into the box beside the slider (for exact

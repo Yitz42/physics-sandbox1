@@ -14,6 +14,7 @@ export default {
   challenge: "build",
   solver: "statics.equivalent",
   title: "Lift It Level",
+  mission: "Place the crates so the crane lifts the beam level.",
   instructions:
     "A crane lifts this light beam by one hook, 1.5 m from its left end. Place the three crates so the beam hangs **level**: " +
     "the single resultant of their weights must act right under the hook. Press **Test** to check.",

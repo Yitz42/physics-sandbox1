@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.moment",
   title: "An Angled Force, Two Ways",
+  mission: "Find the moment of an angled force about O, two different ways.",
   instructions:
     "A force $F$ acts on the bracket at A. Find its moment about O. First choose the correct equation for each method, then find $M_O$. Stuck on the moment arm $d$? Press **Show how d is found** under the picture.",
   setup: {

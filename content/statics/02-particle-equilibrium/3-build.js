@@ -15,6 +15,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Stay Under the Rating",
+  mission: "Hang the crate so neither cable goes over its rating.",
   instructions:
     `Hang the 100 kg crate from the ceiling with two cables. Each cable is rated for **${LIMIT} N**. ` +
     "The middle of the ceiling is a skylight (red), so no anchors there. Pick the two cable angles, then press **Test** to load it.",

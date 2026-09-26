@@ -9,6 +9,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Hit the Target",
+  mission: "Set $F_2$ so the two forces together hit the green target.",
   instructions:
     "Force $F_1$ is fixed. You control $F_2$ only. Set $F_2$ so that the two forces together — the resultant $F_R$ — match the green **target**: " +
     `${TARGET} N straight up. The resultant stays hidden until you press **Test**, so work it out with components first!`,

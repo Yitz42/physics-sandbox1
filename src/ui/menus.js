@@ -4,6 +4,7 @@ import { el, button } from "./controls.js";
 import { renderMixed } from "../render/panel.js";
 import { getStatus, resetAll } from "../core/progress.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
+import { topNav, progressBar } from "./chrome.js";
 
 // "practice" (answer was shown) is an internal record: students just see "not done yet".
 // A block of content text that may contain math like $\\Sigma F_x = 0$.
@@ -20,6 +21,7 @@ const ICON_TITLE = { none: "Not done yet", practice: "Not done yet", complete: "
 export function renderHome(root, courses) {
   root.innerHTML = "";
   root.append(
+    topNav(),
     el("header", { className: "page-header" }, [
       el("h1", { textContent: "Engineering Mechanics Sandbox" }),
       el("p", { className: "lead", textContent: "Build it, load it, press Test — and see how forces become equations." }),
@@ -47,7 +49,7 @@ export function renderCourse(root, course, units) {
     ]));
   });
   root.append(
-    el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" })]),
+    topNav({ course }),
     el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), mixed(course.description, "lead")]),
     list,
     el("footer", { className: "page-footer" }, [
@@ -83,8 +85,12 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
   const concept = el("p", { className: "lead" });
   renderMixed(concept, unit.concept);
   root.append(
-    el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title })]),
-    el("header", { className: "page-header" }, [el("div", { className: "unit-num", textContent: `Unit ${unitNumber}` }), el("h1", { textContent: unit.title }), concept]),
+    topNav({ course, unit, unitNumber, stages }),
+    el("header", { className: "page-header unit-header" }, [
+      el("div", {}, [el("div", { className: "unit-num", textContent: `Unit ${unitNumber}` }), el("h1", { textContent: unit.title })]),
+      progressBar(course, unit),
+    ]),
+    concept,
     el("h3", { textContent: "You will be able to:" }), goals,
     el("h3", { textContent: "Stages" }), list,
   );

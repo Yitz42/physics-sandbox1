@@ -41,9 +41,10 @@ async function route() {
       next = `#/${courseId}`;
       nextLabel = `Back to ${course.title} →`;
     }
+    // The page's top menu lists every stage of this unit.
     const view = createStageView(app, stage, {
-      course: { href: `#/${courseId}`, title: course.title },
-      unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitIndex + 1}: ${unit.title}` },
+      course, unit, unitNumber: unitIndex + 1, current: stageFile,
+      stages: await loadUnitStages(courseId, unit),
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
     runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });

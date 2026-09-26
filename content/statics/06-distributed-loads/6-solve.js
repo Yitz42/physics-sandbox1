@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.distributed",
   title: "The Curved Load",
+  mission: "Replace a curved load with one force, using integration.",
   instructions:
     "The load on this beam follows a curve: zero at O, rising to $w_0$ at the far end. Replace it with one force. " +
     "First choose the correct integrals, then find $F_R$ and where it acts, $\\bar{x}$ from O.",

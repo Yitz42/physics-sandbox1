@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "statics.couple",
   title: "Find the Mistake",
+  mission: "Find the mistake in a student's moment of a couple about P.",
   instructions:
     "A student found the moment of this couple about point P, one force at a time. " +
     "The second line, $M = Fd$, is right — and the two lines must agree, because a couple has the same moment about every point.",

@@ -11,6 +11,7 @@ export default {
   challenge: "solve",
   solver: "statics.equivalent",
   title: "Reduce to O",
+  mission: "Replace the bracket's forces and couple with one force and one couple at O.",
   instructions:
     "Replace the two forces and the couple on the bracket with a single resultant force and a couple moment at O. " +
     "First choose the correct equations, then find $F_{Rx}$, $F_{Ry}$ and $(M_R)_O$ (counterclockwise positive). Stuck? Press **Show the moment arms** under the picture.",

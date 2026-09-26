@@ -57,9 +57,10 @@ export function runStage({ stage, view, key, next, nextLabel = "Next stage →" 
       // after a correct answer and bring them back for the next question.
       hideHints() {
         el.hints.innerHTML = "";
+        el.hintList.innerHTML = "";
       },
       showHints() {
-        buildHints(el.hints, stage.hints);
+        buildHints(el.hints, stage.hints, el.hintList);
       },
       explain() {
         showExplanation(el.explanation, stage.explanation);
@@ -67,7 +68,7 @@ export function runStage({ stage, view, key, next, nextLabel = "Next stage →" 
       // message: optional extra line for the "Stage complete" card
       finish({ message = "" } = {}) {
         el.actions.innerHTML = "";
-        el.hints.innerHTML = ""; // finished: hints are no longer needed
+        ctx.hideHints(); // finished: hints are no longer needed
         if (ctx.revealed) {
           showMessage(el.status, "info", "Your turn", "Now try one on your own, with new numbers.");
           el.actions.appendChild(button("Try a new version →", newRound, "btn btn-play"));

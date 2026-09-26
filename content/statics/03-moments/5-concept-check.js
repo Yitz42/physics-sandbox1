@@ -13,6 +13,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.moment",
   title: "Moment Sense",
+  mission: "Show you know what makes a moment, and which way it turns.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

@@ -4,6 +4,7 @@ export default {
   id: "07-supports-fbd/5-concept-check",
   challenge: "concept-check",
   title: "Which Reactions?",
+  mission: "Show you know which reactions each kind of support gives.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

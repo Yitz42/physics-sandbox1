@@ -4,6 +4,7 @@ export default {
   id: "06-distributed-loads/5-concept-check",
   challenge: "concept-check",
   title: "Area and Centroid",
+  mission: "Show you know why a distributed load's resultant is its area at its centroid.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

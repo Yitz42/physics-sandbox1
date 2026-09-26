@@ -11,7 +11,7 @@
 //   goal: { text, check(result, setup) → { ok, message, flagged?: [ids] } }
 
 import { createWorkspace } from "./common/workspace.js";
-import { el, button } from "../ui/controls.js";
+import { el, testButton } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
 
@@ -38,12 +38,13 @@ export function mount(ctx) {
     },
   });
 
-  const goalBox = el("div", { className: "goal" }, [el("div", { className: "area-title", textContent: "Goal" })]);
+  const goalBox = el("div", { className: "goal" }, [el("div", { className: "area-title", textContent: "Challenge objective:" })]);
   const goalText = el("div");
   renderMixed(goalText, goal.text);
   goalBox.appendChild(goalText);
-  const testBtn = button("Test", onTest, "btn btn-play");
-  ctx.el.area.append(goalBox, el("div", { className: "actions" }, [testBtn]));
+  ctx.el.area.append(goalBox);
+  // Test sits at the bottom right of the panel (Continue → replaces it when done).
+  ctx.el.actions.appendChild(testButton(onTest));
 
   function onTest() {
     playing = true;

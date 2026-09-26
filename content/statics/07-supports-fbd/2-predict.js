@@ -15,6 +15,7 @@ export default {
   challenge: "predict",
   solver: "statics.rigidBody",
   title: "Count the Unknowns",
+  mission: "Predict how many unknown reactions each support gives.",
   instructions:
     "Replace each support with its reactions. How many **unknown** reactions does the support at A give, and the one at B? " +
     "Predict both, then press **Test** to see the free-body diagram.",

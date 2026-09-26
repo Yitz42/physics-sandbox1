@@ -24,7 +24,7 @@ export function mount(ctx) {
     list.appendChild(li);
     return li;
   });
-  if (tasks.length) ctx.el.area.append(el("div", { className: "area-title", textContent: "Try to:" }), list);
+  if (tasks.length) ctx.el.area.append(el("div", { className: "area-title", textContent: "Challenge objectives:" }), list);
 
   let ws = null; // set just below; onChange runs once during creation, before ws exists
   let finished = false;

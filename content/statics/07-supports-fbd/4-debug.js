@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "statics.rigidBody",
   title: "What's Wrong with This FBD?",
+  mission: "Find the mistake in a student's free-body diagram of the boom.",
   instructions:
     "A student replaced the pin and the cable with reactions and wrote the equations from their free-body diagram. " +
     "The faded symbols show the real supports. One thing on their FBD is wrong.",

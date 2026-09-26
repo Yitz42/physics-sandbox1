@@ -11,6 +11,7 @@ export default {
   challenge: "debug",
   solver: "statics.equivalent",
   title: "Find the Mistake",
+  mission: "Find the mistake in a student's resultant moment about O.",
   instructions:
     "A student replaced these forces and the couple with a resultant force and moment at O. Their $F_{Rx}$ and $F_{Ry}$ lines are right; " +
     "their $(M_R)_O$ line has one mistake.",

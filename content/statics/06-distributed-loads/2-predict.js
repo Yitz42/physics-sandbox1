@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.distributed",
   title: "The Triangular Load",
+  mission: "Predict the size and position of the triangular load's resultant.",
   instructions:
     "Water pressure on this beam grows steadily from zero to its largest value $w_0$. Replace it with **one** force: how big is it, and how far from O does it act? " +
     "Predict both, then press **Test**.",

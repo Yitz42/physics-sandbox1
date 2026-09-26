@@ -29,6 +29,8 @@ for (const { unit, file, stage } of stages) {
   test(`${stage.id}: stage file is valid`, () => {
     equal(checkStage(stage), []);
     equal(stage.id, `${unit.id}/${file}`, "id must be <unit folder>/<file name>:");
+    // The one-line MISSION shown at the top of the panel.
+    ok(typeof stage.mission === "string" && stage.mission.length > 0 && stage.mission.length <= 120, "needs a one-line mission (up to 120 characters)");
   });
 
   if (!stage.setup) continue;

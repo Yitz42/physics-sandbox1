@@ -16,6 +16,7 @@ export default {
   challenge: "build",
   solver: "statics.distributed",
   title: "Load the Trailer",
+  mission: "Spread the gravel so its resultant sits right over the trailer's axle.",
   instructions:
     "Spread gravel along this 4 m trailer bed. Its depth changes steadily from the front (O) to the back, so the load goes from $w_F$ to $w_B$. " +
     "The trailer pulls best when the gravel's resultant sits **right over the axle**. Set the two ends, then press **Test**.",

@@ -48,7 +48,7 @@ src/
   render/                  drawing only, no physics
     canvas.js  arrows.js  fbd.js  diagrams.js  panel.js
   ui/
-    controls.js  menus.js  feedback.js
+    controls.js  menus.js  feedback.js  stage-view.js  chrome.js (top menu, progress bar)
   subjects/                one folder per subject; each is a plug-in
     statics/
       index.js             registers the statics solvers with the core
@@ -111,6 +111,7 @@ export default {
   challenge: "predict",          // one of the challenge types
   solver: "statics.rigidBody",   // solver registered by the subject
   title: "Balance the Seesaw",
+  mission: "Predict where child B must sit to balance the seesaw.", // one line, shown as MISSION:
   instructions: "Plain-language instructions shown to the student.",
   setup: { bodies: [...], supports: [...], loads: [...] },
   editable: ["loads.0.position"],
@@ -137,6 +138,15 @@ export default {
 - Moments: counterclockwise positive; students type clockwise moments as negative
   numbers. Answer precision: ±0.1 N and ±0.1 N·m for forces and moments, ±0.01 m
   for distances (set per ask with `precision`).
+- Page layout ("simulation lab" look, agreed with the owner): a tab at the top centre
+  ("STATICS SIMULATION LAB") opens a menu on hover or tap: Home, back to the unit, the
+  unit's stages (ticked when done), and a greyed "Account — coming soon" slot. The
+  stage title sits top left with a progress bar top right showing **stages done in
+  this unit**. No stage-type tag on the stage page. The panel starts with
+  **MISSION:** (the stage's `mission` line), explore objectives are titled
+  "Challenge objectives" and still tick themselves (no Test button in explore). The
+  hint button sits bottom left of the panel and the main button (Test, Continue →)
+  bottom right.
 - Nothing moves on by itself: after a correct step the student presses **Next step →**,
   and a finished stage shows **Continue →**, which opens the "Stage complete" card.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted

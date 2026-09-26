@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.couple",
   title: "Replace the Couple",
+  mission: "Predict the forces of a new couple that has the same effect as the old one.",
   instructions:
     "The couple on the left (forces $F$ at A and B) must be replaced by a couple of forces $F'$ at C and D that has **exactly the same effect** on the plate. " +
     "How big must $F'$ be? Predict it, then press **Test**.",

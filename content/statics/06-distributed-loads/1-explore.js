@@ -8,6 +8,7 @@ export default {
   challenge: "explore",
   solver: "statics.distributed",
   title: "Shape the Load",
+  mission: "Shape the load on the beam and watch its single resultant force move.",
   instructions:
     "Sand is piled along a 6 m beam. Its **intensity** $w$ (newtons per metre of beam) changes steadily from the left end to the right end. " +
     "The dashed purple arrow is the single force with the same effect: $F_R$ equals the **area** of the load, acting at its **centroid**. " +

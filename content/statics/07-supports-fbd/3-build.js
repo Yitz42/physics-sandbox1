@@ -19,6 +19,7 @@ export default {
   challenge: "build",
   solver: "statics.rigidBody",
   title: "Support the Bridge",
+  mission: "Choose supports so the bridge is stable, solvable, and free to expand.",
   instructions:
     "A 10 m bridge deck rests on two piers, A and B. A braking truck pushes down on it and also drags it sideways. " +
     "Choose the support at each pier, then press **Test**. The engineer's brief is below.",

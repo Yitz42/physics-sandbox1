@@ -9,6 +9,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "Predict the Tensions",
+  mission: "Predict the tension in each cable holding the crate.",
   instructions:
     "The crate hangs at rest. Using the angles and mass in the picture, predict the tension in each cable, then press **Test**.",
   setup: crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }),

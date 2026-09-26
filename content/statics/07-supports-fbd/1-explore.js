@@ -18,6 +18,7 @@ export default {
   challenge: "explore",
   solver: "statics.rigidBody",
   title: "Swap the Supports",
+  mission: "Try different supports and see which reactions each one gives.",
   instructions:
     "Choose what holds each end of the beam. The faded symbols are the supports; the orange arrows are the **reactions** they push and pull with — one for each motion the support stops. " +
     "A body in a plane can move 3 ways (slide sideways, slide up and down, turn), and there are 3 equations to find the reactions.",

@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "The Hanging Lamp",
+  mission: "Find the cable tensions holding the lamp: FBD, equations, answers.",
   instructions:
     "A lamp hangs from ring A. Cable AB rises on a 3-4-5 slope; cable AC is at an angle. Work through the full problem: FBD, equations, answers.",
   setup: {

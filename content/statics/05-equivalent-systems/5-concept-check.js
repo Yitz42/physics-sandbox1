@@ -4,6 +4,7 @@ export default {
   id: "05-equivalent-systems/5-concept-check",
   challenge: "concept-check",
   title: "Equivalent or Not?",
+  mission: "Show you know when two force systems are equivalent.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [
