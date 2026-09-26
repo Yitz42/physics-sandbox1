@@ -23,6 +23,7 @@ export default {
     boxSize: 0.42, // narrower than the 0.5 m spacing, so boxes never overlap
     hideArms: true,
     body: { points: [[-3, 0], [3, 0]] },
+    listValues: true, // the weights' values in a tidy list in the corner
     forces: [
       { id: "W_P", symbol: "W_P", kind: "weight", mass: 60, at: [-1, 0] },
       { id: "B10", symbol: "W_{10}", kind: "weight", mass: 10, at: [0.5, 0] },

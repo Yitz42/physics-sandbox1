@@ -147,6 +147,15 @@ export default {
   "Challenge objectives" and still tick themselves (no Test button in explore). The
   hint button sits bottom left of the panel and the main button (Test, Continue →)
   bottom right.
+- Picture rules (agreed with the owner): an arrow pushing on a body ends ON its
+  surface and is labelled at its outer end; other arrows start exactly at their
+  point and are labelled just past the tip, in line (below a downward arrow).
+  Point letters and a resultant's label go below, hopping over dimension lines.
+  Angle numbers sit between the angle's two sides, clear of both. Labels have no
+  background box. A moment label that runs into something becomes its name
+  ("M") with the value in the corner list; a stage can list every value there
+  (`listValues: true`). Pictures without sliders or dragging are zoomed to fill
+  the canvas. Real objects are drawn as themselves (wrench, trailer, eyebolt …).
 - Nothing moves on by itself: after a correct step the student presses **Next step →**,
   and a finished stage shows **Continue →**, which opens the "Stage complete" card.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted

@@ -85,8 +85,17 @@ export function createWorkspace(ctx, opts = {}) {
     const framed = all.find((s) => s.frame);
     ws.framed = !!framed;
     if (framed) return cv.fit(framed.frame);
-    if (ctx.stage.view) return cv.fit(ctx.stage.view);
-    cv.fit(boundsOf([...all, ...ws.extraShapes()], 0.8)); // margin leaves room for labels
+    // Stages where things move (sliders, dragging) keep their own fixed window,
+    // so nothing slides out of view. Otherwise the picture is made as big as
+    // the canvas allows: fit snugly around the full drawing, with a margin
+    // (a share of its size) for labels.
+    const moves = (opts.editable && opts.editable.length) || (opts.draggable && opts.draggable.length);
+    if (ctx.stage.view && moves) return cv.fit(ctx.stage.view);
+    // (Faint dashed guides — lines of action — may run off the edge: they don't set the size.)
+    const solid = all.filter((s) => !(s.type === "line" && (s.style === "action" || s.style === "reference")));
+    const b = boundsOf([...solid, ...ws.extraShapes()], 0);
+    const m = 0.1 * Math.max(b.xmax - b.xmin, b.ymax - b.ymin, 1e-6);
+    cv.fit({ xmin: b.xmin - m, xmax: b.xmax + m, ymin: b.ymin - m, ymax: b.ymax + m });
   };
 
   // Side-by-side diagrams are laid out for the canvas size, so re-fit when it changes.

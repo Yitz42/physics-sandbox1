@@ -29,7 +29,7 @@ export default {
     dims: [
       { from: [0, -0.12], to: [0.4, -0.12] },
       { from: [0.4, -0.12], to: [0.8, -0.12] },
-      { from: [-0.32, 0], to: [-0.32, 0.6], side: -1 },
+      { from: [-0.5, 0], to: [-0.5, 0.6], side: -1 }, // well left of the couple moment on the upright
     ],
   },
   view: { xmin: -0.5, xmax: 1.4, ymin: -0.45, ymax: 1.05 },

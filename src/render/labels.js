@@ -14,6 +14,9 @@ const TRIES = [
   [100, 0], [-100, 0], [100, 36], [-100, 36], [100, -36], [-100, -36], // far tries: to get back inside a diagram
 ];
 
+// Straight-down spots, for labels that prefer to go below (18 px steps).
+const DOWN = [0, 18, 36, 54, 72, 90, 108, 126].map((dy) => [0, dy]);
+
 function overlapArea(a, b) {
   const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
   const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
@@ -35,7 +38,8 @@ function segmentHits(box, p, q) {
 
 // labels:    [{ text, pos: [x, y], align, size, weight, maxMove? }]
 // obstacles: boxes already on the picture
-// segments:  [[p, q], ...] arrow and cable lines (pixels)
+// segments:  [[p, q, kind?], ...] lines (pixels); kind true = a faint dashed
+//            guide (labels may sit on it), "dim" = a dimension line (labels may hop over it)
 // view:      { width, height } of the canvas
 // Returns the labels with an adjusted `pos` (and the `box` each one covers).
 export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }) {
@@ -47,16 +51,33 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     // Try each nearby spot, with the preferred alignment, then centred, then
     // running the other way (e.g. a long label that must stay inside its diagram).
     const aligns = [l.align, ...["center", "left", "right"].filter((a) => a !== l.align)];
-    const tries = TRIES.flatMap(([dx, dy]) => aligns.map((a) => [dx, dy, a]));
+    // prefer: "down" (point names, a resultant's label): step straight down
+    // first — below any dimension lines there — before trying sideways.
+    // "down" steps up to 72 px (past a dimension line or two); "far-down" (a
+    // resultant's label) keeps going until it's below every dimension line.
+    const down = l.prefer === "down" || l.prefer === "far-down";
+    const maxDown = l.prefer === "far-down" ? Infinity : 72;
+    const spots = down ? [...DOWN.filter(([, dy]) => dy <= maxDown), ...TRIES] : TRIES;
+    const tries = spots.flatMap(([dx, dy]) => aligns.map((a) => [dx, dy, a]));
     for (const [dx, dy, align] of tries) {
       if (l.maxMove != null && Math.hypot(dx, dy) > l.maxMove) continue; // e.g. angles stay by their arc
       const pos = [l.pos[0] + dx, l.pos[1] + dy];
       const box = labelBox(pos[0], pos[1], width, l.size, align);
       // Prefer the original spot: moving away (or re-aligning) costs a little.
-      let cost = Math.hypot(dx, dy) + (align === l.align ? 0 : 8);
+      let cost = (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
       for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
-      for (const [p, q] of segments) cost += segmentHits(box, p, q) * 40;
+      // A faint dashed guide (a line of action) barely counts: a label may sit on it.
+      for (const [p, q, kind] of segments) cost += segmentHits(box, p, q) * (kind === true ? 1 : 40);
+      // Stepping down may hop over dimension lines, but never past an arrow or
+      // the body: check the strip the label would slide through.
+      if (down && dy > 18) {
+        const start = labelBox(l.pos[0], l.pos[1], width, l.size, align);
+        const strip = { x0: start.x0, y0: start.y1, x1: start.x1, y1: box.y0 };
+        for (const [p, q, kind] of segments) if (kind !== "dim" && kind !== true && segmentHits(strip, p, q)) cost += 500;
+        // …nor through a drawing (an eyebolt, a support): only dimension lines.
+        for (const t of obstacles) if (!t.soft && !t.dim && overlapArea(strip, t) > 0) cost += 500;
+      }
       // Keep it on the canvas, and inside its own diagram (minX/maxX, set by dividers).
       if (box.x0 < 0 || box.y0 < 0 || box.x1 > view.width || box.y1 > view.height) cost += 5000;
       if ((l.minX != null && box.x0 < l.minX) || (l.maxX != null && box.x1 > l.maxX)) cost += 5000;

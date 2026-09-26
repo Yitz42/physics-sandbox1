@@ -68,7 +68,9 @@ export function drawShape(cv, s, env) {
       ctx.moveTo(a[0], a[1]);
       ctx.lineTo(b[0], b[1]);
       ctx.stroke();
-      out.segments.push([a, b]); // labels keep off cables and dashed reference lines
+      // Labels keep off cables; faint dashed guides (lines of action, reference
+      // lines) they may sit on if that's the best spot (the third entry says so).
+      out.segments.push(s.style === "cable" ? [a, b] : [a, b, true]);
       break;
     }
     case "support": {
@@ -136,8 +138,13 @@ export function drawShape(cv, s, env) {
       ctx.arc(x, y, r, (-s.start * Math.PI) / 180, (-(s.start + diff) * Math.PI) / 180, diff > 0);
       ctx.stroke();
       const mid = ((s.start + diff / 2) * Math.PI) / 180;
-      // The angle's number is placed with the other labels, so it can dodge arrows.
-      out.labels.push({ text: s.label, pos: [x + Math.cos(mid) * (r + 20), y - Math.sin(mid) * (r + 20)], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 26 });
+      // The angle's number sits on the line halfway between the two sides of
+      // the angle, far enough out that the text clears both sides (a narrow
+      // angle needs it further out). It's placed with the other labels, so it
+      // can still dodge arrows.
+      const half = Math.max(0.12, Math.abs(diff) / 2 * Math.PI / 180);
+      const out2 = Math.max(r + 18, Math.min(r + 90, 17 / Math.sin(half)));
+      out.labels.push({ text: s.label, pos: [x + Math.cos(mid) * out2, y - Math.sin(mid) * out2 + 4], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 30 });
       break;
     }
     case "triangle": {

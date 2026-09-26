@@ -31,6 +31,9 @@ export function progressBar(course, unit) {
     bar.title = `${done} of ${total} stages in this unit complete`;
   };
   bar.refresh();
+  // The bar's width follows the space the title leaves; when it's narrow,
+  // show just "83%" instead of "83% complete".
+  if (globalThis.ResizeObserver) new ResizeObserver(() => bar.classList.toggle("compact", bar.clientWidth < 170)).observe(bar);
   return bar;
 }
 

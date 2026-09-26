@@ -235,6 +235,7 @@ p { margin: 0 0 8px; }
   --c-mission: #b0661f;
   --c-progress: #7aa3d9; --c-progress-track: #dde1e7;
   --c-thumb: #d6e4f6; --c-thumb-rim: #4f7fc0;
+  --c-steel: #c9d0d9; --c-nut: #8f99a6; /* the wrench */
   --shadow: 0 2px 10px rgba(20, 30, 50, .08);
 }
 @media (prefers-color-scheme: dark) {
@@ -243,6 +244,7 @@ p { margin: 0 0 8px; }
     --c-figure-a: #283040; --c-figure-b: #1b212b;
     --c-mission: #f0a660; --c-progress: #4f7fc0; --c-progress-track: #2c3444;
     --c-thumb: #9dbde8; --c-thumb-rim: #dbe7f7;
+    --c-steel: #5b6474; --c-nut: #3c4452;
     --shadow: 0 2px 10px rgba(0, 0, 0, .35);
   }
 }
@@ -270,15 +272,20 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .topnav-tick { width: 16px; color: var(--c-good); font-weight: 700; text-align: center; flex: none; }
 
 /* Title and the unit's progress bar */
-.stage-header, .unit-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
-.stage-header h1 { font-size: 30px; font-weight: 600; margin: 0; }
+/* The progress bar fills whatever room the title leaves (a clean 32 px gap
+   after the title), up to 420 px wide and at least 84 px. */
+.stage-header, .unit-header { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-bottom: 14px; }
+.stage-header h1 { font-size: 30px; font-weight: 600; margin: 0; flex: 0 1 auto; min-width: 0; }
+.stage-header .progress-bar, .unit-header .progress-bar { flex: 1 1 0; min-width: 84px; max-width: 420px; }
+.progress-bar.compact .progress-word { display: none; } /* too narrow for "complete": just "83%" */
 .progress-bar { position: relative; width: min(380px, 100%); height: 28px; border-radius: 999px; background: var(--c-progress-track); overflow: hidden; }
 .progress-fill { height: 100%; background: var(--c-progress); border-radius: 999px 0 0 999px; transition: width .4s ease-out; }
 .progress-word { margin-left: .35em; }
 .progress-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
 
 /* Panels */
-.figure { background: radial-gradient(ellipse at 50% 38%, var(--c-figure-a), var(--c-figure-b)); border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow); }
+.figure { background: radial-gradient(ellipse at 50% 38%, var(--c-figure-a), var(--c-figure-b)); border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow);
+  height: clamp(420px, 58vh, 580px); } /* taller on tall screens, so drawings can be bigger */
 .stage-right, .equations { border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow); }
 .stage-right { padding: 18px; }
 
@@ -334,12 +341,8 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 
 /* Phones and narrow windows: stack the picture above the panel. */
 @media (max-width: 860px) {
-  /* The unit's progress shrinks to a small "67%" bar beside the title,
-     instead of taking a whole row of its own. */
-  .stage-header, .unit-header { flex-wrap: nowrap; align-items: flex-start; }
-  .stage-header h1 { font-size: 26px; flex: 1; min-width: 0; }
-  .stage-header .progress-bar, .unit-header .progress-bar { width: 76px; height: 24px; flex: none; margin-top: 6px; }
-  .progress-word { display: none; }
+  .stage-header, .unit-header { gap: 20px; }
+  .stage-header h1 { font-size: 26px; }
   .stage-body { grid-template-columns: 1fr; }
   .figure { height: 340px; }
   .unit-card { grid-template-columns: 1fr; gap: 4px; }

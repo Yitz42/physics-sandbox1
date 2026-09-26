@@ -25,12 +25,16 @@ export default {
     body: { points: [[0, 0], [4, 0]] },
     loadScale: 2500, // 1 m of picture per 2500 N/m
     partsOnReveal: true,
-    resultantDimOffset: -1.0,
-    extras: [{ type: "wheel", at: [AXLE, 0], rPx: 14 }],
+    resultantDimOffset: -1.3,
+    // The trailer: tow bar and hitch in front of the bed, and its wheel at the axle.
+    extras: [{ type: "trailer", from: [0, 0], to: [4, 0] }, { type: "wheel", at: [AXLE, 0], rPx: 14 }],
     loads: [{ id: "g", shape: "linear", from: 0, to: 4, w: [1000, 1000], symbols: ["w_F", "w_B"] }],
-    dims: [{ from: [0, -0.62], to: [AXLE, -0.62], label: "axle: 1.6 m" }],
+    dims: [
+      { from: [0, -0.62], to: [AXLE, -0.62], label: "axle: 1.6 m" },
+      { from: [0, -0.95], to: [4, -0.95], label: "bed: 4 m" },
+    ],
   },
-  view: { xmin: -0.5, xmax: 4.5, ymin: -1.4, ymax: 2.3 },
+  view: { xmin: -0.95, xmax: 4.35, ymin: -1.55, ymax: 2.1 },
   editable: [
     { path: "loads.#g.w.0", label: "w at the front, w_F", min: 0, max: 3000, step: 100, unit: "N/m" },
     { path: "loads.#g.w.1", label: "w at the back, w_B", min: 0, max: 3000, step: 100, unit: "N/m" },

@@ -13,7 +13,7 @@ export default {
   setup: {
     analysis: "moment",
     about: { at: [0, 0], label: "O" },
-    body: { points: [[0, 0], [0.3, 0]] }, // the wrench handle, 0.3 m long
+    body: { points: [[0, 0], [0.3, 0]], kind: "wrench" }, // a wrench, 0.3 m long, its ring on the bolt at O
     forceScale: 800, // arrows drawn 1 m per 800 N (so 100 N is 0.125 m)
     dragStep: 10,
     dragMax: 200,

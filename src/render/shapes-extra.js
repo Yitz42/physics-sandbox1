@@ -8,12 +8,14 @@
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
 // Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js;
-// distributed loads and wheels in loads.js; support symbols in supports.js.
+// distributed loads and wheels in loads.js; support symbols in supports.js;
+// a wrench and a trailer in hardware.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
 import { drawObject } from "./objects.js";
 import { drawLoadShape } from "./loads.js";
 import { drawSupportSymbol } from "./supports.js";
+import { drawHardware } from "./hardware.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -104,9 +106,9 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.lineTo(p[0] + n[0] * 6, p[1] + n[1] * 6);
         ctx.stroke();
       }
-      out.segments.push([a, b]);
+      out.segments.push([a, b, "dim"]); // a dimension line: labels may hop over it, not sit on it
       if (half) {
-        out.boxes.push(drawLabel(ctx, s.label, mid[0], mid[1], { color, size: 13, weight }));
+        out.boxes.push({ ...drawLabel(ctx, s.label, mid[0], mid[1], { color, size: 13, weight }), dim: true }); // part of a dimension
       } else if (s.label) {
         // Label beside the middle, on the side the normal points to.
         const side = s.labelSide || 1;
@@ -162,14 +164,15 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.closePath();
       ctx.fill();
       // labelMove: how far the label may move to dodge things (0 keeps it right above the arrow).
-      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60 });
+      // (moment: true lets a crowded label move to the corner list, leaving just its name.)
+      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60, fromArrow: s.role !== "shadow", moment: true });
       out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r });
       break;
     }
     default: {
       // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js;
       // distributed loads and wheels in loads.js; support symbols in supports.js.
-      const obj = drawObject(cv, s, env) || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env);
+      const obj = drawObject(cv, s, env) || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env);
       if (obj) return obj;
     }
   }
