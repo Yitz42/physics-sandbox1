@@ -14,6 +14,7 @@ import { angleMarks } from "./particle-scene.js";
 import { armOf } from "./moment.js";
 import { allForces, coupleGeometry, dSymbolOf, armSymbolOf, isSlanted, upAlong } from "./couple-geometry.js";
 import { coupleShadow, phiOf, momentCenter } from "./couple-tools.js";
+import { spreadPanels } from "../../render/panels.js";
 
 // Overall size of the picture, so arrows scale with it.
 function sizeOf(setup) {
@@ -172,7 +173,31 @@ export function coupleScene(setup, result, opts = {}) {
 
   if (opts.guesses) shapes.push(...coupleShadow(setup, result, opts.guesses, { k, size, center: momentCenter(setup) }));
   if (about) shapes.push({ type: "point", at: setup.about.at, label: setup.about.label || "P", style: "ring" });
-  return shapes;
+  return setup.divider != null ? sideBySide(setup, result, shapes, opts) : shapes;
+}
+
+// Two parts side by side (e.g. a couple and its replacement): a soft line
+// between them at setup.divider, each part centred in its half of the canvas
+// (render/panels.js). Each part's width is measured on the fully revealed
+// picture (every arrow at its true length, every distance drawn), so it stays
+// the same while the student works and when the answer appears.
+// setup.frameY is the height to show; setup.frameMargin the space around each part.
+function sideBySide(setup, result, shapes, opts) {
+  const full = coupleScene({ ...setup, divider: null }, result, { reveal: true, arms: true });
+  // A shape belongs to the part where it starts (a long arrow may reach past the line).
+  const groups = { left: [], right: [] };
+  for (const s of full) {
+    const start = s.at || s.from || s.center || (s.points && s.points[0]);
+    if (!start || s.type === "note") continue;
+    const pts = [s.at, s.from, s.to, ...(s.points || [])].filter(Boolean);
+    if (s.center) pts.push(add(s.center, [-0.12, 0]), add(s.center, [0.12, 0])); // a curved arrow's size
+    groups[start[0] < setup.divider ? "left" : "right"].push(...pts);
+  }
+  const span = (list) => [Math.min(...list), Math.max(...list)];
+  const left = span(groups.left.map((p) => p[0]));
+  const right = span(groups.right.map((p) => p[0]));
+  const y = setup.frameY || span([...groups.left, ...groups.right].map((p) => p[1]));
+  return spreadPanels(shapes, { divider: setup.divider, left, right, y, margin: setup.frameMargin ?? 0.25, size: opts.canvasSize });
 }
 
 // Shortest distance between segments p1–p2 and q1–q2 (0 if they cross).

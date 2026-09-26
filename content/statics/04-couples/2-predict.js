@@ -13,7 +13,6 @@ export default {
   setup: {
     analysis: "couple",
     plates: [{ from: [0, 0], to: [0.5, 0.3] }, { from: [1.25, 0], to: [1.75, 0.3] }],
-    texts: [{ at: [0.875, 0.02], text: "same effect as" }],
     forceScale: 800, // arrows drawn 1 m per 800 N, so F and F' can be compared by eye
     couples: [
       // F up at B and down at A: vertical lines 0.5 m apart (A to B diagonally is 0.583 m).
@@ -22,9 +21,11 @@ export default {
       { id: "C2", symbol: "F'", dSymbol: "d'", magnitude: null, equivalentTo: "C1", direction: "left", at: [1.25, 0.3], opposite: [1.75, 0], pointLabels: ["C", "D"], dimShift: 0.72 },
     ],
     showSeparation: true, // d and d' are given, so they're drawn from the start
+    divider: 0.94, // a soft line between the two plates, each centred in its half of the picture
+    frameY: [-0.1, 0.52], // the height to show (plus a margin)
+    frameMargin: 0.12, // space around each plate (the arrows already reach well past them)
     momentAt: [0.25, 0.15], // the original couple's moment is drawn on its own plate
   },
-  view: { xmin: -0.2, xmax: 2.2, ymin: -0.3, ymax: 0.72 },
   vary: [{ path: "couples.#C1.magnitude", min: 50, max: 300, step: 5 }],
   ask: [{ quantity: "C2", min: 0 }], // the size of a force is never negative
   hints: [

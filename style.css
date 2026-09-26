@@ -169,7 +169,7 @@ p { margin: 0 0 8px; }
 .answer-box { position: relative; display: inline-block; }
 .answer-box .answer-input { padding-right: 3.2em; }
 .answer-box-unit { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--c-muted); font-size: 16px; pointer-events: none; }
-.answer-sign { font: inherit; font-size: 17px; font-weight: 700; width: 34px; height: 34px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-bg); color: var(--c-ink); cursor: pointer; }
+.answer-sign { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 34px; height: 34px; border: 1.5px solid var(--c-line); border-radius: 6px; background: var(--c-bg); color: var(--c-ink); cursor: pointer; }
 .answer-sign:hover { border-color: var(--c-force); }
 .answer-tol { font-size: 15px; color: var(--c-ink); background: var(--c-bg); border-radius: 999px; padding: 1px 8px; }
 .status-badge[hidden] { display: none; }

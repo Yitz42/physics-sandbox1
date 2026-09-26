@@ -27,8 +27,10 @@ export default {
     about: { at: [0.2, 0.15], label: "O" }, // the middle of the bar
     body: { points: [[0, 0], [0.4, 0.3]] }, // a bar from A to B
     forceScale: 800,
-    target: { value: TARGET, at: [-0.4, 0.15] },
-    texts: [{ at: [-0.4, -0.05], text: "motor's couple" }],
+    target: { value: TARGET, at: [-0.7, 0.15] },
+    texts: [{ at: [-0.7, -0.05], text: "motor's couple" }],
+    divider: -0.225, // a soft line between the motor's couple and the bar, each centred in its half
+    frameY: [-0.2, 0.45], // the height to show (plus a margin): room for arrows up to 250 N
     dims: [
       { from: [0, -0.1], to: [0.4, -0.1], side: -1 },
       { from: [0.52, 0], to: [0.52, 0.3], side: -1 },
@@ -38,7 +40,6 @@ export default {
       { id: "F_2", symbol: "F_2", magnitude: 100, direction: "up", at: [0.4, 0.3], pointLabel: "B" },
     ],
   },
-  view: { xmin: -0.65, xmax: 0.8, ymin: -0.42, ymax: 0.62 },
   editable: [
     { path: "forces.#F_1.magnitude", label: "F₁ at A", min: 10, max: 250, step: 10, unit: "N" },
     directionMenu("F_1", "F₁ points"),

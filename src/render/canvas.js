@@ -8,6 +8,8 @@
 // It also keeps the picture sharp on high-resolution screens and passes mouse,
 // pen and finger input along (already converted to metres).
 
+const PAD = 36; // pixels of breathing room around the picture
+
 export function createCanvas(container) {
   const canvas = document.createElement("canvas");
   canvas.className = "stage-canvas";
@@ -18,6 +20,7 @@ export function createCanvas(container) {
   let bounds = { xmin: -3, xmax: 3, ymin: -2, ymax: 2 };
   let view = { scale: 50, ox: 0, oy: 0, width: 0, height: 0 };
   let redraw = () => {};
+  let onResize = null;
   let handlers = {};
 
   // Choose scale and origin so `bounds` fits inside the canvas, centred.
@@ -30,7 +33,7 @@ export function createCanvas(container) {
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
-    const pad = 36; // pixels of breathing room around the picture
+    const pad = PAD; // pixels of breathing room around the picture
     const bw = bounds.xmax - bounds.xmin || 1;
     const bh = bounds.ymax - bounds.ymin || 1;
     const scale = Math.min((width - 2 * pad) / bw, (height - 2 * pad) / bh);
@@ -50,9 +53,20 @@ export function createCanvas(container) {
     toWorld: (px) => [(px[0] - view.ox) / view.scale, (view.oy - px[1]) / view.scale],
     // Pixel distance → metres (used for "how close is the click to this arrow").
     pxToWorld: (px) => px / view.scale,
+    // { width, height } in pixels, or null before the canvas is on the page.
+    // Side-by-side diagrams use it to centre each one in its half (render/panels.js).
+    size() {
+      const r = canvas.getBoundingClientRect();
+      return r.width > 2 * PAD && r.height > 2 * PAD ? { width: r.width, height: r.height } : null;
+    },
     fit(newBounds) {
       bounds = { ...newBounds };
       if (layout()) redraw();
+    },
+    // Called when the canvas changes size (after it first appears). Return false to
+    // let the canvas simply redraw at the new size, keeping the same view.
+    onResize(fn) {
+      onResize = fn;
     },
     clear() {
       ctx.clearRect(0, 0, view.width, view.height);
@@ -89,9 +103,15 @@ export function createCanvas(container) {
   canvas.addEventListener("pointerup", (e) => handlers.up && handlers.up(worldOf(e), e));
 
   // Re-layout when the window (and so the canvas) changes size.
+  let lastWidth = 0;
   const observer = new ResizeObserver(() => {
     // The page moved on to another stage: stop watching this old canvas.
     if (!canvas.isConnected) return observer.disconnect();
+    const width = canvas.getBoundingClientRect().width;
+    const resized = lastWidth && Math.abs(width - lastWidth) > 0.5;
+    lastWidth = width;
+    // onResize may take over (e.g. re-centre side-by-side diagrams); returning false means "not needed".
+    if (resized && onResize && onResize() !== false) return;
     if (layout()) redraw();
   });
   observer.observe(canvas);

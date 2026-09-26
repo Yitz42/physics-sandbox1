@@ -20,7 +20,7 @@ const SAME_DIRECTION = Math.cos((3 * Math.PI) / 180); // within 3°
 // candidates: [{ id, symbol?, feedback?, missing?, wrongDirection? }]
 // onCorrect(): called when the FBD is right. onWrong(): called after a wrong check.
 export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
-  const info = ctx.solver.fbd(ws.setup);
+  const info = ctx.solver.fbd(ws.setup, ws.sceneOpts); // same layout as the picture
   const correct = new Map(info.forces.map((f) => [f.id, f]));
   const labelOf = (c) => c.symbol || (correct.get(c.id) || {}).symbol || c.id;
   const placed = new Map(); // id → direction

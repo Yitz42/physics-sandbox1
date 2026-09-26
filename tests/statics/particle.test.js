@@ -186,16 +186,22 @@ test("shadow: tensions that are too small leave ΣF pointing down (the crate wou
   ok(!exact.some((x) => x.id === "shadow-net"), "correct tensions should balance");
 });
 
-test("picture: the space diagram and the FBD are each centred in equal halves, split by a divider", async () => {
+test("picture: space diagram and FBD are centred in their halves of the canvas, with the divider in the middle", async () => {
   const { particleScene } = await import("../../src/subjects/statics/particle-scene.js");
   const { crateSetup } = await import("../../content/statics/02-particle-equilibrium/crate.js");
-  const shapes = particleScene(crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }), null, {});
-  const div = shapes.find((s) => s.type === "divider");
-  const fbdPoint = shapes.filter((s) => s.type === "point").pop().at;
-  // Left half from div.from to the divider, right half from the divider to div.to: equal widths.
-  close(div.x - div.from[0], div.to[0] - div.x);
-  close(fbdPoint[0], (div.x + div.to[0]) / 2, 1e-9, "FBD point in the middle of the right half:");
-  // Space diagram: its left- and right-most points are equally far from the middle of the left half.
-  const xs = shapes.filter((s) => s !== div && s.type !== "divider").flatMap((s) => [s.at, s.from, s.to].filter(Boolean)).map((p) => p[0]).filter((x) => x < div.x);
-  close((Math.min(...xs) + Math.max(...xs)) / 2, (div.from[0] + div.x) / 2, 1e-9, "space diagram centred in the left half:");
+  for (const size of [{ width: 750, height: 440 }, { width: 1140, height: 440 }, { width: 520, height: 340 }]) {
+    const shapes = particleScene(crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }), null, { canvasSize: size });
+    // Fit the view the way the game does: to the divider's frame, inside canvas.js's 36 px border.
+    const div = shapes.find((s) => s.type === "divider");
+    const b = div.frame;
+    const scale = Math.min((size.width - 72) / (b.xmax - b.xmin), (size.height - 72) / (b.ymax - b.ymin));
+    const px = (x) => size.width / 2 + (x - (b.xmin + b.xmax) / 2) * scale;
+    const ring = shapes.find((s) => s.type === "point" && s.style === "ring"); // A in the space diagram
+    const dot = shapes.filter((s) => s.type === "point").pop(); // A in the FBD
+    const xs = shapes.filter((s) => s.type !== "divider").flatMap((s) => [s.at, s.from, s.to].filter(Boolean)).map((p) => p[0]).filter((x) => x < div.x);
+    close(px(div.x), size.width / 2, 0.01, `${size.width} px: divider`);
+    close(px((Math.min(...xs) + Math.max(...xs)) / 2), size.width / 4, 0.01, `${size.width} px: space diagram centre`);
+    close(px(dot.at[0]), (3 * size.width) / 4, 0.01, `${size.width} px: FBD point`);
+    ok(px(ring.at[0]) > 0 && px(ring.at[0]) < size.width / 2, "ring A is in the left half");
+  }
 });

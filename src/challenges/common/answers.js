@@ -136,7 +136,9 @@ export function answerInputs(container, asks, quantities) {
     // A ± button, only where a negative answer is possible: phone and tablet
     // number keypads often have no minus key.
     const sign = lo < 0 ? el("button", {
-      type: "button", className: "answer-sign", textContent: "±", title: "Switch between positive and negative",
+      type: "button", className: "answer-sign", title: "Switch between positive and negative", ariaLabel: "plus or minus",
+      // Drawn as lines (not the "±" character, which looks smudged at this size).
+      innerHTML: '<svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true"><path d="M8 2v7M4.5 5.5h7M4.5 13h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>',
       onmousedown: (e) => e.preventDefault(), // keep the typing cursor in the box
       onclick: () => {
         if (input.readOnly) return;

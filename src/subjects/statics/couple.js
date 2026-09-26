@@ -26,7 +26,9 @@
 //   moments: [{ id, symbol, magnitude, sense: +1 | -1, at }]  couple moments
 //            given directly (a curved arrow), counterclockwise +1
 //   netForce: true   also show F_R = ΣF (x and y), which is zero for couples
-//   Drawing only: plates [{ from, to }], body, texts, dims, momentAt (where the
+//   Drawing only: plates [{ from, to }], body, texts, dims, divider (x of a soft
+//   line between two side-by-side parts; frameY: [ymin, ymax] the height to
+//   show, frameMargin: space around each part), momentAt (where the
 //   total moment's curved arrow goes), showSeparation / hideSeparation (d between
 //   each couple's lines), target: { value, at } (a goal moment, build stages)
 // }

@@ -14,6 +14,7 @@ import { add, scale, sub, mag, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { directionOf, magnitudeOf, particleQuantities } from "./particle.js";
 import { shadowShapes } from "./particle-shadow.js";
+import { spreadPanels } from "../../render/panels.js";
 
 const AXIS_DEG = { "+x": 0, "+y": 90, "-x": 180, "-y": 270 };
 const AXIS_VEC = { "+x": [1, 0], "+y": [0, 1], "-x": [-1, 0], "-y": [0, -1] };
@@ -166,33 +167,36 @@ export function particleScene(setup, result, opts = {}) {
     return [{ type: "axes" }, ...fbdArrows(fs, result, A, opts), { type: "point", at: A, label: setup.point.label || "", style: "ring" }];
   }
   const space = spaceDiagram(setup);
-  // Two side-by-side halves of equal width, each diagram centred in its own
-  // half, with a soft line between them:
-  //   | margin  space diagram  margin | margin  FBD  margin |
+  // Two diagrams side by side with a soft line between them: the space
+  // diagram on the left, the FBD on the right. spreadPanels (render/panels.js)
+  // then centres each one in its half of the canvas.
   // The FBD's arrows reach up to FBD_REACH from its point in any direction
   // (the biggest force is drawn 1.7 m long; labels need room past the tips).
   const FBD_REACH = 2.3;
-  const PAD = 0.7; // clear space between a diagram and the line (or the edge)
-  const xs = space.flatMap((s) => [s.at, s.from, s.to].filter(Boolean).map((p) => p[0]));
-  const x0 = Math.min(A[0] - 1, ...xs), x1 = Math.max(A[0] + 1, ...xs);
-  const half = Math.max(x1 - x0, 2 * FBD_REACH) / 2 + PAD; // half the width of one half
-  const divider = (x0 + x1) / 2 + half;
-  const F = [divider + half, A[1]];
-  return [
+  const pts = space.flatMap((s) => [s.at, s.from, s.to].filter(Boolean));
+  const x0 = Math.min(A[0] - 1, ...pts.map((p) => p[0])), x1 = Math.max(A[0] + 1, ...pts.map((p) => p[0]));
+  const divider = x1 + 0.7;
+  const F = [divider + 0.7 + FBD_REACH, A[1]];
+  const ys = [...pts.map((p) => p[1]), A[1] - 3.2, A[1] + FBD_REACH, A[1] - FBD_REACH]; // captions sit 3 m below A
+  const shapes = [
     ...space,
-    // from/to span both halves, so the picture is framed around them evenly.
-    { type: "divider", x: divider, from: [divider - 2 * half, A[1]], to: [divider + 2 * half, A[1]] },
     { type: "text", at: add(A, [0, -3.0]), text: "Space diagram" },
     { type: "text", at: add(F, [0, -3.0]), text: `FBD of ${setup.point.label || "the point"}` },
     { type: "axes" }, // drawn in the canvas corner
-    ...fbdArrows(fs, result, F, { ...opts, minX: divider + 0.25 }),
+    // Wrong-answer arrows pointing left stop at the FBD's side of its half.
+    ...fbdArrows(fs, result, F, { ...opts, minX: F[0] - FBD_REACH }),
     { type: "point", at: F, label: setup.point.label || "", style: "dot" },
   ];
+  return spreadPanels(shapes, {
+    divider, left: [x0, x1], right: [F[0] - FBD_REACH, F[0] + FBD_REACH],
+    y: [Math.min(...ys), Math.max(...ys)], size: opts.canvasSize,
+  });
 }
 
 // Where the FBD's point is drawn (the solve challenge draws arrows there).
-export function fbdOrigin(setup) {
-  const scene = particleScene(setup, null, {});
+// opts.canvasSize must match the picture's, since it changes the layout.
+export function fbdOrigin(setup, opts = {}) {
+  const scene = particleScene(setup, null, { canvasSize: opts.canvasSize });
   const dot = scene.filter((s) => s.type === "point").pop();
   return dot.at;
 }

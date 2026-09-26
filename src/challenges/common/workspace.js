@@ -74,10 +74,20 @@ export function createWorkspace(ctx, opts = {}) {
 
   // Fit the view once (not on every edit, or the picture would jump around).
   ws.fit = () => {
-    if (ctx.stage.view) return cv.fit(ctx.stage.view);
+    // Scenes with side-by-side diagrams use the canvas size to centre each one in its half.
+    const size = cv.size();
+    if (size) ws.sceneOpts.canvasSize = size;
     const all = solver.scene(ws.setup, solver.solve(ws.setup), { ...ws.sceneOpts, reveal: true });
+    // A scene can give its exact frame (side-by-side diagrams, see render/panels.js).
+    const framed = all.find((s) => s.frame);
+    ws.framed = !!framed;
+    if (framed) return cv.fit(framed.frame);
+    if (ctx.stage.view) return cv.fit(ctx.stage.view);
     cv.fit(boundsOf([...all, ...ws.extraShapes()], 0.8)); // margin leaves room for labels
   };
+
+  // Side-by-side diagrams are laid out for the canvas size, so re-fit when it changes.
+  cv.onResize(() => (ws.framed ? ws.fit() : false));
 
   ws.update = () => {
     ws.result = solver.solve(ws.setup);

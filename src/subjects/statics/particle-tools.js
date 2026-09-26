@@ -40,7 +40,7 @@ export function particleDrag(setup, id, point) {
 //   origin      where the point is drawn on the FBD
 //   forces      the correct forces: { id, symbol, dir }
 //   directions  directions a placed arrow can snap to
-export function particleFbd(setup) {
+export function particleFbd(setup, sceneOpts = {}) {
   const forces = setup.forces.map((f) => ({ id: f.id, symbol: f.symbol, dir: directionOf(f), kind: f.kind || "applied" }));
   const directions = [];
   // Eight compass directions …
@@ -52,7 +52,7 @@ export function particleFbd(setup) {
     const d = sub(anchorPoint(setup, f), setup.point.at);
     directions.push(scale(d, 1 / mag(d)), scale(d, -1 / mag(d)));
   }
-  return { origin: fbdOrigin(setup), forces, directions: dedupe(directions) };
+  return { origin: fbdOrigin(setup, sceneOpts), forces, directions: dedupe(directions) };
 }
 
 function dedupe(dirs) {
