@@ -147,7 +147,11 @@ export function coupleScene(setup, result, opts = {}) {
 // the same while the student works and when the answer appears.
 // setup.frameY is the height to show; setup.frameMargin the space around each part.
 function sideBySide(setup, result, shapes, opts) {
-  const full = coupleScene({ ...setup, divider: null }, result, { reveal: true, arms: true });
+  // Measured on the picture both BEFORE and AFTER the answer is shown: an
+  // unknown force is drawn as a longer "?" arrow until it's solved, and every
+  // arrow must stay in its own half either way.
+  const base = { ...setup, divider: null };
+  const full = [...coupleScene(base, result, { reveal: true, arms: true }), ...coupleScene(base, result, { arms: true })];
   // A shape belongs to the part where it starts (a long arrow may reach past the line).
   const groups = { left: [], right: [] };
   for (const s of full) {

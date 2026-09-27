@@ -217,6 +217,10 @@ different situation (all are seen before any repeats), then new numbers from its
   `encoding` field ("none" for now), a snapshot of every course/unit/stage with
   titles (renamed stages are matched by title on import), and unknown fields are
   always kept. Change the format only by adding fields or raising the version.
+- Side-by-side diagrams (space diagram | FBD, a couple | its replacement): every
+  drawing and label stays in its own half — each half is sized for the picture
+  both before and after the answer is shown, and anything that would still
+  reach across the divider is clipped at it.
 - Angle numbers stay with their arc: if the spot is taken, the arc grows outward
   and the dashed reference line extends to meet the number (render/angles.js).
 - Nothing moves on by itself: after a correct step the student presses **Next step →**,

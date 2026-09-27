@@ -52,6 +52,15 @@ export function drawScene(cv, shapes, opts = {}) {
   shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines clear of arrows, with extension lines
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
+  // Dividers (screen x) split the picture into side-by-side diagrams.
+  const cuts = shapes.filter((s) => s.type === "divider").map((s) => cv.toScreen([s.x, 0])[0]).sort((a, b) => a - b);
+  // The [left, right] pixel range of the diagram a shape starts in.
+  const halfOf = (s) => {
+    const p = s.at || s.from || s.center || (s.points && s.points[0]) || (s.profile && s.profile[0]);
+    if (!p) return null;
+    const x = cv.toScreen(p)[0];
+    return [Math.max(0, ...cuts.filter((c) => c <= x).map((c) => c + 2)), Math.min(cv.view.width, ...cuts.filter((c) => c > x).map((c) => c - 2))];
+  };
   const rank = (s) => ORDER.indexOf(s.layer || s.type);
   const sorted = [...shapes].sort((a, b) => rank(a) - rank(b));
   const obstacles = [];
@@ -75,7 +84,17 @@ export function drawScene(cv, shapes, opts = {}) {
       continue;
     }
     const lit = !!opts.highlight && s.id === opts.highlight;
+    // Side-by-side diagrams: a drawing never crosses into the other diagram
+    // (it's clipped to the half where it starts), like the labels below.
+    const half = s.type !== "divider" && cuts.length ? halfOf(s) : null;
+    if (half) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(half[0], 0, half[1] - half[0], cv.view.height);
+      ctx.clip();
+    }
     const out = drawShape(cv, s, { ...env, lit });
+    if (half) ctx.restore();
     obstacles.push(...out.boxes);
     segments.push(...out.segments);
     wanted.push(...out.labels);
@@ -123,7 +142,6 @@ export function drawScene(cv, shapes, opts = {}) {
   wanted.sort((a, b) => (a.yields ? 1 : 0) - (b.yields ? 1 : 0));
   // Dividers split the picture into side-by-side diagrams: each label must
   // stay in the diagram where it starts (its arrow's side of the line).
-  const cuts = shapes.filter((s) => s.type === "divider").map((s) => cv.toScreen([s.x, 0])[0]).sort((a, b) => a - b);
   for (const l of wanted) {
     l.minX = Math.max(0, ...cuts.filter((x) => x <= l.pos[0]).map((x) => x + 4));
     l.maxX = Math.min(cv.view.width, ...cuts.filter((x) => x > l.pos[0]).map((x) => x - 4));
