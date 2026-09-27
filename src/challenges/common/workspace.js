@@ -22,6 +22,7 @@ import { mag, sub } from "../../core/vector.js";
 //   reveal        show unknown values and results from the start?
 //   sceneOpts     extra options passed to solver.scene
 //   onChange(result)   called after every edit
+//   onDraw(report)     called after every drawing, with what it holds (the gallery's clash check)
 export function createWorkspace(ctx, opts = {}) {
   const { solver, canvas: cv } = ctx;
   const ws = {
@@ -76,7 +77,8 @@ export function createWorkspace(ctx, opts = {}) {
     const scene = solver.scene ? solver.scene(ws.setup, ws.result, { ...ws.sceneOpts, reveal: ws.reveal }) : [];
     const handles = (solver.handles ? solver.handles(ws.setup, opts.draggable || []) : []).map((h) => ({ type: "handle", at: h.at, id: h.id }));
     ws.shapes = [...scene, ...ws.extraShapes(), ...handles];
-    drawScene(cv, ws.shapes, { highlight: ws.highlight });
+    const report = drawScene(cv, ws.shapes, { highlight: ws.highlight });
+    if (opts.onDraw) opts.onDraw(report);
   }
   cv.onRedraw(draw);
 

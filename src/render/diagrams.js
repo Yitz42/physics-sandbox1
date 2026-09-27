@@ -33,13 +33,14 @@
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
 
-import { labelPosition, drawLabel, cssColor } from "./arrows.js";
+import { labelPosition, drawLabel, cssColor, measureLabel, labelBox } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
 import { placeLabels, placeLegend, segmentHits, overlapArea } from "./labels.js";
 import { beamDirAt, surfaceGap } from "./fbd.js";
 import { lowerDims, extendDims } from "./dims.js";
 import { drawArc } from "./angles.js";
 import { clearSupports } from "./support-clear.js";
+import { findClashes, drawBounds, showBounds } from "./bounds.js";
 
 export { roleColor };
 
@@ -47,12 +48,16 @@ export { roleColor };
 const ORDER = ["divider", "zone", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
+// Returns a report of what was drawn — every object's outline, every solid
+// line, every label's box, and any clashes between them (bounds.js) — which
+// the gallery and the picture tests check. (Also kept as cv.lastReport.)
 export function drawScene(cv, shapes, opts = {}) {
   const { ctx } = cv;
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
   shapes = touchBeams(clearSupports(shapes, cv)); // arrows clear of support symbols, then of beam surfaces
   shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines clear of arrows, with extension lines
+  shapes = separateMoments(shapes, cv); // two moment circles never overlap
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
   // Dividers (screen x) split the picture into side-by-side diagrams.
@@ -131,10 +136,16 @@ export function drawScene(cv, shapes, opts = {}) {
 
   // Angle markings: each number sits right by its arc (the arc grows to make room).
   // Their numbers are placed first, so arrow labels keep clear of them.
+  // Each number also keeps clear of the numbers of the arcs drawn before it
+  // (two angles measured from the same line would otherwise share a spot).
+  const arcBoxes = [];
   for (const s of arcs) {
-    const out = drawArc(cv, s, env, { obstacles, segments });
+    const out = drawArc(cv, s, env, { obstacles: [...obstacles, ...arcBoxes], segments });
     segments.push(...out.segments);
-    if (out.label) wanted.unshift(out.label);
+    if (out.label) {
+      wanted.unshift(out.label);
+      arcBoxes.push(labelBox(out.label.pos[0], out.label.pos[1], measureLabel(ctx, out.label.text, out.label.size), out.label.size, "center"));
+    }
   }
 
   // Working notes (e.g. how d is found) go in a box in the freest corner.
@@ -162,20 +173,26 @@ export function drawScene(cv, shapes, opts = {}) {
   // keeps only the short name ("W_10", "M") and the list says "W_10 = 98.1 N".
   // That happens for every value when the picture is crowded (several labels
   // had to move well away) or the scene asks for it (listValues), and for a
-  // curved moment arrow whose label ran into something (e.g. a dimension).
-  const valued = wanted.filter((l) => l.fromArrow && l.text.includes(" = "));
+  // curved moment arrow or a moment arm whose label ran into something (e.g. a dimension).
+  const valued = wanted.filter((l) => (l.fromArrow || l.listable) && l.text.includes(" = "));
   // "Struggled" = had to move ~45 px or more, or still overlaps something.
   const struggled = placed.filter((l) => l.fromArrow && l.cost > 45);
   const crowded = struggled.length >= 2 || struggled.some((l) => l.cost > 150);
   const moved = (crowded || listAll) && valued.length > 1
     ? valued
-    : valued.filter((l) => l.moment && placed[wanted.indexOf(l)].cost > 45);
+    : valued.filter((l) => (l.moment || l.listable) && placed[wanted.indexOf(l)].cost > 45);
   if (moved.length) {
-    const legend = placeLegend(ctx, moved.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles] });
+    // (It keeps off the spots the other labels want: their first choices.)
+    const avoid = wanted.map((l) => {
+      const text = moved.includes(l) ? l.text.split(" = ")[0] : l.text; // (a moved one keeps just its name)
+      return labelBox(l.pos[0], l.pos[1], measureLabel(ctx, text, l.size, l.weight), l.size, l.align);
+    });
+    const legend = placeLegend(ctx, moved.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles], avoid });
     // A shortened name may move a little further to find a clear spot.
     const shortened = wanted.map((l) => (moved.includes(l) ? { ...l, text: l.text.split(" = ")[0], maxMove: l.maxMove == null ? undefined : Math.max(l.maxMove, 40) } : l));
     placed = placeLabels(ctx, shortened, { ...layout, obstacles: [...obstacles, legend.box] });
     drawLegend(ctx, legend, env);
+    obstacles.push(legend.box);
   }
 
   // Labels are drawn as plain text, with no box behind them: a box never quite
@@ -188,6 +205,13 @@ export function drawScene(cv, shapes, opts = {}) {
     if (l.box && breaksLine(l.box, segments, obstacles)) ctx.clearRect(l.box.x0, l.box.y0 + 2, l.box.x1 - l.box.x0, l.box.y1 - l.box.y0 - 3);
     drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align });
   }
+
+  // What the picture holds, checked against the object-boundaries rule.
+  const report = { labels: placed.map((l) => ({ text: l.text, box: l.box, breaks: !!l.breaks })), obstacles, segments, view: cv.view };
+  report.clashes = findClashes(report);
+  if (showBounds()) drawBounds(ctx, report);
+  cv.lastReport = report;
+  return report;
 }
 
 // Close spots all round a point (pixels), nearest-looking first: below,
@@ -249,4 +273,25 @@ function drawLegend(ctx, legend, env) {
   ctx.strokeRect(box.x0 + 0.5, box.y0 + 0.5, box.x1 - box.x0 - 1, box.y1 - box.y0 - 1);
   ctx.restore();
   for (const l of lines) drawLabel(ctx, l.text, l.x, l.y, { color: l.color, size, align: "left" });
+}
+
+// Two curved moment arrows close together would overlap (and leave their
+// labels nowhere to go): each shrinks to under half the distance between
+// their centres, down to 18 px. (A moment's usual size is 34 px; see shapes-extra.js.)
+function separateMoments(shapes, cv) {
+  const moments = shapes.filter((s) => s.type === "moment");
+  if (moments.length < 2) return shapes;
+  const radius = new Map();
+  for (const m of moments) {
+    const [x, y] = cv.toScreen(m.center);
+    let r = m.rPx || 34;
+    for (const o of moments) {
+      if (o === m) continue;
+      const [ox, oy] = cv.toScreen(o.center);
+      const d = Math.hypot(ox - x, oy - y);
+      if (d > 1) r = Math.min(r, Math.max(18, d / 2 - 6)); // (the same centre: a concentric pair is fine)
+    }
+    radius.set(m, r);
+  }
+  return shapes.map((s) => (radius.has(s) && radius.get(s) !== (s.rPx || 34) ? { ...s, rPx: radius.get(s) } : s));
 }

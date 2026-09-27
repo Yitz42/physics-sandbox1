@@ -75,9 +75,14 @@ export function drawLoadShape(cv, s, env, roleColor) {
     }
     ctx.restore();
     for (let i = 1; i < top.length; i++) out.segments.push([top[i - 1], top[i]]);
-    const ys = top.map((p) => p[1]);
-    // Labels may not cover the load (but may if there's no other room).
-    out.boxes.push({ x0, y0: Math.min(...ys), x1, y1: baseY, soft: true });
+    // Its true outline: narrow columns from the curve down to the beam, so the
+    // empty space above a low part of the load stays free for labels.
+    // Labels may not cover the load (but may if there's no other room: soft).
+    const cols = Math.max(1, Math.ceil((x1 - x0) / 10));
+    for (let i = 0; i < cols; i++) {
+      const a = x0 + ((x1 - x0) * i) / cols, b = x0 + ((x1 - x0) * (i + 1)) / cols;
+      out.boxes.push({ x0: a, y0: Math.min(heightAt(top, a), heightAt(top, b)), x1: b, y1: baseY, soft: true });
+    }
     for (const l of s.labels || []) {
       const [x, y] = S(l.at);
       out.labels.push({ text: l.text, pos: [x, y - gap - 12], align: "center", size: 13, weight: 600, color, maxMove: 50 });

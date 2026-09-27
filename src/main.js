@@ -4,6 +4,7 @@
 //   #/statics/force-components           one unit's stages
 //   #/statics/force-components/2-predict one stage
 //   #/comprehension/statics              how well the course is understood (from every answer)
+//   #/gallery                            every picture, for checking them (not for students)
 // Using the part after "#" means the browser's Back button works and every
 // stage has its own link, with no server needed.
 
@@ -15,6 +16,7 @@ import { comprehensionPanel, renderComprehension } from "./ui/comprehension-view
 import { courseComprehension } from "./core/comprehension.js";
 import { getEvents } from "./core/evidence.js";
 import { dataPanel } from "./ui/data-panel.js";
+import { renderGallery, galleryLink, boundsBadge } from "./ui/gallery.js";
 
 const app = document.getElementById("app");
 
@@ -34,7 +36,12 @@ async function route() {
   const [courseId, unitId, stageFile] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   window.scrollTo(0, 0);
   document.querySelector(".center-card-backdrop")?.remove(); // close a "Stage complete" card
+  boundsBadge(); // while the gallery's "Show boundaries" is on: a button to turn it off
   try {
+    if (courseId === "gallery") {
+      document.querySelector(".gal-badge-float")?.remove(); // (the gallery has its own switch)
+      return await renderGallery(app);
+    }
     if (!courseId) {
       // The course cards, then the Comprehension window (one card per course).
       const courses = await loadCourseList();
@@ -46,6 +53,8 @@ async function route() {
         // still on the home page: the Comprehension window, then the learning data (export / import)
         app.appendChild(comprehensionPanel(courses, summaries));
         app.appendChild(dataPanel(route));
+        const link = galleryLink(); // (unless hidden from the gallery page)
+        if (link) app.appendChild(link);
       }
       return;
     }

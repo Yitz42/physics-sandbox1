@@ -16,7 +16,8 @@
 // triangle, wheels, hatching, a link's bar — is reported as a box, so labels
 // keep clear of it (render/labels.js keeps a gap around every box).
 
-import { barBoxes } from "./labels.js";
+import { barBoxes, overlapArea, CLEAR } from "./labels.js";
+import { measureLabel, labelBox } from "./arrows.js";
 
 // A pin's size, the same for every pin (a support's or a link's anchor), in pixels.
 const PIN = { half: 14, depth: 24, ground: 22, ring: 4.5 };
@@ -50,9 +51,25 @@ export function drawSupportSymbol(cv, s, env) {
     poly([apex, pt(-PIN.half, PIN.depth), pt(PIN.half, PIN.depth)]);
     hatch(ctx, pt(0, PIN.depth), along, back, PIN.ground);
     ring(apex, PIN.ring);
-    const corners = [pt(-PIN.ground, -PIN.ring), pt(PIN.ground, -PIN.ring), pt(-PIN.ground, PIN.depth + 8), pt(PIN.ground, PIN.depth + 8)];
-    const xs = corners.map((c) => c[0]), ys = corners.map((c) => c[1]);
-    out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
+    outline(pt, -PIN.ground, PIN.ground, -PIN.ring, PIN.depth + 8, along);
+  };
+  // A symbol's outline, from its extent in its own frame (u along the ground,
+  // v back into it): pt(u, v) → pixels. Level or upright, one box covers it
+  // exactly. Tilted, one screen box would cover a lot of empty space round it
+  // (where the slope's angle number goes), so it's covered by thin slices
+  // across the ground line instead — the object-boundaries rule: true outlines.
+  // symbolBox keeps the whole extent, for placing the support's letter.
+  let symbolBox = null;
+  const outline = (pt, u0, u1, v0, v1, dir = t) => {
+    const boxOf = (cs) => ({ x0: Math.min(...cs.map((c) => c[0])), y0: Math.min(...cs.map((c) => c[1])), x1: Math.max(...cs.map((c) => c[0])), y1: Math.max(...cs.map((c) => c[1])) });
+    const whole = boxOf([pt(u0, v0), pt(u1, v0), pt(u0, v1), pt(u1, v1)]);
+    if (!symbolBox) symbolBox = whole;
+    if (Math.abs(dir[0] * dir[1]) < 0.02) return out.boxes.push(whole);
+    const n = Math.max(1, Math.ceil((u1 - u0) / 6));
+    for (let i = 0; i < n; i++) {
+      const a = u0 + ((u1 - u0) * i) / n, c = u0 + ((u1 - u0) * (i + 1)) / n;
+      out.boxes.push(boxOf([pt(a, v0), pt(c, v0), pt(a, v1), pt(c, v1)]));
+    }
   };
   const ring = (q, r = 4.5) => {
     ctx.beginPath();
@@ -65,9 +82,7 @@ export function drawSupportSymbol(cv, s, env) {
   const cover = ([p1, p2]) => {
     const along = (q) => (q[0] - p[0]) * t[0] + (q[1] - p[1]) * t[1];
     const back = (q) => (q[0] - p[0]) * b[0] + (q[1] - p[1]) * b[1];
-    const pts = [[along(p1), back(p1)], [along(p2), back(p1)], [along(p1), back(p2)], [along(p2), back(p2)]].map(([u, v]) => at(u, v));
-    const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
-    out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
+    outline(at, Math.min(along(p1), along(p2)), Math.max(along(p1), along(p2)), Math.min(back(p1), back(p2)), Math.max(back(p1), back(p2)));
   };
   // On a slope (not level ground, not a wall): mark the slope's angle at the
   // low end of the ground line — a short level line and the angle between them.
@@ -78,21 +93,43 @@ export function drawSupportSymbol(cv, s, env) {
     const [Q, R] = e1[1] > e2[1] ? [e1, e2] : [e2, e1]; // Q: the low end (screen y is down)
     const v = [R[0] - Q[0], R[1] - Q[1]], vl = Math.hypot(v[0], v[1]) || 1;
     const h = [Math.sign(v[0]) || 1, 0]; // level, toward the same side
+    const a0 = Math.atan2(h[1], h[0]), a1 = Math.atan2(v[1] / vl, v[0] / vl);
+    // The number goes between the two sides, clear of the symbol's own outline
+    // (its hatching sits right along the slope): the first clear spot, trying
+    // further out along the arc and nearer the level side. The level line and
+    // the arc reach out to meet it, like the other angle marks (angles.js).
+    const text = `${Math.round(tilt)}°`;
+    const w = measureLabel(ctx, text, 13, 600);
+    const clearOf = (pos) => {
+      const bx = labelBox(pos[0], pos[1], w, 13, "center");
+      const pad = { x0: bx.x0 - CLEAR, y0: bx.y0 - CLEAR, x1: bx.x1 + CLEAR, y1: bx.y1 + CLEAR };
+      return !out.boxes.some((q) => overlapArea(pad, q) > 0);
+    };
+    let rad = 36, pos = null;
+    for (let r = 36; r <= 96 && !pos; r += 6) {
+      for (const f of [0.5, 0.35, 0.25]) {
+        const m = a0 + (a1 - a0) * f;
+        const at2 = [Q[0] + Math.cos(m) * r, Q[1] + Math.sin(m) * r + 4];
+        if (clearOf(at2)) {
+          rad = r;
+          pos = at2;
+          break;
+        }
+      }
+    }
+    if (!pos) pos = [Q[0] + Math.cos((a0 + a1) / 2) * 36, Q[1] + Math.sin((a0 + a1) / 2) * 36 + 4];
     ctx.save();
     ctx.strokeStyle = env.faint;
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(Q[0], Q[1]);
-    ctx.lineTo(Q[0] + h[0] * 34, Q[1]);
+    ctx.lineTo(Q[0] + h[0] * Math.max(34, rad + w / 2 + 4), Q[1]);
     ctx.stroke();
-    const a0 = Math.atan2(h[1], h[0]), a1 = Math.atan2(v[1] / vl, v[0] / vl);
     ctx.beginPath();
-    ctx.arc(Q[0], Q[1], 22, a0, a1, a1 < a0);
+    ctx.arc(Q[0], Q[1], rad - 14, a0, a1, a1 < a0);
     ctx.stroke();
     ctx.restore();
-    const mid = (a0 + a1) / 2;
-    const pos = [Q[0] + Math.cos(mid) * 36, Q[1] + Math.sin(mid) * 36 + 4];
-    out.labels.push({ text: `${Math.round(tilt)}°`, pos, align: "center", size: 13, weight: 600, color: env.ink, plain: true, maxMove: 14 });
+    out.labels.push({ text, pos, align: "center", size: 13, weight: 600, color: env.ink, plain: true, maxMove: 14 });
   };
   switch (s.kind) {
     case "pin": {
@@ -198,7 +235,7 @@ export function drawSupportSymbol(cv, s, env) {
   // reaction arrow is often in the way below). A dimension line under it breaks.
   if (s.label) {
     // (A link's or cable's boxes are its bar and far anchor: its letter goes by its point.)
-    const box = s.kind === "link" || s.kind === "cable" ? null : out.boxes[0];
+    const box = s.kind === "link" || s.kind === "cable" ? null : symbolBox || out.boxes[0];
     const mid = box ? (box.y0 + box.y1) / 2 + 4 : p[1];
     const spots = box
       ? [[(box.x0 + box.x1) / 2, box.y1 + 12, "center"], [box.x0 - 6, mid, "right"], [box.x1 + 6, mid, "left"],

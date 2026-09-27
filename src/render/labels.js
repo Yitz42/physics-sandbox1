@@ -126,7 +126,10 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
 // room to put every value beside its arrow. Picks the corner (top-right,
 // top-left, bottom-right) that covers the least of the drawing.
 // items: [{ text, color }]. Returns { box, lines: [{ text, color, x, y }] }.
-export function placeLegend(ctx, items, { obstacles = [], segments = [], view }) {
+// avoid: boxes where labels still to be placed want to go (covering one costs a lot).
+// The list has a background, so covering a faint dashed guide barely matters;
+// a dimension line a little; an arrow or a body a lot.
+export function placeLegend(ctx, items, { obstacles = [], segments = [], view, avoid = [] }) {
   const size = 14, lineH = 20, pad = 10;
   const width = Math.max(...items.map((it) => measureLabel(ctx, it.text, size))) + 2 * pad;
   const height = items.length * lineH + pad;
@@ -141,8 +144,9 @@ export function placeLegend(ctx, items, { obstacles = [], segments = [], view })
   for (const [x0, y0] of corners) {
     const box = { x0, y0, x1: x0 + width, y1: y0 + height };
     let cost = 0;
-    for (const t of obstacles) cost += overlapArea(box, t);
-    for (const [p, q] of segments) cost += segmentHits(box, p, q) * 40;
+    for (const t of obstacles) cost += overlapArea(box, t) * (t.soft ? 0.3 : 1);
+    for (const [p, q, kind] of segments) cost += segmentHits(box, p, q) * (kind === true ? 2 : kind === "dim" ? 10 : 40);
+    for (const t of avoid) cost += overlapArea(box, t) * 4;
     if (cost < bestCost) {
       bestCost = cost;
       best = box;

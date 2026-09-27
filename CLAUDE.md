@@ -277,6 +277,18 @@ different situation (all are seen before any repeats), then new numbers from its
   outline or solid line. Only faint guides and dimension lines may be broken by
   a label. Pins are one drawing (render/supports.js PIN), so every pin — a
   support or a link's anchor — is the same size.
+- **Checking pictures**: `#/gallery` (a small link at the bottom of the home
+  page, which the gallery can hide) shows every picture a student can meet —
+  per part, situation, concept-check question and debug mistake — at the real
+  sizes (computer 750 × 440, phone 343 × 340), with "Show boundaries" (outlines,
+  lines and label boxes; rule-breaking labels in red), "Show answers" and "New
+  numbers". tests/content/pictures.test.js checks every picture at computer
+  size, before and after the answers, with the same check (render/bounds.js):
+  a new or changed picture must pass. Soft areas (plates, loads, the inside of
+  a moment's circle) may be covered. Helpers that keep pictures passing: a
+  too-narrow angle puts its number just outside, beside the arc; a crowded
+  moment-arm label keeps its name and lists its value in the corner; the corner
+  list avoids where labels want to go; moment circles shrink so they never overlap.
 - **Values on bars**: a value that belongs to a bar (a truss member's force) is
   written along the bar, just beside it, upright, on the side away from the
   truss's middle (render/bar-label.js); a bar too short for it falls back to

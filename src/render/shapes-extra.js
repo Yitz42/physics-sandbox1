@@ -157,7 +157,9 @@ export function drawExtraShape(cv, s, env, roleColor) {
         // Label beside the middle, on the side the normal points to.
         const side = s.labelSide || 1;
         const pos = [(a[0] + b[0]) / 2 + n[0] * 14 * side, (a[1] + b[1]) / 2 + n[1] * 14 * side];
-        out.labels.push({ text: s.label, pos, align: "center", size: 13, weight: s.role ? 600 : 500, color, maxMove: 36, yields: true });
+        // (A moment arm's "d = 0.2 m" that runs into something keeps just "d"
+        // and lists its value in the corner, like a moment's label: listable.)
+        out.labels.push({ text: s.label, pos, align: "center", size: 13, weight: s.role ? 600 : 500, color, maxMove: 36, yields: true, listable: s.role === "arm" });
       }
       break;
     }
@@ -210,7 +212,15 @@ export function drawExtraShape(cv, s, env, roleColor) {
       // labelMove: how far the label may move to dodge things (0 keeps it right above the arrow).
       // (moment: true lets a crowded label move to the corner list, leaving just its name.)
       if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60, fromArrow: s.role !== "shadow", moment: true });
-      out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r });
+      // Its true outline: the arc itself (a row of small boxes along it) and its
+      // head; the space inside the circle is soft (labels avoid it if they can).
+      const steps = 16;
+      for (let i = 0; i < steps; i++) {
+        const b0 = a0 + ((a1 - a0) * i) / steps, b1 = a0 + ((a1 - a0) * (i + 1)) / steps;
+        out.boxes.push(...barBoxes([x + r * Math.cos(b0), y + r * Math.sin(b0)], [x + r * Math.cos(b1), y + r * Math.sin(b1)], 6));
+      }
+      out.boxes.push({ x0: ex - 9, y0: ey - 9, x1: ex + 9, y1: ey + 9 });
+      out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r, soft: true });
       break;
     }
     default: {

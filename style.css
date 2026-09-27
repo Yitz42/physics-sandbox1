@@ -486,3 +486,30 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .wb-formula-row { margin: 6px 0; overflow-x: auto; }
 .wb-total { font-weight: 700; border-top: 1px solid var(--c-line); padding-top: 6px; }
 @media (max-width: 560px) { .wb-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* ---- Picture gallery (#/gallery, ui/gallery.js): for checking pictures ---- */
+.gal-home-link { text-align: center; font-size: 14px; margin: 28px 0 8px; }
+.gal-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 8px 0; }
+.gal-check { font-size: 14px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.gal-summary, .gal-legend { font-size: 14px; color: var(--c-muted); margin: 6px 0; }
+.gal-key { display: inline-block; padding: 0 6px; border: 1.5px solid; border-radius: 3px; font-size: 12px; }
+.gal-key-obj { border-color: rgb(234, 88, 12); }
+.gal-key-line { border-color: rgb(37, 99, 235); }
+.gal-key-label { border-color: rgb(22, 163, 74); }
+.gal-key-bad { border-color: rgb(220, 38, 38); background: rgba(220, 38, 38, 0.2); }
+.gal-grid { display: grid; gap: 18px; margin: 12px 0 40px; }
+/* The real picture sizes: a stage on a wide computer screen (750 × 440) and on a phone (343 × 340). */
+/* (Always exactly that size, so what you see is what students see: a narrow window scrolls sideways.) */
+.gal-grid.gal-desktop { grid-template-columns: repeat(auto-fill, 750px); overflow-x: auto; }
+.gal-grid.gal-phone { grid-template-columns: repeat(auto-fill, 343px); overflow-x: auto; }
+.gal-card { min-width: 0; }
+.gal-card[hidden] { display: none; }
+.gal-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; overflow-wrap: anywhere; }
+.gal-figure { height: 440px; width: 750px; }
+.gal-phone .gal-figure { height: 340px; width: 343px; }
+.gal-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.gal-count { font-size: 13px; color: var(--c-muted); margin-right: auto; }
+.gal-ok { color: var(--c-good); }
+.gal-bad { color: var(--c-bad); font-weight: 600; }
+.gal-details { font-size: 12px; color: var(--c-bad); margin-top: 4px; }
+.gal-badge-float { position: fixed; right: 16px; bottom: 16px; z-index: 50; background: var(--c-bad-bg); color: var(--c-bad); border: 1px solid var(--c-bad); }
