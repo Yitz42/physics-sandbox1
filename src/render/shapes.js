@@ -23,6 +23,7 @@ const ROLE_COLORS = {
   arm: ["--c-arm", "#b45309"], // moment arm d
   tension: ["--c-tension", "#dc2626"], // a truss member pulled (red)
   compression: ["--c-compression", "#2563eb"], // a truss member pushed (blue)
+  axis: ["--c-faint", "#94a3b8"], // a coordinate axis in a 3D picture (x, y, z)
 };
 
 export function roleColor(role) {
@@ -55,7 +56,7 @@ export function drawShape(cv, s, env) {
       }
       drawArrow(ctx, a, b, {
         color: roleColor(s.role), glow: lit,
-        width: s.role === "component" ? 1.8 : 2.8,
+        width: s.role === "component" ? 1.8 : s.role === "axis" ? 1.5 : 2.8,
         dashed: ["component", "target", "resultant", "shadow"].includes(s.role),
         alpha: s.alpha ?? (s.role === "target" ? 0.7 : s.role === "shadow" ? 0.55 : 1),
       });

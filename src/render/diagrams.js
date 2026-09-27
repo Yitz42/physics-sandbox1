@@ -17,7 +17,7 @@
 //   text     { at, text }                    a caption
 //   axes     {}                              little x-y axes (bottom-left corner)
 //   handle   { at }                          a grab circle on a draggable arrow tip
-//   beam, pivot, dim, rightangle, moment     see shapes-extra.js
+//   beam, pivot, dim, rightangle, moment, curve   see shapes-extra.js (curve: a 3D picture's angle)
 //   spring, pulley                           see mechanisms.js
 //   trafficLight, balloon, pole              see scenery.js
 //   tfblock, sumjunction, wire, pickoff, signal, groupbox, sfgnode, sfgbranch   see blocks.js
@@ -48,7 +48,7 @@ import { findClashes, drawBounds, showBounds } from "./bounds.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "ramp", "region", "plot", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "leader", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "ramp", "region", "plot", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "curve", "dim", "leader", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 // Returns a report of what was drawn — every object's outline, every solid

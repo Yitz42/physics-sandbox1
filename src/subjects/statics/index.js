@@ -39,6 +39,9 @@ import { internalScene } from "./internal-scene.js";
 import { internalSummary, internalMistakes, internalChoices, internalSteps } from "./internal-tools.js";
 import { solveFriction, frictionQuantities, isBody, placeAlong } from "./friction.js";
 import { frictionScene, bodyPicture } from "./friction-scene.js";
+import { solveForce3d, force3dQuantities } from "./force3d.js";
+import { force3dScene } from "./force3d-scene.js";
+import { force3dEquations, force3dSummary, force3dMistakes, force3dSteps, force3dChoices } from "./force3d-tools.js";
 import { frictionEquations, frictionSummary, frictionMistakes, frictionSteps } from "./friction-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
@@ -70,6 +73,19 @@ registerSolver("statics.particle", {
   mistakes: particleMistakes,
   fbd: particleFbd,
   mutate: particleMutate,
+});
+
+// Unit 2.3: forces in 3D — components from direction angles, an azimuth and elevation,
+// or a line between two points (F = F u_AB); size and direction angles; resultants.
+registerSolver("statics.force3d", {
+  solve: solveForce3d,
+  equations: force3dEquations,
+  summary: force3dSummary,
+  scene: force3dScene,
+  quantities: force3dQuantities,
+  mistakes: force3dMistakes,
+  debugSteps: force3dSteps, // a student's working for a force along a line, one line wrong
+  choices: force3dChoices, // a solve stage's lines: r_AB, F_AB, …, F_R
 });
 
 // Unit 3: moments of forces about a point.

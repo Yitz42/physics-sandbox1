@@ -9,6 +9,8 @@
 //              line with end ticks; its label sits in a break in the middle of the line
 //              (labelOn: false puts it beside the line). noExt: no extension lines (dims.js)
 //   rightangle { at, u, v }                    small square marking a 90° corner
+//   curve      { points, label?, role?, dashed?, labelAway? } a thin curved line (a direction
+//              angle in a 3D picture), labelled by its middle, away from labelAway
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
@@ -137,6 +139,28 @@ export function drawExtraShape(cv, s, env, roleColor) {
         if (box) out.boxes.push({ ...box, heavy: true });
       }
       ctx.globalAlpha = alpha0;
+      break;
+    }
+    case "curve": {
+      // A thin curved line through points (metres), e.g. a direction angle drawn in
+      // space (Unit 2.3), with its label by its middle, clear of everything.
+      const pts = s.points.map(S);
+      ctx.strokeStyle = s.role ? roleColor(s.role) : faint;
+      ctx.lineWidth = 1.4;
+      if (s.dashed) ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      for (let i = 1; i < pts.length; i++) out.segments.push([pts[i - 1], pts[i]]);
+      if (s.label) {
+        const m = pts[Math.floor(pts.length / 2)];
+        const c = s.labelAway ? S(s.labelAway) : pts[0]; // label on the side away from this point
+        const d = [m[0] - c[0], m[1] - c[1]], L = Math.hypot(d[0], d[1]) || 1;
+        const u = [d[0] / L, d[1] / L];
+        const spots = [10, 16, 24].map((k) => [m[0] + u[0] * k, m[1] + u[1] * k + 4, u[0] > 0.3 ? "left" : u[0] < -0.3 ? "right" : "center"]);
+        out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], spots, size: 13, weight: 600, color: s.role ? roleColor(s.role) : ink, maxMove: 26 });
+      }
       break;
     }
     case "pivot": {
