@@ -42,15 +42,15 @@ const chapters = [
     units: [
       "supports", "rigid-body-equilibrium",
       soon("Alternative equation sets", "Two moment equations plus one force equation — and when that works."),
-      soon("Stability and determinacy", "Too few supports and it moves; too many and equilibrium can't find the forces."),
-      soon("Two-force and three-force members", "A two-force member pulls or pushes along its own line; three forces must meet at a point."),
+      "stability",
+      "two-force-members",
       soon("Rigid body equilibrium in 3D", "Six equations, supports in space, and solving for their reactions."),
     ],
   },
   {
     id: "structures", title: "Structures",
     units: [
-      soon("Trusses: method of joints", "Pin-jointed members in pure tension or compression, solved joint by joint."),
+      "trusses",
       soon("Zero-force members", "Spot the members that carry no force, just by looking, before solving."),
       soon("Trusses: method of sections", "Cut through the truss and find up to three member forces at once."),
       soon("Frames and machines", "Take multi-part structures apart into separate free-body diagrams."),

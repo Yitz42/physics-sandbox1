@@ -6,6 +6,9 @@
 //   smooth  a smooth surface: no grip, so the same as a roller → one push N, ⟂ to the surface
 //   cable   can only pull, along itself                     → one pull T, toward its anchor
 //   fixed   stops sliding AND turning                       → A_x, A_y and a moment M_A
+//   link    a two-force member (a strut or tie, pinned at both ends, nothing
+//           else on it): one force along its own line, pulling (tension, +)
+//           or pushing (compression, −)                     → one force F along the link
 //   none    nothing is attached here                        → no reactions
 //
 // A support in setup.supports:
@@ -14,7 +17,8 @@
 //                         roller or surface pushes (default up: support below the body)
 //     direction           for a slanted roller/surface, its push direction in textbook
 //                         form (e.g. { angle: 30, from: "+y", toward: "-x" })
-//     anchor: [x, y]      a cable's other end (the cable pulls toward it)
+//     anchor: [x, y]      a cable's or link's other end (a cable pulls toward it;
+//                         a link's force is along it, + meaning tension: toward it)
 //     symbol              name of a one-force reaction (default B_y, N_B, T_C …) }
 //
 // Reaction directions are what a free-body diagram ASSUMES: pin and fixed
@@ -24,10 +28,10 @@
 import { sub, mag, scale } from "../../core/vector.js";
 import { directionVector, reverse } from "./directions.js";
 
-export const SUPPORT_TYPES = ["pin", "roller", "smooth", "cable", "fixed", "none"];
+export const SUPPORT_TYPES = ["pin", "roller", "smooth", "cable", "fixed", "link", "none"];
 
 // Plain-language names, for messages.
-export const SUPPORT_NAMES = { pin: "pin", roller: "roller", smooth: "smooth surface", cable: "cable", fixed: "fixed support", none: "no support" };
+export const SUPPORT_NAMES = { pin: "pin", roller: "roller", smooth: "smooth surface", cable: "cable", fixed: "fixed support", link: "two-force member (link)", none: "no support" };
 
 // A unit vector along an axis, as a textbook word ("up", "left" …), or null if slanted.
 function wordFor(v) {
@@ -47,7 +51,7 @@ export const normalOf = (s) => s.normal || [0, 1];
 
 // The one-force reaction's direction for a roller, smooth surface or cable.
 function pushDirection(s) {
-  if (s.type === "cable") return s.direction || textbookDirection(sub(s.anchor, s.at));
+  if (s.type === "cable" || s.type === "link") return s.direction || textbookDirection(sub(s.anchor, s.at));
   return s.direction || wordFor(normalOf(s)) || textbookDirection(normalOf(s));
 }
 
@@ -55,6 +59,7 @@ function pushDirection(s) {
 function oneForceSymbol(s, direction) {
   if (s.symbol) return s.symbol;
   if (s.type === "cable") return `T_${s.id}`;
+  if (s.type === "link") return `F_${s.id}`;
   if (s.type === "smooth") return `N_${s.id}`;
   if (direction === "up" || direction === "down") return `${s.id}_y`;
   if (direction === "left" || direction === "right") return `${s.id}_x`;
@@ -64,7 +69,7 @@ function oneForceSymbol(s, direction) {
 // The reactions a support provides, as the FBD assumes them:
 //   [{ id, symbol, support, at, moment?: true, direction, dir, either, kind }]
 //   either: true  → either sense is fine on an FBD (the answer's sign tells)
-//   kind: "component" | "push" | "pull" | "moment"
+//   kind: "component" | "push" | "pull" | "moment" | "link" (either sign: tension or compression)
 export function reactionsOf(s) {
   const base = { support: s.id, supportType: s.type, at: s.at };
   const comp = (axis) => {
@@ -78,10 +83,12 @@ export function reactionsOf(s) {
       return [comp("x"), comp("y"), { ...base, id: `M_${s.id}`, symbol: `M_${s.id}`, moment: true, sense: 1, either: true, kind: "moment" }];
     case "roller":
     case "smooth":
-    case "cable": {
+    case "cable":
+    case "link": {
       const direction = pushDirection(s);
       const symbol = oneForceSymbol(s, direction);
-      return [{ ...base, id: symbol.replace(/[{}]/g, ""), symbol, direction, dir: directionVector(direction), either: false, kind: s.type === "cable" ? "pull" : "push" }];
+      const kind = { cable: "pull", link: "link" }[s.type] || "push";
+      return [{ ...base, id: symbol.replace(/[{}]/g, ""), symbol, direction, dir: directionVector(direction), either: s.type === "link", kind }];
     }
     case "none":
       return [];

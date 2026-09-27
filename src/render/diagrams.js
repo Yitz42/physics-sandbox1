@@ -6,7 +6,8 @@
 //                                            component | target | wrong | student | shadow
 //   line     { id?, from, to, style }        style: cable | reference | dashed
 //   support  { from, to, normal }            hatched ground/ceiling/wall
-//   point    { at, label, style }            style: ring | dot | pin
+//   point    { at, label, style, labelAway? } style: ring | dot | pin; labelAway: a direction
+//                                            the name prefers (e.g. out from a truss)
 //   box      { id?, at, w, h, label, passable? } a crate or block (at = centre); passable: labels avoid it but may cover it
 //   (any shape may set `layer: "<type>"` to be drawn in that type's layer instead of its own)
 //   arc      { center, r, start, end, label }  angle marking (degrees, CCW from +x), see angles.js
@@ -21,6 +22,7 @@
 //   tfblock, sumjunction, wire, pickoff, signal, groupbox, sfgnode, sfgbranch   see blocks.js
 //   distload, wheel                          see loads.js
 //   supportSymbol                            pin, roller, fixed … see supports.js
+//   member                                   a truss bar, red/blue for tension/compression, see members.js
 //   wrench, trailer                          see hardware.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   listValues {}                            put every force's value in the corner list
@@ -42,7 +44,7 @@ import { clearSupports } from "./support-clear.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "support", "pivot", "wheel", "trailer", "beam", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 export function drawScene(cv, shapes, opts = {}) {
@@ -103,7 +105,14 @@ export function drawScene(cv, shapes, opts = {}) {
       const [x, y] = cv.toScreen(s.at);
       // Point names go first, as close to their point as they can: just below
       // it, else anywhere round it. A dimension line under the name breaks around it.
-      wanted.unshift({ text: s.label, pos: [x, y + 20], align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots: aroundPoint(x, y) });
+      // s.labelAway (a direction, e.g. away from a truss's middle) is tried first.
+      const spots = aroundPoint(x, y);
+      if (s.labelAway) {
+        const [ux, uy] = s.labelAway, m = Math.hypot(ux, uy) || 1;
+        const sx = x + (ux / m) * 16, sy = y - (uy / m) * 16 + 5;
+        spots.unshift([sx, sy, ux / m > 0.35 ? "left" : ux / m < -0.35 ? "right" : "center"]);
+      }
+      wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);

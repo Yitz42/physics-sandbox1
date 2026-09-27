@@ -28,7 +28,10 @@
 // result.values: every reaction by id (signed, in its assumed direction: +x, +y,
 // counterclockwise, or push/pull for rollers and cables), "n_<supportId>" (its
 // number of unknowns), "n" (total unknowns), "nM" (how many unknowns the moment
-// equation contains: reactions whose line of action misses the moment point).
+// equation contains: reactions whose line of action misses the moment point),
+// "deg" (degree of indeterminacy: unknowns − 3), and for each pin or fixed
+// support "R_<id>" / "theta_<id>": the size of its force and its direction
+// (degrees, counterclockwise from +x) — once solved.
 
 import { add, sub, scale, mag, unit, cross2 } from "../../core/vector.js";
 import { sigFig } from "../../core/units.js";
@@ -127,7 +130,7 @@ export function solveRigidBody(setup) {
   const equations = rigidBodyEquations(setup);
   const reactions = allReactions(setup);
   const ids = reactions.map((r) => r.id);
-  const values = { n: ids.length };
+  const values = { n: ids.length, deg: ids.length - 3 };
   const counts = countBySupport(setup);
   for (const [id, n] of Object.entries(counts)) values[`n_${id}`] = n;
   for (const f of knownForces(setup)) values[f.id] = magnitudeOf(f);
@@ -155,6 +158,13 @@ export function solveRigidBody(setup) {
     } else {
       status = "determinate";
       Object.assign(values, sol.values);
+      // A pin's (or fixed support's) two components as one force: size and direction.
+      for (const s of setup.supports || []) {
+        if (s.type !== "pin" && s.type !== "fixed") continue;
+        const x = values[`${s.id}_x`], y = values[`${s.id}_y`];
+        values[`R_${s.id}`] = Math.hypot(x, y);
+        values[`theta_${s.id}`] = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+      }
       message = liftOff(reactions, values);
       if (message) status = "unstable";
     }
@@ -188,7 +198,12 @@ function liftOff(reactions, values) {
 // Names and units for result.values (answer boxes and labels).
 export function rigidBodyQuantities(setup) {
   const q = { n: { label: "\\text{unknowns}", unit: "" }, nM: { label: "\\text{unknowns in } \\Sigma M", unit: "" } };
-  for (const s of setup.supports || []) q[`n_${s.id}`] = { label: `\\text{unknowns at } ${s.id}`, unit: "" };
+  q.deg = { label: "\\text{degree of indeterminacy}", unit: "" };
+  for (const s of setup.supports || []) {
+    q[`n_${s.id}`] = { label: `\\text{unknowns at } ${s.id}`, unit: "" };
+    q[`R_${s.id}`] = { label: `R_${s.id}`, unit: "N" };
+    q[`theta_${s.id}`] = { label: `\\theta_${s.id}`, unit: "deg" };
+  }
   for (const r of allReactions(setup)) q[r.id] = { label: r.symbol, unit: r.moment ? "N·m" : "N" };
   for (const f of knownForces(setup)) q[f.id] = { label: f.symbol, unit: "N" };
   return q;
@@ -212,6 +227,11 @@ export function bodyCentre(setup) {
 // and toward the support's side. A cable's reaction lies along the cable.
 export function outwardAt(setup, r) {
   if (r.kind === "pull") return r.dir;
+  // A link: its own line, toward its anchor (a pull starts at the body; a push ends on it).
+  if (r.kind === "link") {
+    const s = (setup.supports || []).find((q) => q.id === r.support);
+    return s && s.anchor ? unit(sub(s.anchor, s.at)) : r.dir;
+  }
   const s = (setup.supports || []).find((q) => q.id === r.support);
   const n = (s && s.normal) || [0, 1];
   const away = sub(r.at, bodyCentre(setup));

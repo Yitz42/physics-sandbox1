@@ -116,23 +116,29 @@ Claude builds from it.
 **Unit 4.3: Alternative equation sets** ⭐
 - Concept: two moment equations plus one force equation (and when that works).
 
-**Unit 4.4: Stability and determinacy**
+**Unit 4.4: Stability and determinacy** ✅
 - Concept: too few supports → mechanism; too many → indeterminate; improper supports.
-- Test ideas: add supports until stable; spot the "stable-looking" but improperly supported structure.
+- Built: add supports at three places (unstable / determinate / degree of indeterminacy);
+  predict n and the degree; hold a beam with three rollers only (parallel and concurrent
+  traps, lift-off); debug a student's classification working; solve a beam on a pin and
+  a roller on a 30° incline.
 
-**Unit 4.5: Two-force and three-force members**
+**Unit 4.5: Two-force and three-force members** ✅
 - Concept: two-force members carry force along their line; three forces must be concurrent or parallel.
-- Test ideas: find a direction without calculating.
+- Built: a shelf on a link (tie or prop) with the three lines of action meeting at O;
+  predict a pin force's direction from geometry; prop a shelf within three limits;
+  debug an FBD with components at a link; solve a boom propped by a strut.
 
 **Unit 4.6: Rigid body equilibrium in 3D**
 - Concept: six equations; supports in space (ball-and-socket, journal bearings).
 
 ### Chapter 5: Structures (textbook ch. 6)
 
-**Unit 5.1: Trusses, method of joints**
+**Unit 5.1: Trusses, method of joints** ✅
 - Concept: pin-jointed members in pure tension or compression; solve joint by joint.
-- Test ideas: build a truss to carry a load across a gap; predict member forces;
-  color members red (tension) / blue (compression).
+- Built: a bridge truss coloured red (tension) / blue (compression) as the load moves;
+  predict member forces (apex load, load plus wind); choose a roof truss's height within
+  a member rating; debug a joint's two equations; solve a wall truss at its loaded joint.
 
 **Unit 5.2: Zero-force members** ⭐
 - Concept: spot members that carry no force by inspection, before solving.

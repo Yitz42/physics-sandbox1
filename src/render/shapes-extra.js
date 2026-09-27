@@ -11,7 +11,7 @@
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
 // Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js,
 // springs and pulleys in mechanisms.js, block diagrams and signal-flow graphs in blocks.js,
-// distributed loads and wheels in loads.js, support symbols in supports.js,
+// distributed loads and wheels in loads.js, support symbols in supports.js, truss members in members.js,
 // a wrench and a trailer in hardware.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
@@ -21,6 +21,7 @@ import { drawBlockShape } from "./blocks.js";
 import { drawScenery } from "./scenery.js";
 import { drawLoadShape } from "./loads.js";
 import { drawSupportSymbol } from "./supports.js";
+import { drawMember } from "./members.js";
 import { drawHardware } from "./hardware.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
@@ -205,7 +206,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
     default: {
       // Pictures of real objects live in their own files (see the top of this file).
       const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawScenery(cv, s, env) || drawBlockShape(cv, s, env, roleColor)
-        || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env);
+        || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env) || drawMember(cv, s, env, roleColor);
       if (obj) return obj;
     }
   }

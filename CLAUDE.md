@@ -233,6 +233,12 @@ different situation (all are seen before any repeats), then new numbers from its
   the symbol (below a pin). A fixed support is a hatched block the body is
   mounted in, and the beam's end is square against it. Force arrows at a point
   with a moment arrow (M_A) stop outside the moment's circle.
+- Units 4.4, 4.5 and 5.1 (the old Units 9, 10, 11): stability (degree of
+  indeterminacy n − 3, improper supports), two-force members as a `link` support
+  (one force along it, tension +) with the three-force lines drawn meeting at O
+  (`showConcurrency`), and trusses (`statics.truss`, method of joints). Truss
+  sign convention: every member assumed in TENSION, negative = compression;
+  members red for tension, blue for compression, grey for zero-force.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

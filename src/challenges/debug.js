@@ -283,7 +283,9 @@ function mountSteps(ctx, mutation) {
     showMessage(ctx.el.feedback, "good", "Found it!", "Now, how should it be fixed?");
     step.textContent = "Step 2: choose the fix.";
     const choices = el("div", { className: "choice-list" });
-    for (const f of work.fixes) {
+    // In a random order, so the right fix isn't always in the same place.
+    const order = work.fixes.map((f) => [Math.random(), f]).sort((x, y) => x[0] - y[0]).map(([, f]) => f);
+    for (const f of order) {
       const right = work.fixes.find((x) => x.correct);
       const fix = { st: "fix", sub: f.label, exp: right ? right.label : null, fl: id };
       choices.appendChild(button(f.label, (e) => {

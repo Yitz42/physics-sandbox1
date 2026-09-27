@@ -8,6 +8,8 @@
 //   smooth  a hatched surface the body rests on
 //   fixed   a hatched block (a wall) the body is built into; the beam's end is square against it
 //   cable   a line to its anchor, fixed to a small hatched ceiling or wall
+//   link    a two-force member: a slim bar to its anchor, pinned at both ends
+//           (a ring at the body, a pin on hatched ground at the anchor)
 // Returns { boxes, segments, labels } like the other shapes, or null for other types.
 
 export function drawSupportSymbol(cv, s, env) {
@@ -88,6 +90,38 @@ export function drawSupportSymbol(cv, s, env) {
       ctx.lineTo(...at(30, 0));
       ctx.stroke();
       cover([at(-30, 0), at(30, 16)]);
+      break;
+    }
+    case "link": {
+      const q = cv.toScreen(s.anchor);
+      const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+      const u = [(q[0] - p[0]) / len, (q[1] - p[1]) / len]; // from the body to the anchor
+      // The bar: a slim outlined strip.
+      ctx.lineCap = "round";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(p[0], p[1]);
+      ctx.lineTo(q[0], q[1]);
+      ctx.stroke();
+      ctx.strokeStyle = env.paper;
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+      ctx.strokeStyle = env.ink;
+      ctx.lineWidth = 2;
+      out.segments.push([p, q]);
+      // The anchor's pin: a triangle behind it, on hatched ground across the bar.
+      const w = [-u[1], u[0]];
+      const back = (along, depth) => [q[0] + w[0] * along + u[0] * depth, q[1] + w[1] * along + u[1] * depth];
+      poly([q, back(-11, 18), back(11, 18)]);
+      hatch(ctx, back(0, 18), w, u, 16);
+      ring(q, 4);
+      ring(p, 4);
+      // The anchor's name (e.g. D), beside its pin, on the side away from the bar.
+      if (s.anchorLabel) {
+        const side = [q[0] - w[0] * 20, q[1] - w[1] * 20], other = [q[0] + w[0] * 20, q[1] + w[1] * 20];
+        const beyond = [q[0] + u[0] * 34, q[1] + u[1] * 34];
+        out.labels.push({ text: s.anchorLabel, pos: side, spots: [side, other, beyond], align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true });
+      }
       break;
     }
     case "cable": {

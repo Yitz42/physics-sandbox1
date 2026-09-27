@@ -26,6 +26,9 @@ import { distributedMistakes, distributedSummary } from "./distributed-tools.js"
 import { solveRigidBody, rigidBodyEquations, rigidBodyQuantities } from "./rigid-body.js";
 import { rigidBodyScene } from "./rigid-body-scene.js";
 import { rigidBodyFbd, rigidBodyMutate, rigidBodyMistakes, rigidBodySummary } from "./rigid-body-tools.js";
+import { classifySteps } from "./rigid-body-count.js";
+import { solveTruss, trussQuantities } from "./truss.js";
+import { trussScene, trussFbd, trussMistakes, trussSummary, trussEquations } from "./truss-scene.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -114,4 +117,16 @@ registerSolver("statics.rigidBody", {
   mistakes: rigidBodyMistakes,
   fbd: rigidBodyFbd,
   mutate: rigidBodyMutate,
+  debugSteps: classifySteps, // a student's working when classifying a structure (Unit 4.4)
+});
+
+// Unit 5.1 on: plane trusses, joint by joint (tension positive).
+registerSolver("statics.truss", {
+  solve: solveTruss,
+  equations: (setup, result) => trussEquations(setup, result || solveTruss(setup)),
+  summary: trussSummary,
+  scene: trussScene,
+  quantities: trussQuantities,
+  mistakes: trussMistakes,
+  fbd: trussFbd,
 });

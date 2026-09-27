@@ -19,6 +19,8 @@ const ROLE_COLORS = {
   student: ["--c-student", "#0f766e"],
   shadow: ["--c-wrong", "#dc2626"], // the student's (wrong) answer, drawn faint and dashed
   arm: ["--c-arm", "#b45309"], // moment arm d
+  tension: ["--c-tension", "#dc2626"], // a truss member pulled (red)
+  compression: ["--c-compression", "#2563eb"], // a truss member pushed (blue)
 };
 
 export function roleColor(role) {

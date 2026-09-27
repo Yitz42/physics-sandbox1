@@ -18,6 +18,7 @@ import { allReactions } from "./supports.js";
 import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt, momentPoint } from "./rigid-body.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
+import { concurrency } from "./rigid-body-count.js";
 
 // Picture metres per newton: the biggest force drawn 0.3 of the body's size.
 export function lengthPerNewton(setup, result, size) {
@@ -48,7 +49,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
   const faint = shown || hide.length > 0;
   for (const s of setup.supports || []) {
     if (s.type === "none") shapes.push({ type: "point", at: s.at, label: s.id, style: "dot" });
-    else shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], anchor: s.anchor, label: s.id, alpha: faint ? 0.28 : 1 });
+    else shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], anchor: s.anchor, anchorLabel: s.anchorLabel, label: s.id, alpha: faint ? 0.28 : 1 });
   }
 
   // Loads: point forces (a push has its arrowhead on the body), distributed loads, couples.
@@ -88,6 +89,16 @@ export function rigidBodyScene(setup, result, opts = {}) {
     }
   }
   if (opts.guesses) shapes.push(...rigidBodyShadow(setup, res, opts.guesses, { k, size }));
+  // setup.showConcurrency: a three-force body's lines of action, meeting at O
+  // (faint dashed lines; the pin's force must point along A → O).
+  // "reveal": only once the answer is shown (a predict stage's question is O itself).
+  if (setup.showConcurrency && (setup.showConcurrency !== "reveal" || opts.reveal)) {
+    const c = concurrency(setup);
+    if (c) {
+      for (const l of c.lines) shapes.push({ type: "line", from: l.from, to: l.to, style: "action" });
+      shapes.push({ type: "point", at: c.at, label: "O", style: "ring" });
+    }
+  }
   // setup.showMomentPoint: mark the point moments are taken about (a ring; named
   // unless it's a support, which has its own letter).
   if (setup.showMomentPoint) {

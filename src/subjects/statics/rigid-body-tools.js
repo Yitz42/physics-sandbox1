@@ -64,6 +64,7 @@ const COUNT_WHY = {
   smooth: "A smooth surface can't grip, so there's no force along it: one unknown, a push perpendicular to the surface.",
   cable: "A cable can only pull along its own length: one unknown, its tension.",
   fixed: "A fixed support stops sliding in x and y AND stops turning: three unknowns, $A_x$, $A_y$ and a moment $M_A$.",
+  link: "A two-force member (a link pinned at both ends) can only push or pull along its own line: one unknown, its force.",
   none: "Nothing is attached here, so there's no reaction.",
 };
 
@@ -85,7 +86,12 @@ export function rigidBodyMistakes(setup, name) {
     return list;
   }
   if (name === "n") {
-    for (let v = 0; v <= 6; v++) add1(v, "Count each support's unknowns and add them: a pin 2, a roller, surface or cable 1, a fixed support 3.", "supports");
+    for (let v = 0; v <= 6; v++) add1(v, "Count each support's unknowns and add them: a pin 2, a roller, surface, cable or link 1, a fixed support 3.", "supports");
+    return list;
+  }
+  if (name === "deg") {
+    add1(res.values.n, "That's the number of unknowns. The degree of indeterminacy is how many MORE unknowns there are than equations: unknowns − 3.", "algebra");
+    for (let v = 0; v <= 4; v++) add1(v, `Count the unknowns first (${"a pin 2, a roller 1, a fixed support 3"}), then subtract the 3 equilibrium equations.`, "supports");
     return list;
   }
   const r = allReactions(setup).find((x) => x.id === name);
@@ -118,6 +124,10 @@ export function rigidBodySummary(setup, result, { mode = "symbolic", reveal = tr
   const lines = [];
   const names = reactions.map((r) => r.symbol).join(",\\ ") || "\\text{none}";
   lines.push(`\\text{Unknowns: } ${names} \\;(${reactions.length}) \\qquad \\text{Equations: } 3`);
+  // The degree of indeterminacy (Unit 4.4): unknowns − 3, when there are too many.
+  if (setup.showDegree && reactions.length > 3) {
+    lines.push(`\\text{Degree of indeterminacy: } n - 3 = ${reactions.length} - 3 = ${reactions.length - 3}`);
+  }
   // Which unknowns the moment equation contains (the "smart point" lesson, Unit 4.2).
   if (setup.showMomentUnknowns && result.momentUnknowns) {
     const P = momentPoint(setup);

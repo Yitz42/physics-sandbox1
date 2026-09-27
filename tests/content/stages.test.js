@@ -70,7 +70,9 @@ for (const { unit, file, whole, stage: part } of stages) {
       for (let i = 0; i < 25; i++) {
         const s = makeVariant(stage.setup, stage.vary);
         const r = solver.solve(s);
-        ok(["resultant", "determinate"].includes(r.status), `version ${JSON.stringify(s)} → ${r.status}`);
+        // (As above: explore and build stages may start unsolved — the student fixes it.)
+        const fine = ["explore", "build"].includes(stage.challenge) ? ["resultant", "determinate", "unstable", "indeterminate"] : ["resultant", "determinate"];
+        ok(fine.includes(r.status), `version ${JSON.stringify(s)} → ${r.status}`);
         for (const f of s.forces || []) if (f.kind === "cable") ok(r.values[f.id] > 0, `cable ${f.id} not pulling`);
         for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]));
       }
