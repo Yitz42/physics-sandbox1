@@ -14,6 +14,7 @@ import { createStageView } from "./ui/stage-view.js";
 import { comprehensionPanel, renderComprehension } from "./ui/comprehension-view.js";
 import { courseComprehension } from "./core/comprehension.js";
 import { getEvents } from "./core/evidence.js";
+import { dataPanel } from "./ui/data-panel.js";
 
 const app = document.getElementById("app");
 
@@ -36,7 +37,11 @@ async function route() {
       const events = getEvents();
       const summaries = {};
       for (const c of courses.filter((x) => !x.comingSoon)) summaries[c.id] = (await courseSummary(c.id, events)).summary;
-      if (location.hash.replace(/^#\/?/, "") === "") app.appendChild(comprehensionPanel(courses, summaries)); // still on the home page
+      if (location.hash.replace(/^#\/?/, "") === "") {
+        // still on the home page: the Comprehension window, then the learning data (export / import)
+        app.appendChild(comprehensionPanel(courses, summaries));
+        app.appendChild(dataPanel(route));
+      }
       return;
     }
     if (courseId === "comprehension") {

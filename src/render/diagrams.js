@@ -9,7 +9,7 @@
 //   point    { at, label, style }            style: ring | dot | pin
 //   box      { id?, at, w, h, label, passable? } a crate or block (at = centre); passable: labels avoid it but may cover it
 //   (any shape may set `layer: "<type>"` to be drawn in that type's layer instead of its own)
-//   arc      { center, r, start, end, label }  angle marking (degrees, CCW from +x)
+//   arc      { center, r, start, end, label }  angle marking (degrees, CCW from +x), see angles.js
 //   triangle { at, dx, dy, labels }          slope triangle, e.g. 3-4-5
 //   zone     { from, to, label, labelBelow? } a shaded "not allowed" area, labelled above (or below)
 //   text     { at, text }                    a caption
@@ -36,6 +36,7 @@ import { drawShape, roleColor } from "./shapes.js";
 import { placeLabels, placeLegend, segmentHits, overlapArea } from "./labels.js";
 import { beamDirAt, surfaceGap } from "./fbd.js";
 import { lowerDims, extendDims } from "./dims.js";
+import { drawArc } from "./angles.js";
 
 export { roleColor };
 
@@ -59,9 +60,14 @@ export function drawScene(cv, shapes, opts = {}) {
 
   const notes = []; // "note" shapes: small text boxes placed in a free corner
   let listAll = false; // a { type: "listValues" } shape: values go in the corner list
+  const arcs = []; // angle markings, drawn after everything else (angles.js)
   for (const s of sorted) {
     if (s.type === "note") {
       notes.push(...s.lines);
+      continue;
+    }
+    if (s.type === "arc") {
+      arcs.push(s); // drawn last (below), once everything that could be in the way is known
       continue;
     }
     if (s.type === "listValues") {
@@ -92,6 +98,14 @@ export function drawScene(cv, shapes, opts = {}) {
       const place = atTail ? labelPosition(b, a, 14) : labelPosition(a, b, 14, mid, side);
       wanted.push({ text: s.label, ...place, size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow" });
     }
+  }
+
+  // Angle markings: each number sits right by its arc (the arc grows to make room).
+  // Their numbers are placed first, so arrow labels keep clear of them.
+  for (const s of arcs) {
+    const out = drawArc(cv, s, env, { obstacles, segments });
+    segments.push(...out.segments);
+    if (out.label) wanted.unshift(out.label);
   }
 
   // Working notes (e.g. how d is found) go in a box in the freest corner.

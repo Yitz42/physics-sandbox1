@@ -46,6 +46,7 @@ src/
     equations.js           builds symbolic + numeric equation strings for KaTeX
     runner.js              loads a stage, runs its challenge, tracks completion
     progress.js            saves which stages a student finished
+    record-file.js         the learning-record file: export / import, built to survive game changes
     evidence.js            a quiet record of every answer checked (localStorage)
     diagnosis.js           kinds of mistake, each a MATH error or an OBJECT error
     comprehension.js       scores units, chapters and courses from the record
@@ -62,7 +63,7 @@ src/
     blocks.js (block diagrams, signal-flow graphs)
   ui/
     controls.js  menus.js  feedback.js  stage-view.js  comprehension-view.js (the Comprehension window)
-    chrome.js (the top tab menu, the unit progress bar)
+    chrome.js (the top tab menu, the unit progress bar)  data-panel.js (export / import on the home page)
   subjects/                one folder per subject; each is a plug-in
     statics/
       index.js             registers the statics solvers with the core
@@ -206,6 +207,18 @@ different situation (all are seen before any repeats), then new numbers from its
   ("M") with the value in the corner list; a stage can list every value there
   (`listValues: true`). Pictures without sliders or dragging are zoomed to fill
   the canvas. Real objects are drawn as themselves (wrench, trailer, eyebolt …).
+- **Learning data** (agreed with the owner): the home page's "Learning data" panel
+  exports everything this browser gathered (finished stages + every checked answer,
+  with timing and mistake kinds) as ONE anonymous JSON file, and imports such a
+  file by ADDING it (nothing is deleted, doubles are skipped). For now it's for the
+  programmer; later, for teachers and students, files may be shrunk and encrypted.
+  The format (src/core/record-file.js) must stay readable as the game changes:
+  spelled-out field names with a dictionary, a format name + version, an
+  `encoding` field ("none" for now), a snapshot of every course/unit/stage with
+  titles (renamed stages are matched by title on import), and unknown fields are
+  always kept. Change the format only by adding fields or raising the version.
+- Angle numbers stay with their arc: if the spot is taken, the arc grows outward
+  and the dashed reference line extends to meet the number (render/angles.js).
 - Nothing moves on by itself: after a correct step the student presses **Next step →**,
   and a finished stage shows **Continue →**, which opens the "Stage complete" card.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted

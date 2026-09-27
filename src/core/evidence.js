@@ -20,7 +20,7 @@
 //     h: how long the page was hidden during this try — another tab or window }
 
 const KEY = "ems-evidence-v1";
-const MAX_EVENTS = 4000; // the oldest are dropped first
+export const MAX_EVENTS = 4000; // the oldest are dropped first
 
 function load() {
   try {
@@ -53,6 +53,28 @@ export function getEvents() {
 
 export function clearEvents() {
   save([]);
+}
+
+// Replace the whole record (loading a learning-record file, see record-file.js).
+// Returns how many events were kept (at most MAX_EVENTS, the newest).
+export function setEvents(events) {
+  save(events);
+  return Math.min(events.length, MAX_EVENTS);
+}
+
+// This browser's anonymous id for its record: random, made once, never a name.
+export function getRecordId() {
+  const KEY_ID = "ems-record-id";
+  try {
+    let id = localStorage.getItem(KEY_ID);
+    if (!id) {
+      id = `rec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(KEY_ID, id);
+    }
+    return id;
+  } catch {
+    return "rec-unsaved";
+  }
 }
 
 // A new id for each round (version of a stage), so answers can be grouped by it.

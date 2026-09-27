@@ -142,38 +142,8 @@ export function drawShape(cv, s, env) {
       out.boxes.push({ x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2, soft: !!s.passable });
       break;
     }
-    case "arc": {
-      const [x, y] = S(s.center);
-      const r = s.r * cv.view.scale;
-      const diff = ((s.end - s.start + 540) % 360) - 180; // shortest way round
-      ctx.strokeStyle = faint;
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      // Canvas angles run clockwise (y down), so negate.
-      ctx.arc(x, y, r, (-s.start * Math.PI) / 180, (-(s.start + diff) * Math.PI) / 180, diff > 0);
-      ctx.stroke();
-      // The angle's number sits just outside the arc, inside the angle next to
-      // its reference side (s.start, the axis or line it's measured from); that
-      // side's line is extended past the number, so the number reads as sitting
-      // in the angle, textbook style. (Placed with the other labels, so it can
-      // still dodge an arrow.)
-      const R = r + 16; // pixels from the vertex to the number's centre
-      const into = Math.min(Math.abs(diff) / 2, (Math.asin(Math.min(1, 12 / R)) * 180) / Math.PI);
-      const at = ((s.start + Math.sign(diff || 1) * into) * Math.PI) / 180;
-      const pos = [x + Math.cos(at) * R, y - Math.sin(at) * R];
-      const w = measureLabel(ctx, s.label, 12);
-      const ref = (s.start * Math.PI) / 180;
-      const ext = R + w / 2 + 6; // the reference line reaches just past the number
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(x + Math.cos(ref) * r, y - Math.sin(ref) * r);
-      ctx.lineTo(x + Math.cos(ref) * ext, y - Math.sin(ref) * ext);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      out.segments.push([[x, y], [x + Math.cos(ref) * ext, y - Math.sin(ref) * ext], true]);
-      out.labels.push({ text: s.label, pos: [pos[0], pos[1] + 4], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 30 });
-      break;
-    }
+    // "arc" (an angle marking) is drawn by angles.js, after the rest of the
+    // picture, so its number can find room right beside it.
     case "triangle": {
       const p0 = S(s.at), p1 = S([s.at[0] + s.dx, s.at[1]]), p2 = S([s.at[0] + s.dx, s.at[1] + s.dy]);
       ctx.strokeStyle = faint;

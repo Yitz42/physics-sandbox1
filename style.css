@@ -449,3 +449,8 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .comp-times { border-collapse: collapse; font-size: 14px; width: 100%; }
 .comp-times th { text-align: left; color: var(--c-muted); font-weight: 600; padding: 2px 10px 4px 0; border-bottom: 1px solid var(--c-line); }
 .comp-times td { padding: 4px 10px 4px 0; border-bottom: 1px solid var(--c-line); }
+
+/* Learning data (home page): export / import everything gathered */
+.data-panel { margin-top: 28px; background: var(--c-panel); border: 1px solid var(--c-edge); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); }
+.data-panel h2 { margin-bottom: 6px; }
+.data-summary { font-weight: 600; }

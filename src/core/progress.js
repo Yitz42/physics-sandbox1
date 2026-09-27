@@ -61,6 +61,14 @@ export function setPartsDone(key, n) {
   save(data);
 }
 
+// The whole progress map, and replacing it (loading a learning-record file).
+export function getAllProgress() {
+  return load();
+}
+export function setAllProgress(data) {
+  save(data);
+}
+
 // "Reset my progress" also clears the record of answers behind the comprehension page.
 export function resetAll() {
   save({});
