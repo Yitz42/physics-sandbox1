@@ -9,6 +9,7 @@
 //              line with end ticks; its label sits in a break in the middle of the line
 //              (labelOn: false puts it beside the line). noExt: no extension lines (dims.js)
 //   rightangle { at, u, v }                    small square marking a 90° corner
+//   grid       { lines: [[p, q], …] }         faint background grid lines (a 3D picture's ground)
 //   curve      { points, label?, role?, dashed?, labelAway? } a thin curved line (a direction
 //              angle in a 3D picture), labelled by its middle, away from labelAway
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
@@ -139,6 +140,22 @@ export function drawExtraShape(cv, s, env, roleColor) {
         if (box) out.boxes.push({ ...box, heavy: true });
       }
       ctx.globalAlpha = alpha0;
+      break;
+    }
+    case "grid": {
+      // Faint grid lines on a plane (a 3D picture's ground), in pixels already placed:
+      // background only — labels may cross them, so they report nothing.
+      ctx.strokeStyle = faint;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      for (const [a, b] of s.lines) {
+        const [p, q] = [S(a), S(b)];
+        ctx.moveTo(p[0], p[1]);
+        ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
       break;
     }
     case "curve": {

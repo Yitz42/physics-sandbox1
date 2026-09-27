@@ -4,7 +4,8 @@
 // corner, as in the 2D pictures; faint dashed lines along the axes mark where angles
 // and components are measured from.
 //   setup.view3d: { yaw, pitch }  where it's looked at from (default: the textbook look)
-//   setup.ground: [xmin, xmax, ymin, ymax]  a faint patch of the x-y plane (the ground)
+//   setup.ground: [xmin, xmax, ymin, ymax]  the patch of the x-y plane drawn (gridded; default:
+//                 round O and under everything); setup.gridStep: its grid spacing
 //   setup.pole: ["O", "A"]  a post between two points;  setup.cables: [["A", "B"], …]
 //   setup.showComponents: the box of F_x, F_y, F_z (dashed) and their arrows — or
 //     "reveal": once the answer is shown
@@ -49,13 +50,6 @@ export function force3dScene(setup, result, opts = {}) {
   const shapes = [];
   const fixed = []; // points (3D) that set the frame: they don't move when numbers change
 
-  // The ground, the axes (with a short faint stub on the negative side where points go).
-  if (setup.ground) {
-    const [x0, x1, y0, y1] = setup.ground;
-    const corners = [[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]];
-    shapes.push({ type: "region", points: corners.map(at), tint: 0, alpha: 0.35 });
-    fixed.push(...corners);
-  }
   // The coordinate axes: a little x-y-z icon in the corner, as in the 2D pictures
   // (agreed with the owner). Where an angle or a component is measured from an axis,
   // a faint dashed line along it through the force's point, as a 2D picture does.
@@ -111,6 +105,23 @@ export function force3dScene(setup, result, opts = {}) {
     shapes.push({ type: "arrow", id: "R", from: at(start), to: at(add3(start, scale3(R, k))), role: "resultant", label: `F_R = ${format(v.R, "N")}` });
   }
 
+  // The ground — the x-y plane — lightly filled with a grid on it, so the plane (and
+  // what's above or below it) is easy to see (agreed with the owner). setup.ground sets
+  // its extent; otherwise it's a patch round O under everything in the picture.
+  // (With sliders, setup.reach: exactly the patch under the box they can reach, so
+  // the floor doesn't make the picture any smaller.)
+  const reachFloor = setup.reach && kFixed ? [-setup.reach[0] * kFixed, setup.reach[0] * kFixed, -setup.reach[1] * kFixed, setup.reach[1] * kFixed] : null;
+  const [gx0, gx1, gy0, gy1] = setup.ground || reachFloor || floorAround(fixed, size);
+  const corners = [[gx0, gy0, 0], [gx1, gy0, 0], [gx1, gy1, 0], [gx0, gy1, 0]];
+  shapes.push({ type: "region", points: corners.map(at), tint: 0, alpha: 0.3, background: true });
+  const step = setup.gridStep ?? (Math.max(gx1 - gx0, gy1 - gy0) > 5 ? 1 : 0.5);
+  const first = (v) => Math.ceil(v / step - 1e-9) * step;
+  const lines = [];
+  for (let x = first(gx0); x <= gx1 + 1e-9; x += step) lines.push([at([x, gy0, 0]), at([x, gy1, 0])]);
+  for (let y = first(gy0); y <= gy1 + 1e-9; y += step) lines.push([at([gx0, y, 0]), at([gx1, y, 0])]);
+  shapes.push({ type: "grid", lines });
+  fixed.push(...corners);
+
   // The key: each named point's coordinates.
   const named = Object.entries(pts).filter(([n]) => n !== "O");
   if (named.length && setup.showCoords !== false) shapes.push({ type: "note", lines: named.map(([n, p]) => `${n} (${p.map(nice).join(", ")}) m`) });
@@ -121,6 +132,14 @@ export function force3dScene(setup, result, opts = {}) {
   const m = 0.14 * size;
   shapes.push({ type: "frame", frame: { xmin: Math.min(...xs) - m, xmax: Math.max(...xs) + m, ymin: Math.min(...ys) - m, ymax: Math.max(...ys) + m } });
   return shapes;
+}
+
+// A patch of the x-y plane under everything (and round O), a little bigger than it,
+// its edges on a half-metre.
+function floorAround(pts, size) {
+  const pad = 0.15 * size, snap = (v, up) => (up ? Math.ceil(v * 2) : Math.floor(v * 2)) / 2;
+  const xs = [0, ...pts.map((p) => p[0])], ys = [0, ...pts.map((p) => p[1])];
+  return [snap(Math.min(...xs) - pad, false), snap(Math.max(...xs) + pad, true), snap(Math.min(...ys) - pad, false), snap(Math.max(...ys) + pad, true)];
 }
 
 // The box of a force's components: dashed edges from its tip down to the x-y plane

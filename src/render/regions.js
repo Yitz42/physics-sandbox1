@@ -1,5 +1,5 @@
 // regions.js — flat shapes filled in (Unit 7.1: the parts of a composite area).
-//   region { points: [[x, y], …], tint: 0 | 1 | 2 | 3, label?, alpha?, hole? }
+//   region { points: [[x, y], …], tint: 0 | 1 | 2 | 3, label?, alpha?, hole?, background? }
 //   hole: true — a hole cut out of the parts drawn before it (Unit 7.2): filled with
 //   the page colour, so it looks cut through, and outlined dashed inside a solid edge.
 // A filled polygon with an outline (a half circle comes as many points). Its
@@ -33,6 +33,12 @@ export function drawRegion(cv, s, env) {
   ctx.lineWidth = 1.8;
   ctx.stroke();
   ctx.restore();
+  // (background: a 3D picture's ground patch — its edges are faint guides, which labels
+  // keep off when they can but may cross; its inside is free.)
+  if (s.background) {
+    for (let i = 0; i < pts.length; i++) out.segments.push([pts[i], pts[(i + 1) % pts.length], true]);
+    return out;
+  }
   for (let i = 0; i < pts.length; i++) out.segments.push([pts[i], pts[(i + 1) % pts.length]]);
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
   // (under: labels may sit on the shape freely — a centroid's letter goes right by its dot)

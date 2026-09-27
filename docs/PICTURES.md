@@ -128,3 +128,6 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   The axes are a little x-y-z icon in the bottom-left corner, like the 2D pictures' x-y icon
   (axes shape `dirs`), turned the way the picture is; where an angle or a component is
   measured from an axis, a faint dashed line runs along it through the force's point.
+  The ground (the x-y plane) is always drawn: lightly filled with a faint grid (0.5 or 1 m),
+  so the plane — and what is above or below it — is easy to see. It is background: its
+  grid lines don't count for labels, and its edges are faint guides labels may cross.
