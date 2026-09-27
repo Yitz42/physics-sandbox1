@@ -170,8 +170,9 @@ function diagramScene(setup, res, opts) {
     shapes.push({ type: "plot", points: [[x0, yV], [x1, yV]], base: yV, name: "V", tint: 0, marks: [] });
     shapes.push({ type: "plot", points: [[x0, yM], [x1, yM]], base: yM, name: "M", tint: 1, marks: [] });
   }
+  // Segment numbers below the diagrams, between the guides (clear of the dimensions).
   if (setup.showSegments) {
-    segs.forEach((s, i) => shapes.push({ type: "text", at: [(s.a + s.b) / 2, y - gapV + hV + 0.1 * size], text: `${i + 1}` }));
+    segs.forEach((s, i) => shapes.push({ type: "text", at: [(s.a + s.b) / 2, bottom - 0.03 * size], text: `${i + 1}` }));
   }
   // 7.3's section line at x (in the force colour), with a ring where it meets each curve.
   if (setup.cut != null) {

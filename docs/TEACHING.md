@@ -29,6 +29,8 @@ Read this before writing or changing stages or challenge types. Changing any of 
   page, every course; on a chapter page, every chapter; inside a unit, no chapter
   list — the way back (to the chapter from the unit's page, to the unit from a stage)
   and the unit's stages, ticked when done; and a greyed "Account — coming soon" slot.
+  A chapter's and a unit's page title has a thick back arrow right beside it (to all
+  chapters, or to the unit's chapter) instead of a text link.
   The course page shows each chapter as a square **folder**: "Chapter N" on its tab at
   the top edge, then its title, progress, and its textbook link inside; a folder opens the
   chapter's page with its units. The

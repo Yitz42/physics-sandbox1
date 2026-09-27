@@ -114,6 +114,7 @@ export function mount(ctx) {
         onCorrect: (detail) => {
           stepRight(detail);
           ws.sceneOpts.hide = [];
+          ws.sceneOpts.showFbd = true; // (the FBD the student drew stays in the picture)
           ws.extraShapes = () => [];
           ws.onPointer = null;
           ws.update();

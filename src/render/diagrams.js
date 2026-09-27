@@ -115,7 +115,7 @@ export function drawScene(cv, shapes, opts = {}) {
       // it, else anywhere round it. A dimension line under the name breaks around it.
       // s.labelAway (a direction, e.g. away from a truss's middle) is tried first.
       const drop = letterDrop(s.label);
-      const r = s.style === "ring" ? RING_R : DOT_R;
+      const r = s.style === "ring" ? RING_R : s.style === "none" ? 3 : DOT_R;
       const spots = aroundPoint(x, y, r, drop);
       if (s.labelAway) {
         const [ux, uy] = s.labelAway, m = Math.hypot(ux, uy) || 1;

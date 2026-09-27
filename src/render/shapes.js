@@ -124,6 +124,11 @@ export function drawShape(cv, s, env) {
     }
     case "point": {
       const [x, y] = S(s.at);
+      // style "none": just the point's letter (e.g. a beam's square end at a wall, on an FBD).
+      if (s.style === "none") {
+        out.boxes.push({ ...circleBox(x, y, 2), heavy: true });
+        break;
+      }
       ctx.fillStyle = s.style === "ring" ? paper : ink;
       ctx.strokeStyle = ink;
       ctx.lineWidth = 2.2;

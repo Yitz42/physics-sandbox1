@@ -90,7 +90,13 @@ export function createWorkspace(ctx, opts = {}) {
     if (size) ws.sceneOpts.canvasSize = size;
     const all = solver.scene(ws.setup, solver.solve(ws.setup), { ...ws.sceneOpts, reveal: true });
     // A scene can give its exact frame (side-by-side diagrams, see render/panels.js).
-    const framed = all.find((s) => s.frame);
+    // One whose layout changes once the answer is shown (a model alone, then the
+    // model and its FBD) gives the frame for what's showing now.
+    let framed = all.find((s) => s.frame);
+    if (framed && !ws.reveal) {
+      const now = solver.scene(ws.setup, solver.solve(ws.setup), { ...ws.sceneOpts, reveal: false }).find((s) => s.frame);
+      if (now) framed = now;
+    }
     ws.framed = !!framed;
     if (framed) return cv.fit(framed.frame);
     // Stages where things move (sliders, dragging) keep their own fixed window,

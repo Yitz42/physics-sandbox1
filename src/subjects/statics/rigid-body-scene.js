@@ -45,6 +45,14 @@ export function rigidBodyScene(setup, result, opts = {}) {
   // The sketch: no reactions and no weight arrow (those belong to the FBD).
   const sketch = overlayScene({ ...setup, showReactions: "reveal" }, res, { ...opts, reveal: false, hide: [], fbdSetup: null, guesses: null })
     .filter((sh) => sh.type !== "axes");
+  // The FBD only when it's needed: its reactions are shown (or being drawn by the
+  // student, or a debug stage's FBD is being checked). Until then — e.g. a predict
+  // stage before its answer — the model alone, with a frame of its own.
+  const needed = setup.showReactions !== "reveal" || opts.reveal || opts.showFbd || !!opts.fbdSetup || (opts.hide || []).length > 0 || !!opts.guesses;
+  if (!needed) {
+    const frame = { xmin: lay.left[0], xmax: lay.left[1], ymin: lay.capY + 0.1 * bodySize(setup), ymax: lay.y[1] };
+    return [{ type: "axes" }, ...sketch, { type: "frame", frame }];
+  }
   // The FBD: everything that acts on the body, on a plain body — nothing else.
   const full = overlayScene(setup, res, opts);
   const extras = new Set(setup.extras || []);
@@ -52,16 +60,19 @@ export function rigidBodyScene(setup, result, opts = {}) {
   for (const sh of full) {
     if (sh.type === "axes" || extras.has(sh)) continue;
     if (["support", "supportSymbol", "dim", "text"].includes(sh.type)) continue;
-    if (sh.type === "beam") fbd.push({ type: "beam", points: sh.points, width: 7 }); // (no caption, no details)
+    // (No caption, no details. An end built into a wall stays square, as in the model.)
+    if (sh.type === "beam") fbd.push({ type: "beam", points: sh.points, width: 7, flat: wallEnds(setup, sh.points) });
     else fbd.push(sh);
   }
   // The supports' letters stay on the FBD, at their points.
-  for (const q of setup.supports || []) if (q.type !== "none") fbd.push({ type: "point", at: q.at, label: q.id, style: "dot" });
+  // (At a wall the body's square end shows the point: the letter alone.)
+  for (const q of setup.supports || []) if (q.type !== "none") fbd.push({ type: "point", at: q.at, label: q.id, style: q.type === "fixed" ? "none" : "dot" });
   const captions = [
     { type: "text", at: [(lay.left[0] + lay.left[1]) / 2, lay.capY], text: "Model" },
     { type: "text", at: [(lay.left[0] + lay.left[1]) / 2 + lay.offset, lay.capY], text: "Free-body diagram" },
   ];
-  const shapes = [{ type: "axes" }, ...sketch, ...fbd.map((sh) => shiftShape(sh, lay.offset)), ...captions];
+  const shapes = [{ type: "axes" }, ...sketch.map((sh) => ({ ...sh, panel: "left" })), ...fbd.map((sh) => ({ ...shiftShape(sh, lay.offset), panel: "right" })),
+    { ...captions[0], panel: "left" }, { ...captions[1], panel: "right" }];
   return spreadPanels(shapes, { divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: opts.canvasSize });
 }
 
@@ -253,4 +264,11 @@ function roomyDims(setup, size) {
   const drop = Math.max(0, Math.max(...rows) - (floor - 0.24 * size));
   if (drop < 1e-9) return dims;
   return dims.map((d) => (below(d) ? { ...d, from: [d.from[0], d.from[1] - drop], to: [d.to[0], d.to[1] - drop] } : d));
+}
+
+// Which ends of a body are built into a wall (a fixed support there): [start, end].
+function wallEnds(setup, pts) {
+  const fixed = (setup.supports || []).filter((q) => q.type === "fixed").map((q) => q.at);
+  const at = (E) => fixed.some((F) => Math.hypot(E[0] - F[0], E[1] - F[1]) < 1e-6);
+  return [at(pts[0]), at(pts[pts.length - 1])];
 }

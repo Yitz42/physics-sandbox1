@@ -50,6 +50,9 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
 
   // Hide the answer's arrows; the student's own arrows are drawn instead.
   ws.sceneOpts.hide = info.forces.map((f) => f.id);
+  // (A picture that shows its FBD only when needed — a rigid body's — now needs it:
+  // frame the picture again.)
+  if (ws.framed) ws.fit();
   ws.extraShapes = () =>
     studentArrows({
       origin: info.origin,

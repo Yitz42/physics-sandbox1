@@ -537,5 +537,10 @@ a.folder-link:hover .folder-title { color: var(--c-accent); }
 .folder-book { padding: 8px 16px 12px; font-size: 0.85rem; line-height: 1.3; border-top: 1px dashed var(--c-line); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .folder-soon { opacity: 0.6; box-shadow: none; }
 .folder-soon .folder-title { color: var(--c-muted); }
-.back-link { display: inline-block; margin: 4px 0 8px; font-size: 0.95rem; }
 @media (max-width: 480px) { .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 12px; } .folder-title { font-size: 1rem; } .folder-link { padding: 10px 12px 6px; } .folder-num { left: 10px; } }
+/* A page title with a thick back arrow beside it (unit → chapter, chapter → all chapters). */
+.title-row { display: flex; align-items: center; gap: 10px; }
+.title-row h1 { margin: 0; }
+.title-back { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;
+  color: var(--c-accent); background: var(--c-panel); border: 1px solid var(--c-edge); box-shadow: var(--shadow); }
+.title-back:hover { background: var(--c-accent); color: var(--c-panel); }

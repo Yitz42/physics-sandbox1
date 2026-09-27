@@ -107,3 +107,10 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
 - **Room round the model**: dimension rows under a rigid body sit at least 0.24 × its
   size below the body and its supports — the automatic ones and a stage's own, moved
   down together (rigid-body-scene.js, roomyDims).
+- **FBD only when needed; square wall ends**: the FBD appears once its reactions are
+  shown (from the start, once revealed, or while the student draws it — solve.js keeps
+  it after); until then the model is drawn alone. On the FBD a body built into a wall
+  keeps its square end, with the support's letter but no dot. Each shape stays with its
+  own diagram (panel: "left" | "right", render/panels.js).
+- **Segment numbers** (Unit 7.3) sit below the moment diagram, between the guides,
+  clear of the dimension lines.

@@ -71,9 +71,13 @@ export function spreadPanels(shapes, { divider, left, right, y, margin = 0.8, si
   const quarter = w / 4 / s; // metres from the divider to the centre of each half
   const dxL = divider - quarter - (left[0] + left[1]) / 2;
   const dxR = divider + quarter - (right[0] + right[1]) / 2;
+  // (A shape may say which diagram it belongs to — panel: "left" | "right" — e.g. an
+  // FBD arrow whose tail reaches back past the divider; otherwise, where it starts.)
   const moved = shapes.map((sh) => {
     const x = anchorX(sh);
-    return x == null ? sh : shift(sh, x < divider ? dxL : dxR);
+    if (x == null) return sh;
+    const left = sh.panel ? sh.panel === "left" : x < divider;
+    return shift(sh, left ? dxL : dxR);
   });
   // The frame is exactly as wide as the canvas (inside its border) at scale s,
   // so the divider lands in the middle and each group at its quarter point.
