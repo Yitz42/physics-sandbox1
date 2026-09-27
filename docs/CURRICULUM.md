@@ -154,9 +154,12 @@ Claude builds from it.
   (a loaded joint, a support joint, members not in line, the wrong member); concept
   check; solve: spot the idle members, then joint A and B.
 
-**Unit 5.3: Trusses, method of sections**
+**Unit 5.3: Trusses, method of sections** ✅
 - Concept: cut through the truss and solve for up to three members directly.
-- Test ideas: choose the best cut; predict one member force quickly.
+- Built: cut the bridge (or try a cut that doesn't split it) and pick the moment point,
+  watching which member forces each equation holds; predict two members with one
+  equation each (one load, two loads); plan a cut and point that give F_GH alone; debug a
+  section's equations; concept check; solve the right part of a two-load bridge.
 
 **Unit 5.4: Frames and machines**
 - Concept: multi-body structures with multi-force members; take them apart into separate FBDs.

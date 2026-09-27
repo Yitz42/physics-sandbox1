@@ -122,10 +122,12 @@ registerSolver("statics.rigidBody", {
 });
 
 // Unit 5.1 on: plane trusses, joint by joint (tension positive); Unit 5.2 adds
-// zero-force members found by inspection (values.zeroCount, setup.showZero).
+// zero-force members found by inspection (values.zeroCount, setup.showZero);
+// Unit 5.3 the method of sections (setup.section: cut, keep one part, three equations).
 registerSolver("statics.truss", {
   solve: solveTrussZero,
-  equations: (setup, result) => trussEquations(setup, result || solveTruss(setup)),
+  // (A section's equations are those of the part kept — Unit 5.3, truss-section.js.)
+  equations: (setup, result) => (setup.section ? (result && result.sectionEquations) || solveTrussZero(setup).sectionEquations : trussEquations(setup, result || solveTruss(setup))),
   summary: trussZeroSummary,
   scene: trussScene,
   quantities: (setup) => ({ ...trussQuantities(setup), zeroCount: { label: "\\text{zero-force members}", unit: "" } }),

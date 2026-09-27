@@ -18,6 +18,7 @@
 import { sub, unit, cross2 } from "../../core/vector.js";
 import { memberId, membersAt, trussLoads, trussReactions, solveTruss } from "./truss.js";
 import { trussSummary } from "./truss-scene.js";
+import { sectionEquations, sectionValues, sectionSummary } from "./truss-section.js";
 import { directionVector } from "./directions.js";
 
 const parallel = (u, v) => Math.abs(cross2(u, v)) < 1e-9;
@@ -166,13 +167,24 @@ export function solveTrussZero(setup) {
   const z = zeroByInspection(setup);
   r.values.zeroCount = z.zero.length;
   r.zeroByInspection = z;
+  // A section (Unit 5.3): the kept part's equations, with the reactions found first.
+  if (setup.section) {
+    const known = {};
+    if (r.status === "determinate") for (const x of trussReactions(setup)) known[x.id] = r.values[x.id];
+    const eqs = sectionEquations(setup, known);
+    const sv = sectionValues(setup, eqs);
+    Object.assign(r, { sectionEquations: eqs, sectionUnknowns: sv.inEq, sectionParts: sv.parts, sectionMessage: sv.parts.message });
+    r.values.secOk = sv.secOk;
+    r.values.secM = sv.secM;
+  }
   return r;
 }
 
 // The summary lines, plus the inspection working when the stage asks for it
 // (setup.showZero: true, or "reveal" — only once the answer is shown).
 export function trussZeroSummary(setup, result, opts = {}) {
-  const lines = trussSummary(setup, result, opts);
+  const tc = (v) => (Math.abs(v) < 1e-6 ? "" : v > 0 ? "\\,(\\text{T})" : "\\,(\\text{C})");
+  const lines = setup.section ? [trussSummary(setup, result, { ...opts, reveal: false })[0], ...sectionSummary(setup, result, opts, tc)] : trussSummary(setup, result, opts);
   if (setup.showZero === true || (setup.showZero === "reveal" && opts.reveal)) lines.push(...zeroSummary(setup));
   return lines;
 }

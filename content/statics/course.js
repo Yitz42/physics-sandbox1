@@ -52,7 +52,7 @@ const chapters = [
     units: [
       "trusses",
       "zero-force-members",
-      soon("Trusses: method of sections", "Cut through the truss and find up to three member forces at once."),
+      "truss-sections",
       soon("Frames and machines", "Take multi-part structures apart into separate free-body diagrams."),
     ],
   },

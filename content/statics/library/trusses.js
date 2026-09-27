@@ -95,3 +95,72 @@ export const wallBracket = scenario({
     },
   },
 });
+
+// ---- Sections through the bridge (Unit 5.3) ----------------------------------------------
+// LEFT cut through FG, CF, BC (keep A, B, F); RIGHT cut through GH, CH, CD (keep D, E, H).
+// Hand checks — P at C (1200 N), keep the left part (A_y = 600 N):
+//   ΣM_C: −6A_y − 3F_FG = 0 → F_FG = −P;   ΣM_F: −3A_y + 3F_BC = 0 → F_BC = +P/2;   ΣF_y → F_CF = +0.7071P
+// Two loads, P = 600 N at B and Q = 1200 N at C: E_y = (3P + 6Q)/12 = 750 N, A_y = 1050 N.
+//   Left part:  ΣM_C: −6(1050) + 3(600) − 3F_FG = 0 → F_FG = −1500 N;  ΣM_F: −3(1050) + 3F_BC = 0 → F_BC = +1050 N;
+//               ΣF_y: 1050 − 600 − (1/√2)F_CF = 0 → F_CF = +636.4 N
+//   Right part: ΣM_C: 6(750) + 3F_GH = 0 → F_GH = −1500 N;  ΣM_H: 3(750) − 3F_CD = 0 → F_CD = +750 N;
+//               ΣF_y: 750 − (1/√2)F_CH = 0 → F_CH = +1060.7 N
+export const LEFT_CUT = { members: ["FG", "CF", "BC"], keep: "A" };
+export const RIGHT_CUT = { members: ["GH", "CH", "CD"], keep: "E" };
+
+export function twoLoadSetup(P = 600, Q = 1200) {
+  const s = bridgeSetup("B", P);
+  s.forces.push({ id: "Q", symbol: "Q", magnitude: Q, direction: "down", joint: "C" });
+  return s;
+}
+
+const sectionHints = (moment1, moment2, force) => [
+  "Keep one part and draw its FBD: its support reaction (found first, from the whole truss), its loads, and a pull (tension) in each cut member.",
+  `${moment1} Two of the cut members pass through that joint, so they drop out.`,
+  `${moment2} ${force}`,
+];
+
+export const leftSection = scenario({
+  name: "one load, left part",
+  story: "The Pratt bridge carries a load $P$ at C. It's cut through FG, CF and BC, and the left part is kept (its reaction $A_y$ is found first from the whole truss).",
+  setup: { ...bridgeSetup("C"), section: { ...LEFT_CUT, sums: [{ M: "C" }, { M: "F" }, { F: "y" }] }, showReactions: "always", knownReactions: true },
+  view: BRIDGE_VIEW,
+  vary: [{ path: "forces.#P.magnitude", min: 600, max: 2400, step: 20 }],
+  questions: {
+    members: {
+      instruction: "Predict $F_{FG}$ and $F_{BC}$ (tension positive), one equation each.",
+      ask: [{ quantity: "F_FG" }, { quantity: "F_BC" }],
+      hints: sectionHints("For $F_{FG}$, take moments about C.", "For $F_{BC}$, take moments about F.", "Each arm is the truss's height, 3 m; $A_y$ acts 6 m (about C) or 3 m (about F) from the point."),
+    },
+  },
+});
+
+export const twoLoadLeft = scenario({
+  name: "two loads, left part",
+  story: "The Pratt bridge carries $P$ at B and $Q$ at C. It's cut through FG, CF and BC, and the left part is kept ($A_y$ is found first from the whole truss).",
+  setup: { ...twoLoadSetup(), section: { ...LEFT_CUT, sums: [{ M: "C" }, { M: "F" }, { F: "y" }] }, showReactions: "always", knownReactions: true },
+  view: BRIDGE_VIEW,
+  vary: [
+    { path: "forces.#P.magnitude", min: 300, max: 1200, step: 20 },
+    { path: "forces.#Q.magnitude", min: 600, max: 1800, step: 20 },
+  ],
+  questions: {
+    members: {
+      instruction: "Predict $F_{FG}$ and $F_{BC}$ (tension positive), one equation each.",
+      ask: [{ quantity: "F_FG" }, { quantity: "F_BC" }],
+      hints: sectionHints("For $F_{FG}$, take moments about C: $A_y$ (6 m) and $P$ at B (3 m) turn the part, $F_{FG}$ (3 m up) balances them.", "For $F_{BC}$, take moments about F.", "$P$ at B is straight below F: about F it has no moment."),
+    },
+  },
+});
+
+export const rightSection = scenario({
+  name: "two loads, right part",
+  story: "The Pratt bridge carries $P$ at B and $Q$ at C. It's cut through GH, CH and CD, and the right part is kept ($E_y$ is found first from the whole truss).",
+  setup: { ...twoLoadSetup(), section: { ...RIGHT_CUT, sums: [{ M: "C" }, { M: "H" }, { F: "y" }] }, showReactions: "always", knownReactions: true },
+  view: BRIDGE_VIEW,
+  vary: [
+    { path: "forces.#P.magnitude", min: 300, max: 1200, step: 20 },
+    { path: "forces.#Q.magnitude", min: 600, max: 1800, step: 20 },
+  ],
+  questions: {},
+});

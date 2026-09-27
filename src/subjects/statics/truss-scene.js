@@ -13,6 +13,7 @@ import { format, fixedTex } from "../../core/units.js";
 import { placeArrow } from "../../render/fbd.js";
 import { solveEquations, swapFactor } from "../../core/equations.js";
 import { magnitudeOf, directionOf } from "./particle.js";
+import { sectionShapes, sectionParts } from "./truss-section.js";
 import { solveTruss, trussSupports, trussLoads, trussReactions, trussEquations, membersAt, memberId, memberSymbol, trussSize } from "./truss.js";
 
 const centreOf = (setup) => {
@@ -42,14 +43,25 @@ export function trussScene(setup, result, opts = {}) {
   for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(mag(sub(d.to, d.from)), "m") });
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });
 
-  for (const s of trussSupports(setup)) shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], label: "", alpha: shown || hide.length ? 0.28 : 1 });
+  const onKept = (at) => !setup.section || sectionParts(setup).kept.some((J) => mag(sub(setup.joints[J], at)) < 1e-9);
+  for (const s of trussSupports(setup)) shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], label: "", alpha: shown || hide.length || !onKept(s.at) ? 0.28 : 1 });
   const focus = setup.joint ? membersAt(setup, setup.joint).map(({ m }) => memberId(m)) : [];
+  // A section (Unit 5.3): the part kept is drawn as usual, the part cut away faintly.
+  const sec = setup.section ? sectionShapes(setup, solved ? res.values : null, { arrowLength: 0.2 * size, fmt: format, tc, hide }) : null;
+  const keptJ = (J) => !sec || sec.kept.has(J);
   const middle = centreOf(setup);
   for (const m of setup.members || []) {
     const id = memberId(m), v = res.values[id];
     const from = setup.joints[m[0]], to = setup.joints[m[1]];
+    if (sec && !(keptJ(m[0]) && keptJ(m[1]))) {
+      // Cut away (or cut): faint — and a cut member's kept half, up to the cut, drawn solid.
+      shapes.push({ type: "member", id: `${id}-away`, from, to, state: null, label: null, alpha: 0.18 });
+      const c = sec.parts.cut.find((x) => x.m === m);
+      if (c) shapes.push({ type: "member", id, from: setup.joints[c.keptEnd], to: c.at, state: solved ? res.states[id] : null, label: null });
+      continue;
+    }
     // Just the value and T/C, written along each bar (the bar itself says which member it is).
-    const label = solved && !focus.includes(id) ? `${format(Math.abs(v), "N")}${tc(v)}` : null;
+    const label = solved && !focus.includes(id) && !sec ? `${format(Math.abs(v), "N")}${tc(v)}` : null;
     // side: the force is written along the bar, on the side away from the truss's middle.
     shapes.push({ type: "member", id, from, to, side: sub(scale(add(from, to), 0.5), middle), state: solved ? res.states[id] : null, label, alpha: setup.joint ? 0.55 : 1 });
   }
@@ -62,12 +74,12 @@ export function trussScene(setup, result, opts = {}) {
     const u = directionOf(f), len = Math.max(0.12 * size, magnitudeOf(f) * k);
     const tail = f.push ? add(f.at, scale(u, -len)) : f.at;
     // (A push ends on its joint and is labelled at its outer end, like any push on a body.)
-    shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", onBody: !!f.push, label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
+    shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", onBody: !!f.push, label: `${f.symbol} = ${format(magnitudeOf(f), "N")}`, ...(onKept(f.at) ? {} : { alpha: 0.3 }) });
   }
   // Support reactions: "?" until solved.
   if (shown) {
     for (const r of trussReactions(setup)) {
-      if (hide.includes(r.id)) continue;
+      if (hide.includes(r.id) || !onKept(r.at)) continue; // (a section shows only its own part's reactions)
       const v = solved || (setup.knownReactions && res.status === "determinate") ? res.values[r.id] : null;
       const dir = v != null && v < 0 ? scale(r.dir, -1) : r.dir;
       const len = v == null ? 0.18 * size : Math.max(0.1 * size, Math.abs(v) * k);
@@ -87,6 +99,7 @@ export function trussScene(setup, result, opts = {}) {
       shapes.push({ type: "arrow", id, ...placeArrow(J, dir, 0.22 * size, toward), role: "unknown", label: `${memberSymbol(m)} = ${v == null ? "?" : format(Math.abs(v), "N") + tc(v)}` });
     }
   }
+  if (sec) shapes.push(...sec.shapes);
   if (solved) shapes.push({ type: "note", lines: [{ text: "red: tension (pulls)", role: "tension" }, { text: "blue: compression (pushes)", role: "compression" }] });
   return shapes;
 }
@@ -94,6 +107,7 @@ export function trussScene(setup, result, opts = {}) {
 // ---- The joint free-body diagram (solve challenge) ---------------------------------
 
 export function trussFbd(setup) {
+  if (setup.section) return sectionFbd(setup);
   const J = setup.joint;
   const at = setup.joints[J];
   const forces = membersAt(setup, J).map(({ m, other }) => {
@@ -110,6 +124,25 @@ export function trussFbd(setup) {
   const points = {};
   for (const [name, p] of Object.entries(setup.joints)) points[name] = { at: p, outward: unit(sub(p, centreOf(setup))) };
   return { forces, directions, points, arrowLength: 0.22 * trussSize(setup), origin: at };
+}
+
+// A section's FBD (Unit 5.3): each cut member's force at the cut (either way: the
+// sign will tell), and the reactions at the kept part's supports.
+function sectionFbd(setup) {
+  const parts = sectionParts(setup);
+  const kept = parts.kept.map((J) => setup.joints[J]);
+  const forces = parts.cut.map((c) => ({ id: c.id, symbol: memberSymbol(c.m), dir: c.dir, at: c.at, outward: c.dir, either: true, kind: "member" }));
+  for (const r of trussReactions(setup)) {
+    if (!kept.some((p) => mag(sub(p, r.at)) < 1e-9)) continue;
+    forces.push({ id: r.id, symbol: r.symbol, dir: r.dir, at: r.at, outward: outwardAt(setup, r), either: r.either, kind: r.kind });
+  }
+  const directions = [];
+  for (let i = 0; i < 8; i++) directions.push([Math.cos((i * Math.PI) / 4), Math.sin((i * Math.PI) / 4)]);
+  for (const f of forces) directions.push(f.dir, scale(f.dir, -1));
+  const points = {};
+  for (const [name, p] of Object.entries(setup.joints)) points[name] = { at: p, outward: unit(sub(p, centreOf(setup))) };
+  const origin = scale(kept.reduce((a, p) => add(a, p), [0, 0]), 1 / Math.max(1, kept.length));
+  return { forces, directions, points, arrowLength: 0.2 * trussSize(setup), origin };
 }
 
 // ---- Common mistakes ---------------------------------------------------------------

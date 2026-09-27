@@ -54,7 +54,7 @@ export function trussReactions(setup) {
 
 // A member's direction as the textbook writes it: a word along an axis, else the
 // smallest whole-number slope triangle (2 : 1.5 → 4 : 3, so its parts read 4/5 and 3/5).
-function memberDirection(v) {
+export function memberDirection(v) {
   const d = textbookDirection(v);
   if (typeof d === "string") return d;
   const [x, y] = d.slope;

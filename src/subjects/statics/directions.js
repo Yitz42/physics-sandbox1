@@ -74,7 +74,10 @@ export function componentFactors(dir) {
     const [dx, dy] = dir.slope;
     const h = Math.hypot(dx, dy);
     if (h < 1e-12) return { x: null, y: null };
-    const frac = (n) => ({ tex: `\\tfrac{${sigFig(Math.abs(n), 4)}}{${sigFig(h, 4)}}`, value: Math.abs(n) / h, pre: true });
+    // A whole-number slope whose length isn't whole (1 : 1, 1 : 2) keeps its root: 1/√2, not 1/1.414.
+    const h2 = dx * dx + dy * dy;
+    const root = Math.abs(h - Math.round(h)) > 1e-9 && Math.abs(h2 - Math.round(h2)) < 1e-9 ? `\\sqrt{${Math.round(h2)}}` : sigFig(h, 4);
+    const frac = (n) => ({ tex: `\\tfrac{${sigFig(Math.abs(n), 4)}}{${root}}`, value: Math.abs(n) / h, pre: true });
     // Mixing up the two fractions is this direction's "sin/cos swap".
     const swap = { swapLabel: "Swap the fractions (x ↔ y)", swapReason: "has the two fractions swapped — the x-component uses the side along x, the y-component the side along y", swapKind: "trig" };
     const make = (n, other) => (n === 0 ? null : { sign: Math.sign(n), factor: { ...frac(n), alt: frac(other), ...swap } });
