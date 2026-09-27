@@ -1,5 +1,6 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
-//   beam       { points, width? }              a bar, bracket or plank (polyline, metres)
+//   beam       { points, width?, flat? }       a bar, bracket or plank (polyline, metres); flat:
+//              [start, end] true = a square end (built into a wall, see support-clear.js)
 //   pivot      { at }                          triangle support under a pin (seesaw)
 //   dim        { from, to, label, role?, labelSide?, labelOn?, noExt? }  a dimension / moment-arm
 //              line with end ticks; its label sits in a break in the middle of the line
@@ -35,16 +36,42 @@ export function drawExtraShape(cv, s, env, roleColor) {
         pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
       };
       const w = s.width || 12;
-      ctx.lineCap = "round";
+      const flat = s.flat || [false, false];
+      // Square line ends, with a round cap added by hand to each end that isn't flat.
+      const caps = (r, color) => {
+        ctx.fillStyle = color;
+        [pts[0], pts[pts.length - 1]].forEach((p, i) => {
+          if (flat[i]) return;
+          ctx.beginPath();
+          ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      };
+      ctx.lineCap = "butt";
       ctx.lineJoin = "round";
       ctx.strokeStyle = ink;
       ctx.lineWidth = w + 3;
       trace();
       ctx.stroke();
+      caps((w + 3) / 2, ink);
       ctx.strokeStyle = env.crate;
       ctx.lineWidth = w;
       trace();
       ctx.stroke();
+      caps(w / 2, env.crate);
+      // A flat end gets its own outline across the bar.
+      [[pts[0], pts[1]], [pts[pts.length - 1], pts[pts.length - 2]]].forEach(([p, q], i) => {
+        if (!flat[i] || !q) return;
+        const L = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+        const n = [-(q[1] - p[1]) / L, (q[0] - p[0]) / L];
+        const h = (w + 3) / 2;
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(p[0] + n[0] * h, p[1] + n[1] * h);
+        ctx.lineTo(p[0] - n[0] * h, p[1] - n[1] * h);
+        ctx.stroke();
+      });
       for (let i = 1; i < pts.length; i++) out.segments.push([pts[i - 1], pts[i]]);
       break;
     }

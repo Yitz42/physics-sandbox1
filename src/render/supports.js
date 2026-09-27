@@ -6,7 +6,7 @@
 //   pin     a triangle on hatched ground, with the pin (a ring) at `at`
 //   roller  a triangle on two small wheels, on hatched ground
 //   smooth  a hatched surface the body rests on
-//   fixed   a hatched wall the body is built into
+//   fixed   a hatched block (a wall) the body is built into; the beam's end is square against it
 //   cable   a line to its anchor, fixed to a small hatched ceiling or wall
 // Returns { boxes, segments, labels } like the other shapes, or null for other types.
 
@@ -65,9 +65,29 @@ export function drawSupportSymbol(cv, s, env) {
       break;
     }
     case "fixed": {
+      // A block the body is mounted in: a hatched box behind a heavy wall face.
+      const box = [at(-30, 0), at(30, 0), at(30, 16), at(-30, 16)];
+      poly(box);
+      ctx.save();
+      ctx.beginPath();
+      box.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+      ctx.closePath();
+      ctx.clip();
+      ctx.lineWidth = 1;
+      for (let k = -44; k <= 30; k += 7) {
+        const a0 = at(k, 0), a1 = at(k + 16, 16);
+        ctx.beginPath();
+        ctx.moveTo(a0[0], a0[1]);
+        ctx.lineTo(a1[0], a1[1]);
+        ctx.stroke();
+      }
+      ctx.restore();
       ctx.lineWidth = 3;
-      hatch(ctx, p, t, b, 30);
-      cover([at(-30, 0), at(30, 9)]);
+      ctx.beginPath();
+      ctx.moveTo(...at(-30, 0));
+      ctx.lineTo(...at(30, 0));
+      ctx.stroke();
+      cover([at(-30, 0), at(30, 16)]);
       break;
     }
     case "cable": {

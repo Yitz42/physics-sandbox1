@@ -20,7 +20,7 @@ export default {
       { id: "C", type: "cable", at: [4, 0], anchor: [0, 3] },
     ],
     forces: [{ id: "P", symbol: "P", magnitude: 600, direction: "down", at: [2.5, 0] }],
-    massLabel: { at: [0.9, -0.5], text: "boom" },
+    massLabel: { at: [1.1, 0.4], text: "boom" }, // above the beam: the space below holds the dimensions and load labels
   },
   view: { xmin: -1.4, xmax: 5.4, ymin: -1.9, ymax: 3.4 },
   vary: [

@@ -228,6 +228,11 @@ different situation (all are seen before any repeats), then new numbers from its
   Storage is capped (5,000 events; oldest explore summaries go first).
   Privacy: no names, emails, account ids, IPs or device fingerprints; the only
   free text is what students type into answer boxes.
+- Supports in pictures (agreed with the owner): a reaction arrow never runs
+  through its support symbol — at a pin, roller or smooth surface it stops past
+  the symbol (below a pin). A fixed support is a hatched block the body is
+  mounted in, and the beam's end is square against it. Force arrows at a point
+  with a moment arrow (M_A) stop outside the moment's circle.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

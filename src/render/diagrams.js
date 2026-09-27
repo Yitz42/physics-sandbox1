@@ -37,6 +37,7 @@ import { placeLabels, placeLegend, segmentHits, overlapArea } from "./labels.js"
 import { beamDirAt, surfaceGap } from "./fbd.js";
 import { lowerDims, extendDims } from "./dims.js";
 import { drawArc } from "./angles.js";
+import { clearSupports } from "./support-clear.js";
 
 export { roleColor };
 
@@ -48,7 +49,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const { ctx } = cv;
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
-  shapes = touchBeams(shapes);
+  shapes = touchBeams(clearSupports(shapes, cv)); // arrows clear of support symbols, then of beam surfaces
   shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines clear of arrows, with extension lines
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
