@@ -142,11 +142,14 @@ export function drawSupportSymbol(cv, s, env) {
       ctx.strokeStyle = env.ink;
       ctx.lineWidth = 2;
       out.segments.push([p, q]);
-      // The anchor's pin: a triangle behind it, on hatched ground across the bar.
-      const w = [-u[1], u[0]];
-      const back = (along, depth) => [q[0] + w[0] * along + u[0] * depth, q[1] + w[1] * along + u[1] * depth];
+      // The anchor's pin: a triangle behind it, on hatched ground — square to its
+      // wall when it has one (anchorNormal: from the wall into the room), else
+      // lined up with the bar.
+      const away = s.anchorNormal ? [-s.anchorNormal[0], s.anchorNormal[1]] : u; // from the pin into the wall (screen)
+      const w = [-away[1], away[0]];
+      const back = (along, depth) => [q[0] + w[0] * along + away[0] * depth, q[1] + w[1] * along + away[1] * depth];
       poly([q, back(-11, 18), back(11, 18)]);
-      hatch(ctx, back(0, 18), w, u, 16);
+      hatch(ctx, back(0, 18), w, away, 16);
       ring(q, 4);
       ring(p, 4);
       // The anchor's name (e.g. D), beside its pin, on the side away from the bar.

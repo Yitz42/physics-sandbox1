@@ -268,7 +268,8 @@ different situation (all are seen before any repeats), then new numbers from its
   triangle or angle; a support on a slope draws the slope's angle at its base;
   rigid-body beams are drawn wide, with the mass caption ("40 kg beam") inside;
   dimension rows sit below any prop anchored under the beam, and a link
-  anchored on a wall gets its height dimensioned.
+  anchored on a wall gets its height dimensioned. A link's anchor pin on the
+  same wall as another support sits square on that wall, like the other pin.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

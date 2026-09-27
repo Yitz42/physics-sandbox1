@@ -57,7 +57,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
   const faint = shown || hide.length > 0;
   for (const s of setup.supports || []) {
     if (s.type === "none") shapes.push({ type: "point", at: s.at, label: s.id, style: "dot" });
-    else shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], anchor: s.anchor, anchorLabel: s.anchorLabel, label: s.id, alpha: faint ? 0.28 : 1 });
+    else shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], anchor: s.anchor, anchorLabel: s.anchorLabel, anchorNormal: anchorNormal(setup, s), label: s.id, alpha: faint ? 0.28 : 1 });
   }
 
   // Loads: point forces (a push has its arrowhead on the body), distributed loads, couples.
@@ -118,6 +118,17 @@ export function rigidBodyScene(setup, result, opts = {}) {
     shapes.push({ type: "point", at: P.at, label: isSupport ? "" : P.label, style: "ring" });
   }
   return shapes;
+}
+
+// Which way a link's anchor pin faces: s.anchorNormal if given; else, when
+// another support is on the same wall (a vertical wall through the anchor),
+// that wall's direction — so both pins sit square on the wall; else null
+// (the pin lines up with the link).
+function anchorNormal(setup, s) {
+  if (s.type !== "link" || !s.anchor) return null;
+  if (s.anchorNormal) return s.anchorNormal;
+  const wall = (setup.supports || []).find((q) => q !== s && q.normal && Math.abs(q.normal[1]) < 1e-9 && Math.abs(q.at[0] - s.anchor[0]) < 1e-9);
+  return wall ? wall.normal : null;
 }
 
 // A stage that gives no dimensions gets them drawn for it, for a straight
