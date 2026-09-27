@@ -337,3 +337,37 @@ test("Unit 2 predict part 2: 20 kg at 40°, k = 800 N/m → T_AB = 305.2 N, s = 
   close(r.values.T_AB, 305.23, 1e-2);
   close(r.values["F_AC.s"], 0.29227, 1e-4); // 233.82 / 800
 });
+
+// ---- New parts: Unit 3 Varignon and Unit 5 moving a force -------------------------
+
+test("Unit 3 predict part 2: moments of F_y and F_x add up to M_O in every version", () => {
+  const st = find("03-moments/2-predict", 2);
+  const solver = getSolver(st.solver);
+  close(solver.solve(st.setup).values.M, 52.9423, 1e-3);
+  for (let i = 0; i < 30; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    equal(s.forces[0].at[0], s.body.points[2][0], "A sits on the bracket's corner:");
+    const v = solver.solve(s).values;
+    close(v.My_F + v.Mx_F, v.M);
+  }
+});
+
+test("Unit 5 explore part 2: O under A needs no couple; O 2 m left of A needs 600 N·m clockwise", () => {
+  const st = find("05-equivalent-systems/1-explore", 2);
+  const solver = getSolver(st.solver);
+  const at = (x) => {
+    const s = clone(st.setup);
+    s.about.at[0] = x;
+    return solver.solve(s).values.M;
+  };
+  close(at(3), 0);
+  close(at(1), -600);
+  close(at(4), 300);
+});
+
+test("Unit 5 predict part 2: 250 N at 40° below +x at (0.8, 0.6) → F_R = 250 N, (M_R)_O = −243.5 N·m", () => {
+  const st = find("05-equivalent-systems/2-predict", 2);
+  const v = getSolver(st.solver).solve(st.setup).values;
+  close(v.R, 250);
+  close(v.M, -243.4642, 1e-6);
+});

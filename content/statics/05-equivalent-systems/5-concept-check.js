@@ -1,73 +1,131 @@
-// Unit 5, stage 5 — concept check: what "equivalent" means.
+// Unit 5, stage 5 — concept check, in two parts: what "equivalent" means
+// (3 questions); moving a force to a new point (2 questions).
 
 export default {
   id: "05-equivalent-systems/5-concept-check",
   challenge: "concept-check",
+  solver: "statics.equivalent",
   title: "Equivalent or Not?",
-  instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
-  required: 3,
-  questions: [
+  parts: [
     {
-      prompt: "Two force systems act on the same rigid body. When are they **equivalent**?",
-      options: [
-        { text: "When they have the same resultant force and the same moment about any one point", correct: true },
-        { text: "When they have the same resultant force", feedback: "Same push, but they could turn the body differently. The moments must match too." },
-        { text: "When they have the same number of forces", feedback: "One force can be equivalent to many — that's the whole idea of a resultant." },
-        { text: "When their forces act at the same points", feedback: "Equivalent systems can act at completely different points, as long as $F_R$ and the moment match." },
+      title: "Equivalent or not?",
+      instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
+      required: 3,
+      questions: [
+        {
+          prompt: "Two force systems act on the same rigid body. When are they **equivalent**?",
+          options: [
+            { text: "When they have the same resultant force and the same moment about any one point", correct: true },
+            { text: "When they have the same resultant force", feedback: "Same push, but they could turn the body differently. The moments must match too." },
+            { text: "When they have the same number of forces", feedback: "One force can be equivalent to many — that's the whole idea of a resultant." },
+            { text: "When their forces act at the same points", feedback: "Equivalent systems can act at completely different points, as long as $F_R$ and the moment match." },
+          ],
+          explanation: "Equivalent systems push the same ($F_R$) and turn the same (moment about a point). Then they have the same effect on a rigid body.",
+        },
+        {
+          prompt: "You move a force $F$ from point A to point O, a distance $d$ away (measured perpendicular to $F$). What must you add so nothing changes?",
+          options: [
+            { text: "A couple moment $M = Fd$", correct: true },
+            { text: "Nothing: a force can slide anywhere", feedback: "A force can slide ALONG its line of action. Moving it sideways changes its moment, so a couple must make up the difference." },
+            { text: "A second force $F$ at A", feedback: "That would double the push. The missing piece is the turning effect, $Fd$." },
+            { text: "A couple moment $M = F/d$", feedback: "A moment is force TIMES distance: $M = Fd$." },
+          ],
+          explanation: "Moving $F$ sideways by $d$ changes its moment about any point by $Fd$, so a couple $M = Fd$ is added to keep the same effect.",
+        },
+        {
+          prompt: "Three loads of 100 N, 100 N and 400 N push down on a beam. Where does their single resultant act?",
+          options: [
+            { text: "Closer to the 400 N load", correct: true },
+            { text: "Exactly in the middle of the three loads", feedback: "That would be the plain average of the positions. Bigger loads count more: $\\bar{x} = \\Sigma F x / \\Sigma F$." },
+            { text: "Right under the 400 N load", feedback: "Only if the other loads were zero (or at the same spot). The smaller loads pull it a little toward them." },
+            { text: "At the end of the beam", feedback: "The resultant sits somewhere between the loads — a weighted average of their positions." },
+          ],
+          explanation: "The resultant is a weighted average of the positions, so it lies nearer the biggest load.",
+        },
+        {
+          prompt: "The forces on a body add up to $F_R = 0$, but their moment about O is 50 N·m. What single thing can replace them?",
+          options: [
+            { text: "A 50 N·m couple", correct: true },
+            { text: "A single force at the right spot", feedback: "A single force would push the body. Here the forces cancel, so only a turning effect remains — a couple." },
+            { text: "Nothing: the system has no effect", feedback: "No push, but it still turns the body with 50 N·m." },
+            { text: "A 50 N force", feedback: "$F_R = 0$, so there's no net force. 50 N·m is a moment." },
+          ],
+          explanation: "With $F_R = 0$, the system reduces to a pure couple — and a couple has the same moment about every point.",
+        },
+        {
+          prompt: "The resultant force $F_R$ of a system is the same whichever point you move it to. What about the resultant moment?",
+          options: [
+            { text: "It depends on the point", correct: true },
+            { text: "It's the same for every point", feedback: "Only for a pure couple ($F_R = 0$). Otherwise moving to a different point changes $(M_R)$ by $F_R$ times the shift." },
+            { text: "It's always zero", feedback: "Only at special points — the ones on the line where the single resultant acts." },
+            { text: "It's equal to $F_R$", feedback: "A moment (N·m) can't equal a force (N)." },
+          ],
+          explanation: "$(M_R)_O$ depends on O, because each force's moment arm depends on O. $F_R$ doesn't.",
+        },
+        {
+          prompt: "When can a force $F_R$ plus a couple $(M_R)_O$ in the same plane be replaced by ONE force?",
+          options: [
+            { text: "Whenever $F_R \\ne 0$: move it a distance $d = (M_R)_O / F_R$", correct: true },
+            { text: "Never: a couple can't be removed", feedback: "Sliding $F_R$ sideways adds a moment $F_R d$. Choose $d$ so it matches $(M_R)_O$, and the couple disappears." },
+            { text: "Only when $(M_R)_O = 0$", feedback: "Then it's already a single force at O. With a moment, you just move $F_R$ over." },
+            { text: "Only when all the forces are parallel", feedback: "In a plane it works for any forces, as long as $F_R \\ne 0$." },
+          ],
+          explanation: "Placing $F_R$ at distance $d = (M_R)_O / F_R$ from O gives it exactly the moment $(M_R)_O$, so the couple is no longer needed.",
+        },
       ],
-      explanation: "Equivalent systems push the same ($F_R$) and turn the same (moment about a point). Then they have the same effect on a rigid body.",
+      hints: ["Equivalent means: same push ($F_R$) and same turning (moment about a point)."],
+      explanation: "An equivalent system has the same resultant force and the same moment about a point as the original, so it has the same effect on a rigid body.",
     },
     {
-      prompt: "You move a force $F$ from point A to point O, a distance $d$ away (measured perpendicular to $F$). What must you add so nothing changes?",
-      options: [
-        { text: "A couple moment $M = Fd$", correct: true },
-        { text: "Nothing: a force can slide anywhere", feedback: "A force can slide ALONG its line of action. Moving it sideways changes its moment, so a couple must make up the difference." },
-        { text: "A second force $F$ at A", feedback: "That would double the push. The missing piece is the turning effect, $Fd$." },
-        { text: "A couple moment $M = F/d$", feedback: "A moment is force TIMES distance: $M = Fd$." },
+      title: "Moving a force",
+      instructions: "Answer 2 questions about moving a force to a new point. Every wrong choice explains the misconception behind it.",
+      required: 2,
+      questions: [
+        {
+          prompt: "You slide a force $F$ along its own line of action, from A to B. What couple must you add to keep the same effect?",
+          options: [
+            { text: "None", correct: true },
+            { text: "$M = F \\times AB$", feedback: "Sliding ALONG the line of action doesn't change the moment arm about any point, so nothing is lost (the principle of transmissibility)." },
+            { text: "It depends on where O is", feedback: "For any point O, the perpendicular distance to the line is unchanged — the line hasn't moved." },
+            { text: "A second force at A", feedback: "The force is the same; only its point moved along its own line. That changes nothing on a rigid body." },
+          ],
+          explanation: "Transmissibility: a force may slide along its line of action. A couple is only needed when the line itself is moved sideways.",
+        },
+        {
+          prompt: "A 200 N force pushes straight down on the end of a 0.5 m wrench (horizontal). Replace it with a force-couple system at the bolt. What is it?",
+          options: [
+            { text: "200 N down, plus a 100 N·m clockwise couple", correct: true },
+            { text: "200 N down only", feedback: "At the bolt the force has no moment arm, so the turning effect would be lost. Add the couple $M = Fd = 200(0.5)$." },
+            { text: "100 N·m clockwise only", feedback: "The couple keeps the turning effect, but the push must move too: $F_R = 200$ N down." },
+            { text: "200 N down, plus a 400 N·m clockwise couple", feedback: "That's $F/d$. A moment is force times distance: $200 \\times 0.5 = 100$ N·m." },
+          ],
+          explanation: "$F_R = 200$ N down and $M = Fd = 200(0.5) = 100$ N·m, clockwise (the way the force turned the wrench about the bolt).",
+        },
+        {
+          prompt: "A force is moved to point O with its couple $M_O$. Then you move the same force to a different point P instead. The couple you need there…",
+          options: [
+            { text: "is the force's moment about P, which is usually different", correct: true },
+            { text: "is the same $M_O$", feedback: "A couple's moment is the same about every point, but the force's moment is not: the distance from P to its line of action is different." },
+            { text: "is zero", feedback: "Only if P lies on the force's line of action." },
+            { text: "is $M_O$ plus $F$", feedback: "Moments and forces can't be added: they have different units (N·m and N)." },
+          ],
+          explanation: "The couple you add always equals the original force's moment about the NEW point. Change the point, change the couple.",
+        },
+        {
+          prompt: "Why do engineers often move all the loads to a support point, as a force plus a couple?",
+          options: [
+            { text: "Because that's exactly what the support must resist: a push and a twist", correct: true },
+            { text: "Because it makes the loads smaller", feedback: "The force is unchanged and the couple is added: nothing gets smaller. It's the same effect, described at the support." },
+            { text: "Because couples are easier to draw", feedback: "The reason is physical: a bolt or weld at O has to hold both the force and the moment." },
+            { text: "Because forces can't act away from supports", feedback: "Forces act wherever they're applied. Moving them is a way to see their total effect at one point." },
+          ],
+          explanation: "The force-couple system at a support tells you what that support must hold: the force $F_R$ and the moment $(M_R)_O$ that would otherwise twist the body.",
+        },
       ],
-      explanation: "Moving $F$ sideways by $d$ changes its moment about any point by $Fd$, so a couple $M = Fd$ is added to keep the same effect.",
-    },
-    {
-      prompt: "Three loads of 100 N, 100 N and 400 N push down on a beam. Where does their single resultant act?",
-      options: [
-        { text: "Closer to the 400 N load", correct: true },
-        { text: "Exactly in the middle of the three loads", feedback: "That would be the plain average of the positions. Bigger loads count more: $\\bar{x} = \\Sigma F x / \\Sigma F$." },
-        { text: "Right under the 400 N load", feedback: "Only if the other loads were zero (or at the same spot). The smaller loads pull it a little toward them." },
-        { text: "At the end of the beam", feedback: "The resultant sits somewhere between the loads — a weighted average of their positions." },
-      ],
-      explanation: "The resultant is a weighted average of the positions, so it lies nearer the biggest load.",
-    },
-    {
-      prompt: "The forces on a body add up to $F_R = 0$, but their moment about O is 50 N·m. What single thing can replace them?",
-      options: [
-        { text: "A 50 N·m couple", correct: true },
-        { text: "A single force at the right spot", feedback: "A single force would push the body. Here the forces cancel, so only a turning effect remains — a couple." },
-        { text: "Nothing: the system has no effect", feedback: "No push, but it still turns the body with 50 N·m." },
-        { text: "A 50 N force", feedback: "$F_R = 0$, so there's no net force. 50 N·m is a moment." },
-      ],
-      explanation: "With $F_R = 0$, the system reduces to a pure couple — and a couple has the same moment about every point.",
-    },
-    {
-      prompt: "The resultant force $F_R$ of a system is the same whichever point you move it to. What about the resultant moment?",
-      options: [
-        { text: "It depends on the point", correct: true },
-        { text: "It's the same for every point", feedback: "Only for a pure couple ($F_R = 0$). Otherwise moving to a different point changes $(M_R)$ by $F_R$ times the shift." },
-        { text: "It's always zero", feedback: "Only at special points — the ones on the line where the single resultant acts." },
-        { text: "It's equal to $F_R$", feedback: "A moment (N·m) can't equal a force (N)." },
-      ],
-      explanation: "$(M_R)_O$ depends on O, because each force's moment arm depends on O. $F_R$ doesn't.",
-    },
-    {
-      prompt: "When can a force $F_R$ plus a couple $(M_R)_O$ in the same plane be replaced by ONE force?",
-      options: [
-        { text: "Whenever $F_R \\ne 0$: move it a distance $d = (M_R)_O / F_R$", correct: true },
-        { text: "Never: a couple can't be removed", feedback: "Sliding $F_R$ sideways adds a moment $F_R d$. Choose $d$ so it matches $(M_R)_O$, and the couple disappears." },
-        { text: "Only when $(M_R)_O = 0$", feedback: "Then it's already a single force at O. With a moment, you just move $F_R$ over." },
-        { text: "Only when all the forces are parallel", feedback: "In a plane it works for any forces, as long as $F_R \\ne 0$." },
-      ],
-      explanation: "Placing $F_R$ at distance $d = (M_R)_O / F_R$ from O gives it exactly the moment $(M_R)_O$, so the couple is no longer needed.",
+      hints: ["Moving a force sideways by $d$ needs a couple $M = Fd$; sliding it along its own line needs nothing."],
+      explanation: "A force can be moved to any point if you add a couple equal to its moment about that point. That's how any system is reduced to a force-couple system.",
     },
   ],
-  hints: ["Equivalent means: same push ($F_R$) and same turning (moment about a point)."],
-  explanation: "An equivalent system has the same resultant force and the same moment about a point as the original, so it has the same effect on a rigid body.",
+  explanation:
+    "Equivalent systems have the same resultant force and the same moment about a point. A force moved sideways needs a couple $M = Fd$ to stay equivalent.",
 };
