@@ -1,5 +1,6 @@
 // blocks.js — drawings for block diagrams and signal-flow graphs (controls):
-//   tfblock      { at, w, h, label | fraction: [top, bottom], role? }  a block (box)
+//   tfblock      { at, w, h, label | fraction: [top, bottom], name?, role? }  a block (box);
+//                name: its symbol (e.g. "G_{2}"), written just above it when the box shows numbers
 //                role "reduced": a block that replaced a group (drawn in purple);
 //                role "tunable": a block a slider controls (drawn in the sliders' colour,
 //                with a soft tint and a "set by slider" tag above it)
@@ -64,6 +65,7 @@ export function drawBlockShape(cv, s, env, roleColor) {
         }
         ctx.stroke();
         if (tunable) drawLabel(ctx, "set by slider", x, y - h / 2 - 9, { color: accent, size: 11, weight: 700 });
+        else if (s.name) drawLabel(ctx, s.name, x, y - h / 2 - 11, { color: s.role === "reduced" ? purple : env.faint, size: 14, weight: 700 });
         if (s.fraction) {
           const [top, bottom] = s.fraction;
           ctx.font = "15px system-ui, sans-serif";

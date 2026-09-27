@@ -64,7 +64,12 @@ function layout(node, ctx) {
     return {
       w, up: H / 2, down: H / 2,
       place(x, y, out) {
-        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, role: node.reduced ? "reduced" : tuned ? "tunable" : "block" });
+        // Its name (G_1, H_2 …) above it whenever the box shows numbers instead,
+        // so the equations' symbols can be matched to the picture.
+        const name = blockTex(node);
+        const shown = lab.label != null ? String(lab.label) : null;
+        const named = !tuned && shown !== name && shown !== name.replace(/[{}]/g, "");
+        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, name: named ? name : null, role: node.reduced ? "reduced" : tuned ? "tunable" : "block" });
         ctx.boxes.set(node.src || node, [x, y - H / 2, x + w, y + H / 2]);
       },
     };

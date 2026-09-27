@@ -246,6 +246,9 @@ different situation (all are seen before any repeats), then new numbers from its
   a block shows its symbol and value ("K = 25", "set by slider"), a
   signal-flow branch shows "−k (k = 0.1)". The workspace passes the slider
   paths to every picture as sceneOpts.tunable.
+- Block diagrams: a block that shows numbers (10, 1/(s + 2)) also has its name
+  (G_1, H_2 …) written above it, so the symbols in the equations and choices
+  can be matched to the picture.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.
