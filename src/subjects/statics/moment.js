@@ -30,6 +30,11 @@ function named(letter, symbol) {
   const m = String(symbol).match(/_\{?([^}]*)\}?$/);
   return m ? `${letter}_{${m[1]}}` : letter;
 }
+// A component's name the way textbooks write it: F → F_x, F_1 → F_{1x}.
+export function componentSymbol(symbol, axis) {
+  const m = String(symbol).match(/^([A-Za-z])_\{?([^}]*)\}?$/);
+  return m ? `${m[1]}_{${m[2]}${axis}}` : `${symbol}_${axis}`;
+}
 // Numbers substituted into the equations, with units so students see what each is.
 const num = (v) => `(${sigFig(Math.abs(v), 3)}\\,\\text{m})`; // a distance
 const numN = (v) => `(${sigFig(Math.abs(v), 4)}\\,\\text{N})`; // a force
@@ -124,7 +129,9 @@ export function momentEquations(setup) {
 
 // Solve. Returns { status, message, values, equations, unknowns }.
 // values: "M" (total M_O), and per force "<id>" size, "M_<id>" its moment,
-//         "d_<id>" its moment arm, "r_<id>" distance to O, "<id>.pos" solved position
+//         "d_<id>" its moment arm, "r_<id>" distance to O, "<id>.pos" solved position,
+//         "My_<id>" = x·F_y and "Mx_<id>" = −y·F_x, the moments of its two
+//         components on their own. Varignon's theorem: they add up to M_<id>.
 export function solveMoment(setup) {
   const equations = momentEquations(setup);
   const values = {};
@@ -156,6 +163,11 @@ export function solveMoment(setup) {
     values[`M_${f.id}`] = M;
     values[`d_${f.id}`] = setup._armMode === "r" ? a.rLen : a.d;
     values[`r_${f.id}`] = a.rLen;
+    // Varignon's theorem: the moment of a force = the sum of the moments of its components.
+    const [x, y] = a.r;
+    const Fv = scale(directionOf(f), magnitudeOf(f) ?? 0);
+    values[`My_${f.id}`] = x * Fv[1]; // F_y's arm is the sideways distance x
+    values[`Mx_${f.id}`] = -y * Fv[0]; // F_x's arm is the height y (above O, pushing right: clockwise)
     total += M;
   }
   values.M = total;
@@ -169,6 +181,8 @@ export function momentQuantities(setup) {
   for (const f of setup.forces) {
     q[f.id] = { label: f.symbol, unit: "N" };
     q[`M_${f.id}`] = { label: named("M", f.symbol), unit: "N·m" };
+    q[`Mx_${f.id}`] = { label: `M_O(${componentSymbol(f.symbol, "x")})`, unit: "N·m" };
+    q[`My_${f.id}`] = { label: `M_O(${componentSymbol(f.symbol, "y")})`, unit: "N·m" };
     q[`d_${f.id}`] = { label: named("d", f.symbol), unit: "m" };
     q[`r_${f.id}`] = { label: named("r", f.symbol), unit: "m" };
     if (!f.at) q[`${f.id}.pos`] = { label: f.posSymbol || named("x", f.symbol), unit: "m" };

@@ -9,7 +9,7 @@ import { add, sub, scale, mag, unit, angleDeg } from "../../core/vector.js";
 import { format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { angleMarks } from "./particle-scene.js";
-import { forcePoint, armOf, armAngle } from "./moment.js";
+import { forcePoint, armOf, armAngle, componentSymbol } from "./moment.js";
 import { momentShadow } from "./moment-tools.js";
 
 // Overall size of the body, so arrows and boxes scale with the picture.
@@ -33,7 +33,8 @@ function placeholder(setup, f) {
   return add(setup.about.at, scale(f.along.dir, f.along.placeholder ?? 0.6 * sizeOf(setup) / 2));
 }
 
-// opts: { reveal, arms (always show moment arms), hideMoment, guesses }
+// opts: { reveal, arms (always show moment arms), hideMoment, guesses,
+//         components (draw each force's F_x and F_y at its point: Varignon) }
 export function momentScene(setup, result, opts = {}) {
   const O = setup.about.at;
   const vals = result ? result.values : {};
@@ -57,6 +58,15 @@ export function momentScene(setup, result, opts = {}) {
     }
     shapes.push({ type: "arrow", id: f.id, from: P, to: add(P, scale(u, len)), label: `${f.symbol} = ${format(F, "N")}`, role: ghost ? "unknown" : "known", alpha: ghost ? 0.5 : undefined });
     if (f.kind !== "weight") shapes.push(...angleMarks(f, P, len, i));
+    // Varignon's theorem (opts.components): the force's two components, both
+    // acting at the same point P. Their sizes appear once the answer is revealed.
+    if (opts.components && !ghost && f.kind !== "weight") {
+      const v = scale(u, len);
+      const name = (axis) => componentSymbol(f.symbol, axis).replace(/[{}]/g, "");
+      const lab = (axis, c) => (opts.reveal ? `${name(axis)} = ${format(Math.abs(F * c), "N")}` : name(axis));
+      if (Math.abs(v[0]) > 1e-9) shapes.push({ type: "arrow", id: f.id, from: P, to: add(P, [v[0], 0]), role: "component", label: lab("x", u[0]) });
+      if (Math.abs(v[1]) > 1e-9) shapes.push({ type: "arrow", id: f.id, from: P, to: add(P, [0, v[1]]), role: "component", label: lab("y", u[1]) });
+    }
     if (f.pointLabel) shapes.push({ type: "point", at: P, label: f.pointLabel, style: "dot" });
 
     // Line of action and moment arm d (the key idea of this unit).

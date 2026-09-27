@@ -10,7 +10,7 @@ export default {
   solver: "statics.moment",
   title: "An Angled Force, Two Ways",
   instructions:
-    "A force $F$ acts on the bracket at A. Find its moment about O. First choose the correct equation for each method, then find $M_O$. Stuck on the moment arm $d$? Press **Show how d is found** under the picture.",
+    "A force $F$ acts on the bracket at A. Find its moment about O. First choose the correct equation for each method — $M_O = Fd$, and Varignon's theorem $M_O = xF_y - yF_x$ — then find $M_O$. Stuck on the moment arm $d$? Press **Show how d is found** under the picture.",
   setup: {
     analysis: "moment",
     about: { at: [0, 0], label: "O" },
@@ -35,6 +35,6 @@ export default {
     "Then $d = |M_O| / F$. It is shorter than the distance OA, because the force is angled.",
   ],
   explanation:
-    "Both methods give the same answer. The components method avoids finding $d$ directly; $M = Fd$ is quicker when $d$ is easy to see. " +
+    "Both methods give the same answer. The components method (Varignon's theorem) avoids finding $d$ directly; $M = Fd$ is quicker when $d$ is easy to see. " +
     "Here $F_y$ turns the bracket counterclockwise about O, and so does $F_x$ (it pushes left above O) — both terms add.",
 };

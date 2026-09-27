@@ -7,7 +7,7 @@ import { clone } from "../../core/paths.js";
 import { fixedTex, format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { fromVector, swapTrig } from "./directions.js";
-import { solveMoment, armOf, armAngle, momentQuantities } from "./moment.js";
+import { solveMoment, armOf, armAngle, momentQuantities, componentSymbol } from "./moment.js";
 
 // ---- Dragging arrow tips (explore/build) ---------------------------------------
 
@@ -68,6 +68,18 @@ export function momentMistakes(setup, name) {
       add1(correct - Mf, `Did you leave out the moment of ${pretty(f.symbol)}? Every force with a moment arm about O counts.`);
       add1(correct - 2 * Mf, `Check which way ${pretty(f.symbol)} turns the body about O: clockwise moments are negative, counterclockwise positive.`);
     }
+  }
+
+  // Varignon: the moment of ONE component (F_x or F_y) about O.
+  const part = name.match(/^M([xy])_(.+)$/);
+  const pf = part && setup.forces.find((f) => f.id === part[2] && f.at);
+  if (pf) {
+    const [x, y] = sub(pf.at, setup.about.at);
+    const Fv = scale(directionOf(pf), magnitudeOf(pf));
+    const c = pretty(componentSymbol(pf.symbol, part[1]));
+    if (part[1] === "y") add1(y * Fv[1], `${c} is vertical, so its moment arm is the SIDEWAYS distance x from O to its line, not the height y.`);
+    else add1(-x * Fv[0], `${c} is horizontal, so its moment arm is the HEIGHT y of its line above or below O, not the sideways distance x.`);
+    add1(base.values[`M_${pf.id}`], `That's the moment of the whole force. Here you need only ${c}'s part — Varignon's theorem adds the two parts up afterwards.`);
   }
 
   // Balance problems: the ratio upside down (the lighter one must sit farther out).
@@ -144,6 +156,10 @@ export function momentSummary(setup, result, { mode = "symbolic", reveal = true 
     return lines;
   }
   if (mode === "symbolic") lines.push("d = \\perp \\text{ distance from } O \\text{ to line of action}");
+  // The second line is Varignon's theorem: name it where it's used.
+  if (mode === "symbolic" && setup.forces.some((f) => f.direction && typeof f.direction === "object")) {
+    lines.push("\\text{Varignon's theorem: } M_O(F) = M_O(F_x) + M_O(F_y) = -yF_x + xF_y");
+  }
   if (reveal) {
     const names = momentQuantities(setup);
     for (const f of setup.forces) {

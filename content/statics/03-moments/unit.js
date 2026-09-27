@@ -5,8 +5,9 @@ export default {
   goals: [
     "Find the moment arm $d$: the perpendicular distance from O to the line of action.",
     "Give moments a sign: counterclockwise positive, clockwise negative.",
-    "Find the moment of an angled force two ways: $M_O = Fd$ and $M_O = xF_y - yF_x$.",
+    "Find the moment of an angled force two ways: $M_O = Fd$, and by Varignon's theorem (add the moments of its components): $M_O = xF_y - yF_x$.",
     "Use $\\Sigma M_O = 0$ to balance a seesaw.",
   ],
+  // Stage files in this folder, in order. A stage may have several parts.
   stages: ["1-explore", "2-predict", "3-build", "4-debug", "5-concept-check", "6-solve"],
 };

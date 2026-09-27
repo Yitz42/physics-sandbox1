@@ -87,3 +87,29 @@ test("moment arm working: d = r sin φ (r = 0.5 m, φ = 66.87°, d = 0.4598 m)",
   close(phi, 66.8699);
   close(0.5 * Math.sin((phi * Math.PI) / 180), solveMoment(s).values.d_F);
 });
+
+// ---- Varignon's theorem ------------------------------------------------------------
+
+test("Varignon: 200 N at 60° above +x at (0.45, 0.25) → M(F_y) = +77.94, M(F_x) = −25, sum = M_O = 52.94 N·m", () => {
+  const setup = { analysis: "moment", about: { at: [0, 0], label: "O" }, forces: [{ id: "F", symbol: "F", magnitude: 200, direction: { angle: 60, from: "+x", toward: "+y" }, at: [0.45, 0.25] }] };
+  const r = solveMoment(setup);
+  close(r.values.My_F, 77.9423, 1e-3);
+  close(r.values.Mx_F, -25);
+  close(r.values.M, 52.9423, 1e-3);
+  close(r.values.My_F + r.values.Mx_F, r.values.M_F); // the theorem itself
+});
+
+test("Varignon: the components' moments add up to the force's moment for any force and point", () => {
+  for (const [dir, at] of [[{ angle: 25, from: "-y", toward: "+x" }, [-0.3, 0.7]], [{ slope: [-5, -12] }, [1.2, -0.4]], ["left", [0.2, 0.5]]]) {
+    const r = solveMoment({ analysis: "moment", about: { at: [0.1, 0.1] }, forces: [{ id: "F", symbol: "F", magnitude: 130, direction: dir, at }] });
+    close(r.values.Mx_F + r.values.My_F, r.values.M_F);
+  }
+});
+
+test("Varignon mistakes: swapped arms and 'the whole force' are explained", () => {
+  const setup = { analysis: "moment", about: { at: [0, 0], label: "O" }, forces: [{ id: "F", symbol: "F", magnitude: 200, direction: { angle: 60, from: "+x", toward: "+y" }, at: [0.45, 0.25] }] };
+  const my = momentMistakes(setup, "My_F");
+  ok(my.some((m) => Math.abs(m.value - 0.25 * 173.205) < 0.01 && /SIDEWAYS/.test(m.message)), "used y for F_y's arm");
+  ok(my.some((m) => Math.abs(m.value - 52.9423) < 0.01 && /whole force/.test(m.message)), "gave the whole moment");
+  ok(momentMistakes(setup, "Mx_F").some((m) => Math.abs(m.value + 0.45 * 100) < 0.01 && /HEIGHT/.test(m.message)), "used x for F_x's arm");
+});
