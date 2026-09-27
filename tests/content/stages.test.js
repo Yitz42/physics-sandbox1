@@ -2,7 +2,7 @@
 // the answers it asks for exist, "new versions" stay solvable, and the build
 // goals can actually be met. This catches typos in content files.
 import { test, ok, equal, close, setFile } from "../harness.js";
-import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts } from "../../src/core/content.js";
+import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts, stageSituations } from "../../src/core/content.js";
 import { getSolver } from "../../src/core/registry.js";
 import { makeVariant, clone, setPath } from "../../src/core/paths.js";
 
@@ -17,30 +17,34 @@ async function allStages() {
       const unit = await loadUnit(c.id, unitId);
       for (const file of unit.stages) {
         const whole = await loadStage(c.id, unitId, file);
-        // A stage with several parts is checked part by part.
-        for (const stage of stageParts(whole)) out.push({ course, unit, file, whole, stage });
+        // A stage with several parts is checked part by part, and a part with
+        // several situations (a different picture each version) situation by situation.
+        for (const part of stageParts(whole)) for (const stage of stageSituations(part)) out.push({ course, unit, file, whole, stage });
       }
     }
   }
   return out;
 }
 const stages = await allStages();
-// find("force-components/2-predict") → its first part; find(id, 2) → part 2.
-const find = (id, part = 1) => stages.find((s) => s.stage.id === id && s.stage.part.index === part - 1).stage;
+// find("force-components/2-predict") → its first part; find(id, 2) → part 2;
+// find(id, 1, "balloon") → the part's situation named "balloon".
+const find = (id, part = 1, situation = null) => stages.find((s) => s.stage.id === id && s.stage.part.index === part - 1 &&
+  (situation == null || (s.stage.situation && s.stage.situation.name === situation))).stage;
 
 test(`found ${stages.length} stage parts (6 stages per unit)`, () => ok(stages.length >= 12));
 
 test("every unit has all six challenge types, in order", async () => {
   const order = ["explore", "predict", "build", "debug", "concept-check", "solve"];
   const byUnit = {};
-  for (const { unit, whole, stage } of stages) if (stage.part.index === 0) (byUnit[unit.id] ||= []).push(whole.challenge);
+  for (const { unit, whole, stage } of stages) if (stage.part.index === 0 && !(stage.situation && stage.situation.index > 0)) (byUnit[unit.id] ||= []).push(whole.challenge);
   for (const [u, types] of Object.entries(byUnit)) equal(types, order, `unit ${u}:`);
 });
 
 for (const { unit, file, whole, stage: part } of stages) {
-  // Name each part in the test list: "…/2-predict part 2".
-  const stage = { ...part, id: part.part.count > 1 ? `${part.id} part ${part.part.index + 1}` : part.id };
-  if (part.part.index === 0) test(`${part.id}: stage file is valid`, () => {
+  // Name each part in the test list: "…/2-predict part 2", "…/2-predict (balloon)".
+  const named = part.part.count > 1 ? `${part.id} part ${part.part.index + 1}` : part.id;
+  const stage = { ...part, id: part.situation ? `${named} (${part.situation.name || part.situation.index + 1})` : named };
+  if (part.part.index === 0 && !(part.situation && part.situation.index > 0)) test(`${part.id}: stage file is valid`, () => {
     equal(checkStage(whole), []);
     equal(whole.id, `${unit.id}/${file}`, "id must be <unit folder>/<file name>:");
   });
@@ -144,6 +148,56 @@ test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39�
   equal(count([-1.0, 1.2], 80), 169, "1.2 m, 80 kg");
 });
 
+test("Cables build, balloon: pond −1.0 to +1.4 m; 880 N lift, 45°/35° below level holds (732.0 N, 631.8 N); 45°/36° hits the pond", () => {
+  const st = find("cables/3-build", 1, "balloon");
+  const solver = getSolver(st.solver);
+  const design = (ab, ac, lift = 880, pond = [-1.0, 1.4]) => {
+    const s = clone(st.setup);
+    setPath(s, "ground.forbidden", pond);
+    setPath(s, "forces.#F_L.magnitude", lift);
+    setPath(s, "forces.#T_AB.direction.angle", ab);
+    setPath(s, "forces.#T_AC.direction.angle", ac);
+    const r = solver.solve(s);
+    return { r, out: st.goal.check(r, s) };
+  };
+  const good = design(45, 35);
+  ok(good.out.ok, good.out.message);
+  close(good.r.values.T_AB, 732.0, 1e-4);
+  close(good.r.values.T_AC, 631.8, 1e-4);
+  const pond = design(45, 36);
+  ok(!pond.out.ok && /pond/.test(pond.out.message), "45/36 puts C in the pond");
+  ok(design(35, 45, 880, [-1.4, 1.0]).out.ok, "mirrored pond: 35/45 works");
+  // The hardest versions (biggest lift, widest pond, either side) still have designs that work.
+  for (const p of [[-1.0, 1.4], [-1.4, 1.0]]) {
+    let n = 0;
+    for (let ab = 20; ab <= 80; ab++) for (let ac = 20; ac <= 80; ac++) if (design(ab, ac, 880, p).out.ok) n++;
+    ok(n >= 8, `pond ${p}: ${n} designs work`);
+  }
+});
+
+test("Cables predict, every situation: crate 430.9/527.7 N, traffic light 560.5/571.5 N, balloon 345.5/461.4 N, lamp aside 135.9/68.0 N", () => {
+  const solver = getSolver("statics.particle");
+  const expect = { crate: [430.9, 527.7], "traffic light": [560.5, 571.5], balloon: [345.5, 461.4], "lamp aside": [135.9, 68.0] };
+  for (const [name, [ab, ac]] of Object.entries(expect)) {
+    const v = solver.solve(find("cables/2-predict", 1, name).setup).values;
+    ok(Math.abs(v.T_AB - ab) < 0.05, `${name} T_AB = ${v.T_AB}, expected ${ab}`); // to the 0.1 N the answer box asks for
+    ok(Math.abs(v.T_AC - ac) < 0.05, `${name} T_AC = ${v.T_AC}, expected ${ac}`);
+  }
+});
+
+test("Cables solve, every situation: lamp 140.1/158.6 N, traffic light 272.3/267.5 N, balloon 462.0/431.3 N", () => {
+  const solver = getSolver("statics.particle");
+  const expect = { lamp: [140.1, 158.6], "traffic light": [272.3, 267.5], balloon: [462.0, 431.3] };
+  for (const [name, [ab, ac]] of Object.entries(expect)) {
+    const st = find("cables/6-solve", 1, name);
+    const v = solver.solve(st.setup).values;
+    ok(Math.abs(v.T_AB - ab) < 0.05, `${name} T_AB = ${v.T_AB}, expected ${ab}`); // to the 0.1 N the answer box asks for
+    ok(Math.abs(v.T_AC - ac) < 0.05, `${name} T_AC = ${v.T_AC}, expected ${ac}`);
+    // Every force on A is in the FBD palette (and the palette's extra forces aren't in the setup).
+    for (const f of st.setup.forces) ok(st.solve.candidates.some((c) => c.id === f.id), `${name}: ${f.id} missing from the palette`);
+  }
+});
+
 test("Moments seesaw: every new version puts child B on the 3 m half-plank", () => {
   const st = find("moments/2-predict");
   const solver = getSolver(st.solver);
@@ -231,11 +285,14 @@ test("Couples solve: M_R = −68.04 N·m; every version stays clearly clockwise"
 
 test("every stage with random numbers has at least 50 different versions (so neighbours rarely match)", () => {
   const count = (rule) => (rule.values ? rule.values.length : Math.floor((rule.max - rule.min) / rule.step + 1e-9) + 1);
+  // A part with several situations counts the versions of all of them together.
+  const byPart = {};
   for (const { stage } of stages) {
     if (!stage.vary) continue;
-    const versions = stage.vary.reduce((n, r) => n * count(r), 1);
-    ok(versions >= 50, `${stage.id} has only ${versions} versions`);
+    const k = `${stage.id} part ${stage.part.index + 1}`;
+    byPart[k] = (byPart[k] || 0) + stage.vary.reduce((n, r) => n * count(r), 1);
   }
+  for (const [k, versions] of Object.entries(byPart)) ok(versions >= 50, `${k} has only ${versions} versions`);
 });
 
 test("Equivalent systems predict: F_R = 1200 N at x̄ = 2.67 m; every version's resultant lands on the beam", () => {

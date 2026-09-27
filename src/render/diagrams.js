@@ -11,12 +11,13 @@
 //   (any shape may set `layer: "<type>"` to be drawn in that type's layer instead of its own)
 //   arc      { center, r, start, end, label }  angle marking (degrees, CCW from +x)
 //   triangle { at, dx, dy, labels }          slope triangle, e.g. 3-4-5
-//   zone     { from, to, label }             a shaded "not allowed" area
+//   zone     { from, to, label, labelBelow? } a shaded "not allowed" area, labelled above (or below)
 //   text     { at, text }                    a caption
 //   axes     {}                              little x-y axes (bottom-left corner)
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //   spring, pulley                           see mechanisms.js
+//   trafficLight, balloon, pole              see scenery.js
 //   tfblock, sumjunction, wire, pickoff, signal, groupbox, sfgnode, sfgbranch   see blocks.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   divider  { x, frame? }                   soft grey vertical line between two diagrams (frame: the

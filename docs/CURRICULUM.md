@@ -41,6 +41,9 @@ Claude builds from it.
 - Test ideas: a weight hanging from two cables; predict cable tensions;
   pick cable angles so neither exceeds a limit, past an off-centre skylight, working
   out both tensions for each design before it is load-tested; debug an FBD missing a force.
+- Different pictures each version: Predict (crate, traffic light, balloon, lamp pulled
+  aside), Build (skylight crate, balloon tethers around a pond), Solve (lamp, traffic
+  light, balloon).
 
 **Unit 2.2: Springs** ⭐ ✅
 - Concept: F = k s; equilibrium sets the force, the stiffness sets the stretch.

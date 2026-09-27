@@ -5,7 +5,7 @@ import { sigFig, format } from "../../src/core/units.js";
 import { getPath, setPath, makeVariant, pickValue } from "../../src/core/paths.js";
 import { solveSystem, rank } from "../../src/core/linear.js";
 import { solveEquations, equationTex, swapFactor, flipSign, mistakesOf } from "../../src/core/equations.js";
-import { stageParts, checkStage } from "../../src/core/content.js";
+import { stageParts, checkStage, stageSituations, nextSituation } from "../../src/core/content.js";
 
 setFile("core");
 
@@ -226,6 +226,44 @@ test("parts: a stage without parts is one part; checkStage names the part with a
   equal(checkStage(twoParts), []);
   const broken = { ...twoParts, parts: [twoParts.parts[0], { title: "No ask", instructions: "x", setup: {} }] };
   equal(checkStage(broken), ["part 2: predict stages need \"ask\""]);
+});
+
+// ---- Situations: a different picture each version ------------------------------
+
+const threeSituations = {
+  id: "u/2-predict", challenge: "predict", title: "Hang It", solver: "statics.particle",
+  instructions: "Find the tensions.", ask: { quantity: "T" }, hints: ["shared hint"],
+  situations: [
+    { name: "crate", setup: { forces: [1] } },
+    { name: "light", setup: { forces: [2] }, instructions: "The traffic light…", hints: ["own hint"] },
+    { name: "balloon", setup: { forces: [3] } },
+  ],
+};
+
+test("situations: each takes the stage's fields and replaces the ones it sets", () => {
+  const [a, b, c] = stageSituations(threeSituations);
+  equal([a.instructions, a.hints, a.setup, a.ask], ["Find the tensions.", ["shared hint"], { forces: [1] }, { quantity: "T" }]);
+  equal([b.instructions, b.hints], ["The traffic light…", ["own hint"]]);
+  equal([a.situation, c.situation], [{ index: 0, count: 3, name: "crate" }, { index: 2, count: 3, name: "balloon" }]);
+  equal(a.situations, undefined, "a situation doesn't carry the list");
+  equal(stageSituations({ id: "x" }).length, 1, "a stage without situations is its own one situation");
+});
+
+test("situations: every one is played before any repeats, never the same twice in a row", () => {
+  let seed = 7;
+  const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const memory = {};
+  const seen = [];
+  for (let i = 0; i < 30; i++) seen.push(nextSituation(memory, 3, random));
+  for (let k = 0; k < 30; k += 3) equal([...seen.slice(k, k + 3)].sort(), [0, 1, 2], `versions ${k + 1}–${k + 3}:`);
+  for (let i = 1; i < 30; i++) ok(seen[i] !== seen[i - 1], `version ${i + 1} repeats`);
+  equal(nextSituation({}, 1), 0);
+});
+
+test("situations: checkStage names the situation with a problem", () => {
+  equal(checkStage(threeSituations), []);
+  const broken = { ...threeSituations, situations: [...threeSituations.situations, { name: "kite", setup: { forces: [] }, ask: null }] };
+  equal(checkStage(broken), ["situation 4 (kite): predict stages need \"ask\""]);
 });
 
 // ---- Polynomials, transfer functions, symbolic algebra ------------------------

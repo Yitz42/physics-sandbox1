@@ -54,6 +54,7 @@ src/
   render/                  drawing only, no physics
     canvas.js  arrows.js  fbd.js  diagrams.js  panel.js
     objects.js (motor, lamp, eyebolt …)  mechanisms.js (springs, pulleys)
+    scenery.js (traffic light, balloon, street pole)
     blocks.js (block diagrams, signal-flow graphs)
   ui/
     controls.js  menus.js  feedback.js
@@ -81,7 +82,8 @@ content/
     course.js              chapters (following the textbook), each an ordered list of units;
                            planned units are listed as soon(...) and shown as "Coming soon"
     reading.js             the free textbook, and its chapter for each course chapter
-    shared/                setups used by several units (angle-options.js, crate.js)
+    shared/                setups used by several units (angle-options.js, crate.js,
+                           hanging.js: traffic light, balloon, lamp pulled aside)
     force-components/      one folder per unit (one concept), named after it
       unit.js              concept, learning goals, ordered list of stages
       1-explore.js  2-predict.js  3-build.js  4-debug.js  5-concept-check.js  6-solve.js
@@ -143,6 +145,13 @@ explanation…) and takes the stage's id, challenge type, title and (by default)
 solver. The part reached is saved; the stage is complete after the last part.
 `vary` rules apply in order; `{ paths: [a, b], values }` puts one value at several paths.
 
+A stage (or part) can also give several **situations**: the same idea in different
+settings, each with its own picture (a crate on two cables, a traffic light between
+poles, a balloon held down by tethers …):
+`{ id, challenge, title, solver, ask, explanation, situations: [ { name, instructions, setup, vary, hints, … }, … ] }`.
+Each situation replaces the stage fields it sets. Every new version plays a
+different situation (all are seen before any repeats), then new numbers from its `vary`.
+
 ## Teaching decisions (agreed with the owner)
 - **Angles, textbook style**: directions are given as an angle from the nearest axis
   (`{ angle: 30, from: "-x", toward: "+y" }`), a slope triangle (`{ slope: [-4, 3] }`),
@@ -178,6 +187,10 @@ solver. The part reached is saved; the stage is complete after the last part.
   found by trial and error, the stage sets `goal.predict`: the student works out the
   key numbers for their own design (e.g. both tensions) before Test, and a changed
   design must be worked out again.
+- **Different pictures each version**: predict, build and solve stages should
+  have several `situations`, so a new version is a new picture to read, not the same
+  one with new numbers. Started in Unit 2.1 Cables; roll out unit by unit once the
+  owner has tried it.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
 

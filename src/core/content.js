@@ -92,6 +92,42 @@ export function stageParts(stage) {
   }));
 }
 
+// ---- Situations: a different picture each version -----------------------------
+//
+// A stage (or one of its parts) can give several SITUATIONS: the same idea in
+// different settings, each with its own picture — e.g. a crate on two cables,
+// a traffic light on two wires, a balloon held down by two tethers. Every new
+// version picks a different situation (and then new numbers from its `vary`),
+// so students have to think each one through instead of repeating the last.
+//   situations: [{ name, instructions?, setup, vary?, ask?, hints?, solve?,
+//                  goal?, editable?, explanation? }, …]
+// Each situation is written like a stage and replaces the stage's own fields
+// that it sets; anything it leaves out comes from the stage.
+export function stageSituations(stage) {
+  if (!Array.isArray(stage.situations) || !stage.situations.length) return [stage];
+  const { situations, ...base } = stage;
+  return situations.map((s, i) => ({ ...base, ...s, situation: { index: i, count: situations.length, name: s.name || "" } }));
+}
+
+// Which situation the next version uses: every one is seen once, in a random
+// order, before any repeats — and never the same one twice in a row.
+// memory: an object kept between versions (the runner's part memory).
+export function nextSituation(memory, count, random = Math.random) {
+  if (count <= 1) return 0;
+  if (!memory.situationOrder || !memory.situationOrder.length) {
+    const order = [...Array(count).keys()];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    // A fresh round must not start with the situation just played.
+    if (order[0] === memory.lastSituation) order.push(order.shift());
+    memory.situationOrder = order;
+  }
+  memory.lastSituation = memory.situationOrder.shift();
+  return memory.lastSituation;
+}
+
 // Catch typos in stage files early, with a readable message.
 // Returns a list of problems (empty = fine). Also used by the test page.
 export function checkStage(stage) {
@@ -109,6 +145,14 @@ export function checkStage(stage) {
 }
 
 function checkOne(stage) {
+  if (stage && Array.isArray(stage.situations)) {
+    if (!stage.situations.length) return [`"situations" is empty`];
+    const p = [];
+    stageSituations(stage).forEach((v, i) => {
+      for (const msg of checkOne(v)) p.push(`situation ${i + 1}${v.situation.name ? ` (${v.situation.name})` : ""}: ${msg}`);
+    });
+    return p;
+  }
   const p = [];
   if (!stage || typeof stage !== "object") return ["the file must `export default { ... }`"];
   for (const f of ["id", "challenge", "title", "instructions"]) if (!stage[f]) p.push(`missing "${f}"`);

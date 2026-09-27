@@ -149,7 +149,10 @@ export function drawShape(cv, s, env) {
       ctx.globalAlpha = 0.18;
       ctx.fillRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]) + 4);
       ctx.globalAlpha = 1;
-      out.boxes.push(drawLabel(ctx, s.label, (a[0] + b[0]) / 2, Math.min(a[1], b[1]) - 20, { color: roleColor("wrong"), size: 12 }));
+      // The label goes above the zone (a skylight in a ceiling), or below it
+      // (labelBelow: a pond in the ground, where above is where the cables are).
+      const ly = s.labelBelow ? Math.max(a[1], b[1]) + 22 : Math.min(a[1], b[1]) - 20;
+      out.boxes.push(drawLabel(ctx, s.label, (a[0] + b[0]) / 2, ly, { color: roleColor("wrong"), size: 12 }));
       break;
     }
     case "text": {

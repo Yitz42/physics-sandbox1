@@ -14,6 +14,7 @@ import { drawLabel, measureLabel } from "./arrows.js";
 import { drawObject } from "./objects.js";
 import { drawMechanism } from "./mechanisms.js";
 import { drawBlockShape } from "./blocks.js";
+import { drawScenery } from "./scenery.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -167,7 +168,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
     }
     default: {
       // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js.
-      const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawBlockShape(cv, s, env, roleColor);
+      const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawScenery(cv, s, env) || drawBlockShape(cv, s, env, roleColor);
       if (obj) return obj;
     }
   }

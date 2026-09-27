@@ -5,7 +5,8 @@
 // and handles what happens when the challenge ends:
 //   • solved without help → stage "complete", offer the next stage
 //   • answer was shown     → stage "needs practice", offer a NEW version
-//                            (different numbers from the stage's `vary` rules)
+//                            (different numbers from the stage's `vary` rules,
+//                            and a different situation if the stage has several)
 // Every version — the first one too — gets random numbers from `vary`, so
 // students sitting side by side get different questions and can't copy.
 //
@@ -17,7 +18,7 @@
 
 import { getSolver } from "./registry.js";
 import { getStatus, setStatus, getPartsDone, setPartsDone, STATUS } from "./progress.js";
-import { stageParts } from "./content.js";
+import { stageParts, stageSituations, nextSituation } from "./content.js";
 import { makeVariant, clone } from "./paths.js";
 import { createCanvas } from "../render/canvas.js";
 import { showExplanation, buildHints, showMessage, showCenterCard } from "../ui/feedback.js";
@@ -41,19 +42,22 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
   // Start where the student left off, unless the stage is already complete
   // (then replaying starts from part 1).
   let partIndex = getStatus(key) === STATUS.COMPLETE ? 0 : Math.min(getPartsDone(key), parts.length - 1);
-  let stage, solver, memory, round, lastSetup;
+  let memory, round, lastSetup;
 
   function startPart(i) {
     partIndex = i;
-    stage = parts[i];
-    solver = stage.solver ? getSolver(stage.solver) : null;
-    memory = {}; // survives new versions of this part (concept-check and debug use it)
+    memory = {}; // survives new versions of this part (concept-check, debug and situations use it)
     round = 0;
     lastSetup = null;
     startRound();
   }
 
   function startRound() {
+    // A stage with several situations plays a different one each version
+    // (see stageSituations in content.js); the rest of this round uses it.
+    const situations = stageSituations(parts[partIndex]);
+    const stage = situations[nextSituation(memory, situations.length)];
+    const solver = stage.solver ? getSolver(stage.solver) : null;
     // Random numbers for every version (never the same as the last one).
     let setup = stage.setup ? clone(stage.setup) : null;
     if (setup && stage.vary) setup = makeVariant(stage.setup, stage.vary, Math.random, lastSetup);
