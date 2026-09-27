@@ -194,9 +194,15 @@ different situation (all are seen before any repeats), then new numbers from its
 - Picture rules (agreed with the owner): an arrow pushing on a body ends ON its
   surface and is labelled at its outer end; other arrows start exactly at their
   point and are labelled just past the tip, in line (below a downward arrow).
-  Point letters and a resultant's label go below, hopping over dimension lines.
-  Angle numbers sit between the angle's two sides, clear of both. Labels have no
-  background box. A moment label that runs into something becomes its name
+  A resultant (F_R) is labelled at its top. Point and support letters sit as
+  close to their point as they can (below first, else right beside it). Angle
+  numbers sit just outside the arc, inside the angle next to its reference line,
+  which is extended past the number. Dimension values sit IN their line (with a
+  break); thin extension lines run from each dimension's ends to just short of
+  the body; a dimension an arrow crosses moves down below the arrow and its
+  label; any faint line under a label breaks around it. Beams on supports with
+  no dimensions of their own are dimensioned automatically (supports, loads,
+  overall length). Labels have no background box. A moment label that runs into something becomes its name
   ("M") with the value in the corner list; a stage can list every value there
   (`listValues: true`). Pictures without sliders or dragging are zoomed to fill
   the canvas. Real objects are drawn as themselves (wrench, trailer, eyebolt …).

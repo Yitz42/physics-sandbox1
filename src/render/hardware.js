@@ -89,9 +89,11 @@ export function drawHardware(cv, s, env) {
       ctx.lineTo(e[0], e[1] - 30);
       ctx.stroke();
     }
-    const xs = [under[0], hitch[0], j[0] - 7], ys = [under[1], hitch[1] - 5, j[1] + 26];
-    out.boxes.push({ x0: Math.min(...xs) - 6, y0: Math.min(...ys), x1: Math.max(...xs) + 6, y1: Math.max(...ys) });
+    // What labels must keep off: the tow bar (a line), the hitch and the jack
+    // stand — not the space under the front of the bed, where O's letter goes.
     out.segments.push([under, hitch]);
+    out.boxes.push({ x0: hitch[0] - 7, y0: hitch[1] - 7, x1: hitch[0] + 7, y1: hitch[1] + 7 });
+    out.boxes.push({ x0: j[0] - 8, y0: j[1], x1: j[0] + 8, y1: j[1] + 26 });
   }
   ctx.restore();
   return out;

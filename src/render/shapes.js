@@ -59,7 +59,22 @@ export function drawShape(cv, s, env) {
       break;
     }
     case "line": {
-      const a = S(s.from), b = S(s.to);
+      let a = S(s.from), b = S(s.to);
+      if (s.style === "extension") {
+        // A dimension's extension line: thin and faint, stopping gapPx short
+        // of the body it measures (see dims.js).
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        const g = Math.min(s.gapPx || 0, len - 2);
+        b = [b[0] - ((b[0] - a[0]) / len) * g, b[1] - ((b[1] - a[1]) / len) * g];
+        ctx.strokeStyle = faint;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+        ctx.stroke();
+        out.segments.push([a, b, "dim"]); // like its dimension: labels may hop over it
+        break;
+      }
       ctx.strokeStyle = s.style === "cable" ? (lit ? roleColor("known") : ink) : s.style === "action" ? roleColor("known") : faint;
       ctx.lineWidth = s.style === "cable" ? (lit ? 3.5 : 2) : 1.2;
       if (s.style === "action") ctx.globalAlpha = 0.55; // a force's line of action: faint, dashed, force colour
@@ -137,14 +152,26 @@ export function drawShape(cv, s, env) {
       // Canvas angles run clockwise (y down), so negate.
       ctx.arc(x, y, r, (-s.start * Math.PI) / 180, (-(s.start + diff) * Math.PI) / 180, diff > 0);
       ctx.stroke();
-      const mid = ((s.start + diff / 2) * Math.PI) / 180;
-      // The angle's number sits on the line halfway between the two sides of
-      // the angle, far enough out that the text clears both sides (a narrow
-      // angle needs it further out). It's placed with the other labels, so it
-      // can still dodge arrows.
-      const half = Math.max(0.12, Math.abs(diff) / 2 * Math.PI / 180);
-      const out2 = Math.max(r + 18, Math.min(r + 90, 17 / Math.sin(half)));
-      out.labels.push({ text: s.label, pos: [x + Math.cos(mid) * out2, y - Math.sin(mid) * out2 + 4], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 30 });
+      // The angle's number sits just outside the arc, inside the angle next to
+      // its reference side (s.start, the axis or line it's measured from); that
+      // side's line is extended past the number, so the number reads as sitting
+      // in the angle, textbook style. (Placed with the other labels, so it can
+      // still dodge an arrow.)
+      const R = r + 16; // pixels from the vertex to the number's centre
+      const into = Math.min(Math.abs(diff) / 2, (Math.asin(Math.min(1, 12 / R)) * 180) / Math.PI);
+      const at = ((s.start + Math.sign(diff || 1) * into) * Math.PI) / 180;
+      const pos = [x + Math.cos(at) * R, y - Math.sin(at) * R];
+      const w = measureLabel(ctx, s.label, 12);
+      const ref = (s.start * Math.PI) / 180;
+      const ext = R + w / 2 + 6; // the reference line reaches just past the number
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(ref) * r, y - Math.sin(ref) * r);
+      ctx.lineTo(x + Math.cos(ref) * ext, y - Math.sin(ref) * ext);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      out.segments.push([[x, y], [x + Math.cos(ref) * ext, y - Math.sin(ref) * ext], true]);
+      out.labels.push({ text: s.label, pos: [pos[0], pos[1] + 4], align: "center", size: 12, weight: 500, color: ink, plain: true, maxMove: 30 });
       break;
     }
     case "triangle": {

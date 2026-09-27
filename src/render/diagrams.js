@@ -33,8 +33,9 @@
 
 import { labelPosition, drawLabel, cssColor } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
-import { placeLabels, placeLegend } from "./labels.js";
+import { placeLabels, placeLegend, segmentHits, overlapArea } from "./labels.js";
 import { beamDirAt, surfaceGap } from "./fbd.js";
+import { lowerDims, extendDims } from "./dims.js";
 
 export { roleColor };
 
@@ -47,6 +48,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
   shapes = touchBeams(shapes);
+  shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines clear of arrows, with extension lines
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
   const rank = (s) => ORDER.indexOf(s.layer || s.type);
@@ -73,24 +75,22 @@ export function drawScene(cv, shapes, opts = {}) {
     wanted.push(...out.labels);
     if (s.type === "point" && s.label) {
       const [x, y] = cv.toScreen(s.at);
-      // Point names go first, so they get their preferred spot: just below the
-      // point — and if a dimension line is there, further down, below it.
-      wanted.unshift({ text: s.label, pos: [x, y + 20], align: "center", size: 14, weight: 700, color: env.ink, plain: true, prefer: "down" });
+      // Point names go first, as close to their point as they can: just below
+      // it, else anywhere round it. A dimension line under the name breaks around it.
+      wanted.unshift({ text: s.label, pos: [x, y + 20], align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots: aroundPoint(x, y) });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
       // Components and targets prefer the middle of their arrow. An arrow
       // pushing on a body (its head on the body) is labelled at its outer end;
       // any other arrow just past its tip, in line with it (below a downward
-      // arrow). A resultant ending on a beam keeps its label at the tip, below
-      // the beam and its dimension lines.
+      // arrow).
       const mid = s.role === "component" || s.role === "target";
       const side = s.labelSide || (s.role === "target" ? -1 : 1);
       const size = lit ? 15 : 14, weight = lit ? 700 : 500;
-      const atTail = s.onBody && s.role !== "resultant" && !mid;
+      const atTail = s.onBody && !mid;
       const place = atTail ? labelPosition(b, a, 14) : labelPosition(a, b, 14, mid, side);
-      const prefer = s.onBody && s.role === "resultant" ? "far-down" : undefined;
-      wanted.push({ text: s.label, ...place, size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow", prefer });
+      wanted.push({ text: s.label, ...place, size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow" });
     }
   }
 
@@ -140,8 +140,30 @@ export function drawScene(cv, shapes, opts = {}) {
   // matches the picture's shaded background, and the placement above already
   // keeps labels clear of lines and arrows.
   for (const l of placed) {
+    // A faint line (a dimension, a line of action) running under a label
+    // breaks around it: clear the label's patch so the picture's own background
+    // shows through — but only where nothing else would be wiped out.
+    if (l.box && breaksLine(l.box, segments, obstacles)) ctx.clearRect(l.box.x0, l.box.y0 + 2, l.box.x1 - l.box.x0, l.box.y1 - l.box.y0 - 3);
     drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align });
   }
+}
+
+// Close spots all round a point (pixels), nearest-looking first: below,
+// below-right, below-left, right, left, above-right, above-left, above.
+function aroundPoint(x, y) {
+  return [[x, y + 20, "center"], [x + 9, y + 16, "left"], [x - 9, y + 16, "right"], [x + 11, y + 1, "left"],
+    [x - 11, y + 1, "right"], [x + 9, y - 13, "left"], [x - 9, y - 13, "right"], [x, y - 18, "center"]];
+}
+
+// Does a label's box sit on a faint line (and on nothing else that clearing it would erase)?
+function breaksLine(box, segments, obstacles) {
+  let faint = false;
+  for (const [p, q, kind] of segments) {
+    if (!segmentHits(box, p, q)) continue;
+    if (kind === true || kind === "dim") faint = true;
+    else return false; // an arrow, a cable, the body …
+  }
+  return faint && !obstacles.some((t) => overlapArea(box, t) > 4);
 }
 
 // An arrow that ENDS on a beam's centre line stops at the beam's surface

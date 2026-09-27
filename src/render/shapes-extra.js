@@ -1,8 +1,9 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
 //   beam       { points, width? }              a bar, bracket or plank (polyline, metres)
 //   pivot      { at }                          triangle support under a pin (seesaw)
-//   dim        { from, to, label, role?, labelSide?, labelOn? }  a dimension / moment-arm
-//              line with end ticks; labelOn puts the label in a break in the middle of the line
+//   dim        { from, to, label, role?, labelSide?, labelOn?, noExt? }  a dimension / moment-arm
+//              line with end ticks; its label sits in a break in the middle of the line
+//              (labelOn: false puts it beside the line). noExt: no extension lines (dims.js)
 //   rightangle { at, u, v }                    small square marking a 90° corner
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
@@ -87,7 +88,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
       // labelOn: the label sits IN the middle of the line, engineering-drawing
       // style, with the line broken around it (if the line is long enough).
       let half = 0;
-      if (s.label && s.labelOn) {
+      // Dimension values sit IN the line (with a break) unless the stage says labelOn: false.
+      if (s.label && s.labelOn !== false) {
         const tw = measureLabel(ctx, s.label, 13, weight) + 10, th = 20;
         const h = (Math.abs(u[0]) * tw + Math.abs(u[1]) * th) / 2; // half the label's length along the line
         if (len > 2 * h + 12) half = h;

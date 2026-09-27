@@ -86,12 +86,17 @@ export function drawSupportSymbol(cv, s, env) {
     }
   }
   ctx.restore();
-  // The support's name (A, B …) goes centred BELOW the symbol when there's
-  // room; it's placed with the other labels, so it moves if something is there.
+  // The support's name (A, B …) stays as close to its point as it can:
+  // centred below the symbol, else just beside the symbol or the point (a
+  // reaction arrow is often in the way below). A dimension line under it breaks.
   if (s.label) {
     const box = out.boxes[0];
-    const pos = box ? [(box.x0 + box.x1) / 2, box.y1 + 12] : [p[0], p[1] + 20];
-    out.labels.push({ text: s.label, pos, align: "center", size: 14, weight: 700, color: env.ink, plain: true, maxMove: 60 });
+    const mid = box ? (box.y0 + box.y1) / 2 + 4 : p[1];
+    const spots = box
+      ? [[(box.x0 + box.x1) / 2, box.y1 + 12, "center"], [box.x0 - 6, mid, "right"], [box.x1 + 6, mid, "left"],
+        [p[0] - 12, p[1] + 16, "right"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] - 12, "right"], [p[0] + 12, p[1] - 12, "left"]]
+      : [[p[0], p[1] + 20, "center"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] + 16, "right"]];
+    out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true });
   }
   return out;
 }

@@ -17,14 +17,14 @@ const TRIES = [
 // Straight-down spots, for labels that prefer to go below (18 px steps).
 const DOWN = [0, 18, 36, 54, 72, 90, 108, 126].map((dy) => [0, dy]);
 
-function overlapArea(a, b) {
+export function overlapArea(a, b) {
   const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
   const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
   return w > 0 && h > 0 ? w * h : 0;
 }
 
 // How much of line segment p→q runs through box (checked every 3 px).
-function segmentHits(box, p, q) {
+export function segmentHits(box, p, q) {
   const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
   const steps = Math.max(1, Math.ceil(len / 3));
   let hits = 0;
@@ -51,27 +51,30 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     // Try each nearby spot, with the preferred alignment, then centred, then
     // running the other way (e.g. a long label that must stay inside its diagram).
     const aligns = [l.align, ...["center", "left", "right"].filter((a) => a !== l.align)];
-    // prefer: "down" (point names, a resultant's label): step straight down
-    // first — below any dimension lines there — before trying sideways.
-    // "down" steps up to 72 px (past a dimension line or two); "far-down" (a
-    // resultant's label) keeps going until it's below every dimension line.
-    const down = l.prefer === "down" || l.prefer === "far-down";
-    const maxDown = l.prefer === "far-down" ? Infinity : 72;
+    // prefer: "down" steps straight down first (up to 72 px, past a dimension
+    // line or two) before trying sideways.
+    const down = l.prefer === "down";
+    const maxDown = 72;
+    // l.spots: its own close-by places to try first, in order ([x, y, align] in
+    // pixels) — e.g. all round a point, so a point's letter stays next to it.
+    const own = (l.spots || []).map(([x, y, a], i) => ({ dx: x - l.pos[0], dy: y - l.pos[1], align: a || "center", base: 3 * i }));
     const spots = down ? [...DOWN.filter(([, dy]) => dy <= maxDown), ...TRIES] : TRIES;
-    const tries = spots.flatMap(([dx, dy]) => aligns.map((a) => [dx, dy, a]));
-    for (const [dx, dy, align] of tries) {
+    const tries = [...own, ...spots.flatMap(([dx, dy]) => aligns.map((a) => ({ dx, dy, align: a })))];
+    for (const { dx, dy, align, base } of tries) {
       if (l.maxMove != null && Math.hypot(dx, dy) > l.maxMove) continue; // e.g. angles stay by their arc
       const pos = [l.pos[0] + dx, l.pos[1] + dy];
       const box = labelBox(pos[0], pos[1], width, l.size, align);
       // Prefer the original spot: moving away (or re-aligning) costs a little.
-      let cost = (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
+      let cost = base != null ? base : (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
       for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
-      // A faint dashed guide (a line of action) barely counts: a label may sit on it.
-      for (const [p, q, kind] of segments) cost += segmentHits(box, p, q) * (kind === true ? 1 : 40);
+      // A faint dashed guide (a line of action) barely counts: a label may sit
+      // on it (the line breaks around the label). A label that `breaks` lines
+      // (a point's letter) may sit on a dimension line too.
+      for (const [p, q, kind] of segments) cost += segmentHits(box, p, q) * (kind === true || (l.breaks && kind === "dim") ? 1 : 40);
       // Stepping down may hop over dimension lines, but never past an arrow or
       // the body: check the strip the label would slide through.
-      if (down && dy > 18) {
+      if (down && base == null && dy > 18) {
         const start = labelBox(l.pos[0], l.pos[1], width, l.size, align);
         const strip = { x0: start.x0, y0: start.y1, x1: start.x1, y1: box.y0 };
         for (const [p, q, kind] of segments) if (kind !== "dim" && kind !== true && segmentHits(strip, p, q)) cost += 500;

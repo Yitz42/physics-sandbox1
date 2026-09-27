@@ -112,7 +112,7 @@ export function distributedScene(setup, result, opts = {}) {
     res.parts.forEach((p, i) => {
       shapes.push({ type: "arrow", id: p.id, from: [p.x, tail], to: [p.x, y], role: "component", label: `${plainSym(p.symbol)} = ${format(p.F, "N")}` });
       shapes.push({ type: "line", from: [p.x, tail], to: [p.x, row(i) + 0.02 * size], style: "reference" });
-      shapes.push({ type: "dim", from: [O[0], row(i)], to: [p.x, row(i)], label: `${plainSym(p.xSymbol.replace("\\tilde{x}", "x̃"))} = ${format(Math.abs(p.x - O[0]), "m")}`, labelOn: true });
+      shapes.push({ type: "dim", noExt: true, from: [O[0], row(i)], to: [p.x, row(i)], label: `${plainSym(p.xSymbol.replace("\\tilde{x}", "x̃"))} = ${format(Math.abs(p.x - O[0]), "m")}`, labelOn: true });
     });
     const last = row(res.parts.length - 1);
     shapes.push({ type: "line", from: O, to: [O[0], last + 0.02 * size], style: "reference" });

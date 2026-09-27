@@ -42,6 +42,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
   // setup.massLabel: a caption such as "40 kg beam" that follows the (random) mass.
   if (setup.massLabel && setup.body && setup.body.mass) shapes.push({ type: "text", at: setup.massLabel.at, text: `${setup.body.mass} kg ${setup.massLabel.text || ""}`.trim() });
   for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(mag(sub(d.to, d.from)), "m"), labelSide: d.side || 1 });
+  if (!setup.dims) shapes.push(...autoDims(setup, size));
 
   // Supports: faint whenever their reactions are drawn (or being drawn by the student).
   const faint = shown || hide.length > 0;
@@ -88,4 +89,23 @@ export function rigidBodyScene(setup, result, opts = {}) {
   }
   if (opts.guesses) shapes.push(...rigidBodyShadow(setup, res, opts.guesses, { k, size }));
   return shapes;
+}
+
+// A stage that gives no dimensions gets them drawn for it, for a straight
+// horizontal beam: a chain of distances between the ends, the supports and
+// the point loads (they follow the sliders), plus the overall length below it.
+function autoDims(setup, size) {
+  const pts = (setup.body && setup.body.points) || [];
+  if (pts.length !== 2 || Math.abs(pts[0][1] - pts[1][1]) > 1e-9) return [];
+  const y = pts[0][1];
+  const on = (P) => Math.abs(P[1] - y) < 1e-9;
+  const xs = [pts[0][0], pts[1][0], ...(setup.supports || []).filter((q) => on(q.at)).map((q) => q.at[0]),
+    ...(setup.forces || []).filter((f) => on(f.at)).map((f) => f.at[0])];
+  for (const l of setup.loads || []) xs.push(l.from, l.to);
+  const stops = [...new Set(xs.map((x) => +x.toFixed(6)))].sort((a, b) => a - b);
+  const out = [];
+  const row1 = y - 0.12 * size, row2 = y - 0.2 * size;
+  for (let i = 1; i < stops.length; i++) out.push({ type: "dim", from: [stops[i - 1], row1], to: [stops[i], row1], label: format(stops[i] - stops[i - 1], "m") });
+  if (stops.length > 2) out.push({ type: "dim", from: [stops[0], row2], to: [stops[stops.length - 1], row2], label: format(stops[stops.length - 1] - stops[0], "m") });
+  return out;
 }

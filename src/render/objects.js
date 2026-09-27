@@ -163,8 +163,12 @@ export function drawObject(cv, s, env) {
         ctx.stroke();
         ctx.lineWidth = 2.5;
         hatchedLine(ctx, s1[0], s1[1], n, d, 32);
+        // What labels must keep off: the eye, the shank (a line) and the mount at
+        // its end — not the whole rectangle around them, so the point's letter
+        // can sit right next to the eye.
         out.segments.push([s0, s1]);
-        out.boxes.push({ x0: Math.min(x, s1[0]) - 14, y0: Math.min(y, s1[1]) - 14, x1: Math.max(x, s1[0]) + 14, y1: Math.max(y, s1[1]) + 14 });
+        out.boxes.push({ x0: x - R - 2, y0: y - R - 2, x1: x + R + 2, y1: y + R + 2 });
+        out.boxes.push({ x0: s1[0] - 18, y0: s1[1] - 18, x1: s1[0] + 18, y1: s1[1] + 18 });
         return out;
       }
       case "bracket": {
