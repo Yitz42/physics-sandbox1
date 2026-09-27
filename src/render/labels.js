@@ -14,6 +14,27 @@ const TRIES = [
   [100, 0], [-100, 0], [100, 36], [-100, 36], [100, -36], [-100, -36], // far tries: to get back inside a diagram
 ];
 
+// Every label keeps this much clear space (pixels) around it, from every
+// object's boundary and every solid line — the "object boundaries" rule.
+// (Faint dashed guides and dimension lines may still be broken by a label.)
+export const CLEAR = 4;
+const padded = (b, m = CLEAR) => ({ x0: b.x0 - m, y0: b.y0 - m, x1: b.x1 + m, y1: b.y1 + m });
+
+// A thick bar (a beam, a truss member, a link) as a row of boxes covering its
+// whole width, so labels keep off the bar itself, not just its centre line.
+// p, q: its ends (pixels); w: its thickness (pixels).
+export function barBoxes(p, q, w) {
+  const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  const n = Math.max(1, Math.ceil(len / w));
+  const h = w / 2;
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const x = p[0] + ((q[0] - p[0]) * i) / n, y = p[1] + ((q[1] - p[1]) * i) / n;
+    out.push({ x0: x - h, y0: y - h, x1: x + h, y1: y + h });
+  }
+  return out;
+}
+
 // Straight-down spots, for labels that prefer to go below (18 px steps).
 const DOWN = [0, 18, 36, 54, 72, 90, 108, 126].map((dy) => [0, dy]);
 
@@ -67,11 +88,16 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       // Prefer the original spot: moving away (or re-aligning) costs a little.
       let cost = base != null ? base : (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
-      for (const t of taken) cost += overlapArea(box, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
+      // (The label's box with its clear margin: close counts as touching.)
+      const near = padded(box);
+      for (const t of taken) cost += overlapArea(t.soft ? box : near, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
       // A faint dashed guide (a line of action) barely counts: a label may sit
       // on it (the line breaks around the label). A label that `breaks` lines
       // (a point's letter) may sit on a dimension line too.
-      for (const [p, q, kind] of segments) cost += segmentHits(box, p, q) * (kind === true || (l.breaks && kind === "dim") ? 1 : 40);
+      for (const [p, q, kind] of segments) {
+        const faint = kind === true || (l.breaks && kind === "dim");
+        cost += segmentHits(faint ? box : near, p, q) * (faint ? 1 : 40);
+      }
       // Stepping down may hop over dimension lines, but never past an arrow or
       // the body: check the strip the label would slide through.
       if (down && base == null && dy > 18) {

@@ -11,6 +11,15 @@
 //   link    a two-force member: a slim bar to its anchor, pinned at both ends
 //           (a ring at the body, a pin on hatched ground at the anchor)
 // Returns { boxes, segments, labels } like the other shapes, or null for other types.
+//
+// Object boundaries (a rule for every drawing): each part a symbol draws —
+// triangle, wheels, hatching, a link's bar — is reported as a box, so labels
+// keep clear of it (render/labels.js keeps a gap around every box).
+
+import { barBoxes } from "./labels.js";
+
+// A pin's size, the same for every pin (a support's or a link's anchor), in pixels.
+const PIN = { half: 14, depth: 24, ground: 22, ring: 4.5 };
 
 export function drawSupportSymbol(cv, s, env) {
   if (s.type !== "supportSymbol") return null;
@@ -33,6 +42,17 @@ export function drawSupportSymbol(cv, s, env) {
     ctx.closePath();
     if (fill) ctx.fill();
     ctx.stroke();
+  };
+  // A pin: its triangle (apex at the pin), hatched ground behind it, the ring —
+  // in the frame (along, back) — and its outline, for the labels.
+  const pinAt = (apex, along, back) => {
+    const pt = (a, d) => [apex[0] + along[0] * a + back[0] * d, apex[1] + along[1] * a + back[1] * d];
+    poly([apex, pt(-PIN.half, PIN.depth), pt(PIN.half, PIN.depth)]);
+    hatch(ctx, pt(0, PIN.depth), along, back, PIN.ground);
+    ring(apex, PIN.ring);
+    const corners = [pt(-PIN.ground, -PIN.ring), pt(PIN.ground, -PIN.ring), pt(-PIN.ground, PIN.depth + 8), pt(PIN.ground, PIN.depth + 8)];
+    const xs = corners.map((c) => c[0]), ys = corners.map((c) => c[1]);
+    out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
   };
   const ring = (q, r = 4.5) => {
     ctx.beginPath();
@@ -76,11 +96,8 @@ export function drawSupportSymbol(cv, s, env) {
   };
   switch (s.kind) {
     case "pin": {
-      poly([p, at(-14, 24), at(14, 24)]);
-      hatch(ctx, at(0, 24), t, b, 22);
-      ring(p);
-      cover([at(-22, 0), at(22, 32)]);
-      incline(at(0, 24), 22);
+      pinAt(p, t, b);
+      incline(at(0, PIN.depth), PIN.ground);
       break;
     }
     case "roller": {
@@ -142,21 +159,19 @@ export function drawSupportSymbol(cv, s, env) {
       ctx.strokeStyle = env.ink;
       ctx.lineWidth = 2;
       out.segments.push([p, q]);
-      // The anchor's pin: a triangle behind it, on hatched ground — square to its
-      // wall when it has one (anchorNormal: from the wall into the room), else
-      // lined up with the bar.
+      out.boxes.push(...barBoxes(p, q, 7));
+      // The anchor's pin — the same pin as a pin support — square to its wall
+      // when it has one (anchorNormal: from the wall into the room), else lined up with the bar.
       const away = s.anchorNormal ? [-s.anchorNormal[0], s.anchorNormal[1]] : u; // from the pin into the wall (screen)
       const w = [-away[1], away[0]];
-      const back = (along, depth) => [q[0] + w[0] * along + away[0] * depth, q[1] + w[1] * along + away[1] * depth];
-      poly([q, back(-11, 18), back(11, 18)]);
-      hatch(ctx, back(0, 18), w, away, 16);
-      ring(q, 4);
+      pinAt(q, w, away);
       ring(p, 4);
-      // The anchor's name (e.g. D), beside its pin, on the side away from the bar.
+      // The anchor's name (e.g. D), beside its pin, clear of the triangle and the ground.
       if (s.anchorLabel) {
-        const side = [q[0] - w[0] * 20, q[1] - w[1] * 20], other = [q[0] + w[0] * 20, q[1] + w[1] * 20];
-        const beyond = [q[0] + u[0] * 34, q[1] + u[1] * 34];
-        out.labels.push({ text: s.anchorLabel, pos: side, spots: [side, other, beyond], align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true });
+        const off = PIN.ground + 12;
+        const spots = [[-off, PIN.depth / 2], [off, PIN.depth / 2], [-off, -8], [off, -8]].map(([a, d]) => [q[0] + w[0] * a + away[0] * d, q[1] + w[1] * a + away[1] * d + 5]);
+        spots.push([q[0] - u[0] * 30, q[1] - u[1] * 30 + 5]);
+        out.labels.push({ text: s.anchorLabel, pos: spots[0], spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true });
       }
       break;
     }
@@ -172,6 +187,8 @@ export function drawSupportSymbol(cv, s, env) {
       const u = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
       hatch(ctx, q, [-u[1], u[0]], u, 16);
       ring(p, 3.5);
+      const ends = [[-16, 0], [16, 0], [-16, 9], [16, 9]].map(([a, d]) => [q[0] - u[1] * a + u[0] * d, q[1] + u[0] * a + u[1] * d]);
+      out.boxes.push({ x0: Math.min(...ends.map((e) => e[0])), y0: Math.min(...ends.map((e) => e[1])), x1: Math.max(...ends.map((e) => e[0])), y1: Math.max(...ends.map((e) => e[1])) });
       break;
     }
   }
@@ -180,7 +197,8 @@ export function drawSupportSymbol(cv, s, env) {
   // centred below the symbol, else just beside the symbol or the point (a
   // reaction arrow is often in the way below). A dimension line under it breaks.
   if (s.label) {
-    const box = out.boxes[0];
+    // (A link's or cable's boxes are its bar and far anchor: its letter goes by its point.)
+    const box = s.kind === "link" || s.kind === "cable" ? null : out.boxes[0];
     const mid = box ? (box.y0 + box.y1) / 2 + 4 : p[1];
     const spots = box
       ? [[(box.x0 + box.x1) / 2, box.y1 + 12, "center"], [box.x0 - 6, mid, "right"], [box.x1 + 6, mid, "left"],

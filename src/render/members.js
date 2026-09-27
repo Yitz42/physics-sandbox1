@@ -6,6 +6,8 @@
 //     sits beside the middle of the bar, on whichever side is free.
 // Returns { boxes, segments, labels } like the other shapes, or null for other types.
 
+import { barBoxes } from "./labels.js";
+
 export function drawMember(cv, s, env, roleColor) {
   if (s.type !== "member") return null;
   const { ctx } = cv;
@@ -27,6 +29,7 @@ export function drawMember(cv, s, env, roleColor) {
   line(6, fill);
   ctx.restore();
   out.segments.push([a, b]);
+  out.boxes.push(...barBoxes(a, b, 9)); // the bar's whole thickness, for the labels
   if (s.label) {
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
     const n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]; // across the bar

@@ -270,6 +270,13 @@ different situation (all are seen before any repeats), then new numbers from its
   dimension rows sit below any prop anchored under the beam, and a link
   anchored on a wall gets its height dimensioned. A link's anchor pin on the
   same wall as another support sits square on that wall, like the other pin.
+- **Object boundaries** (a rule for every picture, agreed with the owner): every
+  drawn object reports its true outline — a symbol's triangle, wheels and
+  hatching, a bar's whole thickness (beams, truss members, links: barBoxes) —
+  and every label keeps at least CLEAR (4 px, render/labels.js) away from any
+  outline or solid line. Only faint guides and dimension lines may be broken by
+  a label. Pins are one drawing (render/supports.js PIN), so every pin — a
+  support or a link's anchor — is the same size.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

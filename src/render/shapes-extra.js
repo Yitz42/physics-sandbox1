@@ -16,6 +16,7 @@
 // a wrench and a trailer in hardware.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
+import { barBoxes } from "./labels.js";
 import { drawObject } from "./objects.js";
 import { drawMechanism } from "./mechanisms.js";
 import { drawBlockShape } from "./blocks.js";
@@ -74,7 +75,10 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.lineTo(p[0] - n[0] * h, p[1] - n[1] * h);
         ctx.stroke();
       });
-      for (let i = 1; i < pts.length; i++) out.segments.push([pts[i - 1], pts[i]]);
+      for (let i = 1; i < pts.length; i++) {
+        out.segments.push([pts[i - 1], pts[i]]);
+        out.boxes.push(...barBoxes(pts[i - 1], pts[i], w + 3)); // its whole thickness, for the labels
+      }
       if (s.text) {
         const [tx, ty] = S(s.text.at);
         const box = drawLabel(ctx, s.text.text, tx, ty + 4, { color: ink, size: Math.min(13, w - 6), weight: 600 });
