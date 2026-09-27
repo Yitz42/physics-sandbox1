@@ -39,7 +39,8 @@ Claude builds from it.
 **Unit 2.1: Cables** ✅
 - Concept: ΣFx = 0, ΣFy = 0 for forces through one point.
 - Test ideas: a weight hanging from two cables; predict cable tensions;
-  pick cable angles so neither exceeds a limit; debug an FBD missing a force.
+  pick cable angles so neither exceeds a limit, past an off-centre skylight, working
+  out both tensions for each design before it is load-tested; debug an FBD missing a force.
 
 **Unit 2.2: Springs** ⭐ ✅
 - Concept: F = k s; equilibrium sets the force, the stiffness sets the stretch.

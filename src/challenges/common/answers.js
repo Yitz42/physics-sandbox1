@@ -184,6 +184,16 @@ export function answerInputs(container, asks, quantities) {
         row.input.readOnly = true;
       }
     },
+    // Make every box editable again, keeping what's typed (build: the design
+    // changed, so the numbers must be checked again).
+    reset() {
+      rows.forEach((r) => {
+        r.done = false;
+        r.input.readOnly = false;
+        r.row.classList.remove("is-right", "is-wrong", "is-shown");
+        r.note.textContent = "";
+      });
+    },
     // Fill in the correct answers (after "Show answer").
     fill(values) {
       rows.forEach((r) => {

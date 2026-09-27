@@ -72,7 +72,8 @@ export function createWorkspace(ctx, opts = {}) {
   }
   cv.onRedraw(draw);
 
-  // Fit the view once (not on every edit, or the picture would jump around).
+  // Fit the view once (not on every edit, or the picture would jump around) —
+  // except side-by-side diagrams, which re-fit to their own frame (see ws.update).
   ws.fit = () => {
     // Scenes with side-by-side diagrams use the canvas size to centre each one in its half.
     const size = cv.size();
@@ -91,6 +92,11 @@ export function createWorkspace(ctx, opts = {}) {
 
   ws.update = () => {
     ws.result = solver.solve(ws.setup);
+    // Side-by-side diagrams (space diagram | FBD) are framed from the geometry,
+    // so when a slider moves a point (e.g. anchor B), re-fit: otherwise the
+    // drawing could run off the canvas. Their frame doesn't depend on arrow
+    // lengths, so revealing an answer never makes the picture jump.
+    if (ws.framed) ws.fit(); // draws, too (when the canvas is on the page)
     draw();
     renderEqs();
     if (controls) controls.syncAll();

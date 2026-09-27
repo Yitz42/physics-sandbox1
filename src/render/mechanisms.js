@@ -1,8 +1,15 @@
 // mechanisms.js — drawings of springs and pulleys (Unit 2 on):
 //   spring  { from, to, id, coils? }   a zig-zag spring between two points (metres);
 //                                      short straight ends, coils in the middle
-//   pulley  { at, r? }                 a pulley wheel centred at `at`, r in metres
-//                                      (default 0.18 m), with its axle
+//   pulley  { at, r?, wrap?, straps? } a pulley wheel centred at `at`, r in metres
+//                                      (default 0.18 m), with its axle.
+//                                      cableR: radius the cable runs at (m; default r)
+//                                      wrap: [startDeg, endDeg] — the cable lying in
+//                                      the groove, drawn counterclockwise from start
+//                                      to end (so students see it run over the wheel);
+//                                      straps: [[dx, dy] …] — directions of ropes or
+//                                      hangers tied to the axle, drawn from the axle
+//                                      to the rim, on top of the wheel
 // Like the other shape files, drawMechanism returns { boxes, segments, labels },
 // or null for a shape type it doesn't know.
 
@@ -44,7 +51,7 @@ export function drawMechanism(cv, s, env) {
       const [x, y] = S(s.at);
       const r = (s.r || 0.18) * cv.view.scale;
       ctx.save();
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = s.wrap ? 1.5 : 2.2; // thinner when a cable wraps it, so the cable stands out
       ctx.strokeStyle = ink;
       ctx.fillStyle = env.crate;
       ctx.beginPath();
@@ -56,6 +63,24 @@ export function drawMechanism(cv, s, env) {
       ctx.beginPath();
       ctx.arc(x, y, r * 0.72, 0, Math.PI * 2);
       ctx.stroke();
+      // The cable in the groove (canvas y points down, so angles flip sign).
+      if (s.wrap) {
+        const [a0, a1] = s.wrap.map((d) => (-d * Math.PI) / 180);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const rc = (s.cableR || s.r || 0.18) * cv.view.scale;
+        ctx.arc(x, y, rc, a0, a1, true); // true: counterclockwise on screen = CCW in the world
+        ctx.stroke();
+      }
+      // Ropes and the hanger, tied to the axle (a strap across the wheel's face).
+      ctx.lineWidth = 2;
+      for (const [dx, dy] of s.straps || []) {
+        const m = Math.hypot(dx, dy) || 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + (dx / m) * r, y - (dy / m) * r);
+        ctx.stroke();
+      }
       ctx.fillStyle = paper;
       ctx.lineWidth = 2;
       ctx.beginPath();

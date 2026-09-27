@@ -107,20 +107,41 @@ test("Force components build: the start fails the goal; F2 = 390 N at 53° above
   ok(st.goal.check(solver.solve(s), s).ok, "hand-worked answer should meet the goal");
 });
 
-test("Cables build: start fails; 44°/44° meets it; 40°/45° overloads AC; 50°/50° hits the skylight", () => {
+test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);
-  const tryAngles = (ab, ac) => {
+  const design = (ab, ac, forbidden = [-1.0, 1.4], mass = 90) => {
     const s = clone(st.setup);
+    setPath(s, "ceiling.forbidden", forbidden);
+    setPath(s, "forces.#W.mass", mass);
     setPath(s, "forces.#T_AB.direction.angle", ab);
     setPath(s, "forces.#T_AC.direction.angle", ac);
-    return st.goal.check(solver.solve(s), s);
+    const r = solver.solve(s);
+    return { r, out: st.goal.check(r, s) };
   };
-  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok);
-  ok(tryAngles(44, 44).ok, "44/44 should work");
-  const over = tryAngles(40, 45);
-  ok(!over.ok && over.flagged.includes("T_AC"), "40/45 should overload AC (754 N)");
-  ok(!tryAngles(50, 50).ok, "50/50 puts anchors in the skylight");
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the starting design fails");
+  const good = design(45, 35);
+  ok(good.out.ok, "45/35 should work");
+  close(good.r.values.T_AB, 734.4, 1e-4);
+  close(good.r.values.T_AC, 633.9, 1e-4);
+  const snap = design(39, 35);
+  ok(!snap.out.ok && snap.out.flagged.includes("T_AB"), "39/35 overloads AB (752.4 N)");
+  close(snap.r.values.T_AB, 752.4, 1e-4);
+  const sky = design(45, 36);
+  ok(!sky.out.ok && /skylight/.test(sky.out.message) && !sky.out.flagged.length, "45/36 puts C in the skylight");
+  ok(!design(44, 44).out.ok, "the old symmetric answer no longer works");
+  ok(design(35, 45, [-1.4, 1.0]).out.ok, "mirrored skylight: 35/45 works");
+  // The student must work out both tensions before each Test.
+  equal(st.goal.predict.map((a) => a.quantity).join(","), "T_AB,T_AC");
+  // The hardest and easiest versions still have designs that work (a few, not most).
+  const count = (forbidden, mass) => {
+    let n = 0;
+    for (let ab = 20; ab <= 80; ab++) for (let ac = 20; ac <= 80; ac++) if (design(ab, ac, forbidden, mass).out.ok) n++;
+    return n;
+  };
+  equal(count([-1.0, 1.4], 90), 8, "1.4 m, 90 kg");
+  equal(count([-1.4, 1.0], 90), 8, "mirrored");
+  equal(count([-1.0, 1.2], 80), 169, "1.2 m, 80 kg");
 });
 
 test("Moments seesaw: every new version puts child B on the 3 m half-plank", () => {

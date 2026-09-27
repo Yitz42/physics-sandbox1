@@ -154,10 +154,42 @@ const coord = (v) => String(+v.toFixed(2)).replace("-", "−"); // a real minus 
 const coordLabel = (name, p) => `${name} (${coord(p[0])}, ${coord(p[1])})`;
 const usesPoints = (setup) => setup.forces.some((f) => f.direction && f.direction.points);
 
+// A pulley at A: the cable shared by two forces (same `shared` name) runs
+// over the wheel, so each side leaves the rim where it is tangent to it —
+// not from the centre. Returns
+//   r        the wheel's radius (m)
+//   offset   { forceId: [dx, dy] } — where each side leaves the rim, from A
+//   wrap     [startDeg, endDeg] — the cable in the groove, counterclockwise
+//   straps   directions of the other ropes and the hanger, tied to the axle
+// (null when the point isn't a pulley).
+const PULLEY_R = 0.45;
+function pulleyWrap(setup) {
+  if (setup.point.object !== "pulley") return null;
+  const out = { r: PULLEY_R, offset: {}, wrap: null, straps: [] };
+  const sides = setup.forces.filter((f) => f.kind === "cable" && f.shared);
+  const others = setup.forces.filter((f) => !sides.includes(f) && (f.kind === "cable" || f.kind === "weight"));
+  out.straps = others.map((f) => directionOf(f));
+  if (sides.length !== 2) return out;
+  const [d1, d2] = sides.map((f) => directionOf(f));
+  const mid = add(d1, d2); // the cable pulls the wheel this way (between its two sides)
+  // The side counterclockwise of `mid` leaves the rim 90° further round (CCW);
+  // the other side 90° back. The cable lies in the groove between them, over `mid`.
+  const ccw = mid[0] * d1[1] - mid[1] * d1[0] > 0 ? 0 : 1;
+  const a = sides.map((f) => angleDeg(directionOf(f)));
+  const leave = [a[0] + (ccw === 0 ? 90 : -90), a[1] + (ccw === 1 ? 90 : -90)];
+  sides.forEach((f, i) => {
+    const t = (leave[i] * Math.PI) / 180;
+    out.offset[f.id] = [PULLEY_R * Math.cos(t), PULLEY_R * Math.sin(t)];
+  });
+  out.wrap = [leave[1 - ccw], leave[ccw]];
+  return out;
+}
+
 // The real setup: ring, cables to supports, hanging crate.
 function spaceDiagram(setup) {
   const A = setup.point.at;
   const shapes = [];
+  const pulley = pulleyWrap(setup);
   // Forces given by coordinates: mark the origin O (unless A is the origin),
   // so students can see the coordinates are measured from there. (The x-y
   // axes icon in the corner shows which way is +x and +y.)
@@ -169,13 +201,17 @@ function spaceDiagram(setup) {
   }
   for (const f of setup.forces) {
     if (f.kind === "cable" || f.kind === "spring") {
-      const P = anchorPoint(setup, f);
+      // Over a pulley, the cable leaves the rim (and its anchor moves with it,
+      // so the drawn cable keeps exactly the force's direction).
+      const off = (pulley && pulley.offset[f.id]) || [0, 0];
+      const start = add(A, off);
+      const P = add(anchorPoint(setup, f), off);
       if (f.kind === "spring") {
         shapes.push({ type: "spring", id: f.id, from: A, to: P });
       } else {
-        shapes.push({ type: "line", id: f.id, from: A, to: P, style: "cable" });
+        shapes.push({ type: "line", id: f.id, from: start, to: P, style: "cable" });
       }
-      const d = sub(P, A);
+      const d = sub(P, start);
       if (!setup.ceiling) {
         const n = Math.abs(d[1]) >= Math.abs(d[0]) ? [0, -Math.sign(d[1])] : [-Math.sign(d[0]), 0];
         const t = [n[1] * 0.35, n[0] * 0.35];
@@ -190,9 +226,10 @@ function spaceDiagram(setup) {
       } else {
         shapes.push({ type: "point", at: P, label: f.anchor?.label || "", style: "pin" });
       }
-      shapes.push(...angleMarks(f, A, Math.min(1.2, mag(d)), setup.forces.indexOf(f)));
+      // The angle is marked where the cable leaves (the pulley's rim, or A).
+      shapes.push(...angleMarks(f, start, Math.min(1.2, mag(d)), setup.forces.indexOf(f)));
     } else if (f.kind === "weight") {
-      const top = add(A, [0, -0.7]);
+      const top = add(A, [0, -0.7 - (pulley ? pulley.r : 0)]); // below the wheel, if there is one
       const label = f.mass != null ? `${+f.mass.toFixed(2)} kg` : f.symbol;
       shapes.push({ type: "line", id: f.id, from: A, to: top, style: "cable" });
       // What hangs there: a crate, or a real object the stage names (object: "lamp").
@@ -202,7 +239,8 @@ function spaceDiagram(setup) {
   }
   const pointLabel = usesPoints(setup) ? coordLabel(setup.point.label || "A", A) : setup.point.label || "";
   // A pulley at A (a cable runs over it): a wheel instead of a ring.
-  if (setup.point.object === "pulley") shapes.push({ type: "pulley", at: A });
+  // The wheel is a little smaller than the cable's path, so the cable shows in its groove.
+  if (pulley) shapes.push({ type: "pulley", at: A, r: pulley.r * 0.8, cableR: pulley.r, wrap: pulley.wrap, straps: pulley.straps });
   shapes.push({ type: "point", at: A, label: pointLabel, style: setup.point.object === "pulley" ? "dot" : "ring" });
   return shapes;
 }

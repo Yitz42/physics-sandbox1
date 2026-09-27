@@ -129,7 +129,8 @@ export default {
   setup: { bodies: [...], supports: [...], loads: [...] },
   editable: ["loads.0.position"],
   ask: { quantity: "supports.0.Ry", units: "N", precision: 0.1 }, // predict/solve; ±0.1 is the default
-  goal: null,                    // used by build challenges
+  goal: null,                    // used by build challenges; goal.predict: numbers the student
+                                 // must work out for their own design before each Test
   hints: ["First hint", "Second hint"],
   explanation: "Shown after completion: why the answer is what it is.",
 };
@@ -173,6 +174,10 @@ solver. The part reached is saved; the stage is complete after the last part.
   arrow follows the pointer, snapping to allowed directions; click to place. Dragging
   from the palette also works (touchscreens). The palette includes tempting wrong
   forces, each with its own explanation.
+- **Build stages must not be passable by guessing.** When slider positions could be
+  found by trial and error, the stage sets `goal.predict`: the student works out the
+  key numbers for their own design (e.g. both tensions) before Test, and a changed
+  design must be worked out again.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
 
