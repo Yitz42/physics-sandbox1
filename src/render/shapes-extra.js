@@ -1,5 +1,5 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
-//   beam       { points, width?, flat?, text? } a bar, bracket or plank (polyline, metres); flat:
+//   beam       { points, width?, flat?, text?, alpha? } a bar, bracket or plank (polyline, metres); flat:
 //              [start, end] true = a square end (built into a wall, see support-clear.js);
 //              text: { at, text } a caption written inside the bar (e.g. "40 kg beam")
 //   pivot      { at }                          triangle support under a pin (seesaw)
@@ -13,7 +13,8 @@
 // Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js,
 // springs and pulleys in mechanisms.js, block diagrams and signal-flow graphs in blocks.js,
 // distributed loads and wheels in loads.js, support symbols in supports.js, truss members in members.js,
-// a wrench and a trailer in hardware.js.
+// a wrench and a trailer in hardware.js, filled regions and leaders in regions.js,
+// shear and moment diagrams in plots.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
 import { barBoxes, overlapArea } from "./labels.js";
@@ -25,6 +26,7 @@ import { drawLoadShape } from "./loads.js";
 import { drawSupportSymbol } from "./supports.js";
 import { drawMember } from "./members.js";
 import { drawRegion } from "./regions.js";
+import { drawPlot } from "./plots.js";
 import { drawHardware } from "./hardware.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
@@ -51,6 +53,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
           ctx.fill();
         });
       };
+      const alpha0 = ctx.globalAlpha;
+      if (s.alpha != null) ctx.globalAlpha = s.alpha; // faint: a body the stage isn't working on
       ctx.lineCap = "butt";
       ctx.lineJoin = "round";
       ctx.strokeStyle = ink;
@@ -86,6 +90,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
         const box = drawLabel(ctx, s.text.text, tx, ty, { color: ink, size: Math.min(13, w - 6), weight: 600 });
         if (box) out.boxes.push({ ...box, heavy: true });
       }
+      ctx.globalAlpha = alpha0;
       break;
     }
     case "pivot": {
@@ -274,7 +279,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
       // Pictures of real objects live in their own files (see the top of this file).
       const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawScenery(cv, s, env) || drawBlockShape(cv, s, env, roleColor)
         || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env) || drawMember(cv, s, env, roleColor)
-        || drawRegion(cv, s, env);
+        || drawRegion(cv, s, env) || drawPlot(cv, s, env);
       if (obj) return obj;
     }
   }

@@ -34,6 +34,9 @@ import { solveFrame, frameQuantities, frameMistakes } from "./frame.js";
 import { frameScene, frameFbd, frameSummary } from "./frame-scene.js";
 import { solveCentroid, centroidQuantities, centroidMistakes } from "./centroid.js";
 import { centroidScene, centroidSummary } from "./centroid-scene.js";
+import { solveInternal, internalQuantities } from "./internal.js";
+import { internalScene } from "./internal-scene.js";
+import { internalSummary, internalMistakes, internalChoices, internalSteps } from "./internal-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -160,4 +163,17 @@ registerSolver("statics.centroid", {
   scene: centroidScene,
   quantities: centroidQuantities,
   mistakes: centroidMistakes,
+});
+
+// Units 7.1–7.3: internal forces — cut a beam: N, V, M at the cut (the kept piece's
+// three equations); V and M along the beam (diagrams); V(x), M(x) segment by segment.
+registerSolver("statics.internal", {
+  solve: solveInternal,
+  equations: (setup, result) => (result || solveInternal(setup)).equations,
+  summary: internalSummary,
+  scene: internalScene,
+  quantities: (setup) => internalQuantities(setup, rigidBodyQuantities(setup)),
+  mistakes: internalMistakes,
+  choices: internalChoices, // a solve stage's V(x), M(x) lines, segment by segment (7.3)
+  debugSteps: internalSteps, // a student's working with one wrong line (7.2, 7.3)
 });

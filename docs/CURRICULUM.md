@@ -190,9 +190,15 @@ Claude builds from it.
 
 ### Chapter 7: Internal forces (textbook ch. 8)
 
-**Unit 7.1: Internal forces at a point**
+**Unit 7.1: Internal forces at a point** ✅
 - Concept: cut a beam; the cut face carries normal force N, shear V, moment M.
-- Test ideas: slide a cut along the beam and watch N, V, M.
+- Sign convention (textbook): N + tension; V + down on a left piece's face (up on a right
+  piece's); M + concave up (a smile) — counterclockwise on a left piece's face.
+- Built: slide a cut (and the load) along a beam and watch N, V, M on the pulled-apart
+  pieces; predict N, V, M on a shelf beam, a cantilever (right piece, no reactions), an
+  overhang and a beam with a slanted load (N ≠ 0); place a bolted splice where M ≈ 0 (the
+  point of contraflexure); debug a left piece's equations (V's sign, the load's centroid,
+  the load missing, A_y's sign); concept check; solve a balcony beam, choosing the piece.
 
 **Unit 7.2: Shear and moment diagrams**
 - Concept: V and M along a beam; relationships dV/dx = −w, dM/dx = V.

@@ -50,6 +50,8 @@ src/
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
       centroid.js          centroids of composite areas (holes: negative area), centres of gravity (centroid-scene.js), Units 6.1–6.2
+      internal.js          internal forces N, V, M at a cut; V(x), M(x) by segment; diagrams (internal-scene.js,
+                           internal-tools.js), Units 7.1–7.3
       geometry.js          later: area moments of inertia
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js
