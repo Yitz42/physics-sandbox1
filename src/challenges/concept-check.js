@@ -4,7 +4,7 @@
 // explaining the misconception behind it.
 //
 // Stage fields used:
-//   questions: [{ prompt, options: [{ text, correct?, feedback }], explanation,
+//   questions: [{ prompt, options: [{ text, correct?, feedback, kind? }], explanation,
 //                 setup?  (optional picture for this question), fixedOrder? }]
 //   required:  how many questions must be answered correctly (default 3)
 //
@@ -76,6 +76,10 @@ export function mount(ctx) {
   }
 
   function choose(o, b) {
+    // For the comprehension record: which question, and (if wrong) what kind of
+    // mistake — "concept" unless the option names its own kind (e.g. "sign").
+    const q0 = `question ${mem.order[mem.pos % mem.order.length]}`;
+    ctx.record({ q: q0, ok: !!o.correct, kinds: o.correct ? [] : [o.kind || "concept"] });
     if (o.correct) {
       const q = current();
       b.classList.add("is-right");

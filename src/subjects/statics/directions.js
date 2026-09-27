@@ -76,7 +76,7 @@ export function componentFactors(dir) {
     if (h < 1e-12) return { x: null, y: null };
     const frac = (n) => ({ tex: `\\tfrac{${sigFig(Math.abs(n), 4)}}{${sigFig(h, 4)}}`, value: Math.abs(n) / h, pre: true });
     // Mixing up the two fractions is this direction's "sin/cos swap".
-    const swap = { swapLabel: "Swap the fractions (x ↔ y)", swapReason: "has the two fractions swapped — the x-component uses the side along x, the y-component the side along y" };
+    const swap = { swapLabel: "Swap the fractions (x ↔ y)", swapReason: "has the two fractions swapped — the x-component uses the side along x, the y-component the side along y", swapKind: "trig" };
     const make = (n, other) => (n === 0 ? null : { sign: Math.sign(n), factor: { ...frac(n), alt: frac(other), ...swap } });
     return { x: make(dx, dy), y: make(dy, dx) };
   }

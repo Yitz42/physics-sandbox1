@@ -37,10 +37,10 @@ export function coupleMistakes(setup, name) {
   const base = solveCouple(setup);
   const correct = base.values[name];
   const list = [];
-  const add1 = (value, message, withSign = true) => {
+  const add1 = (value, message, kind, withSign = true) => {
     if (!Number.isFinite(value) || Math.abs(value - correct) < 1e-6 * Math.max(1, Math.abs(correct))) return;
-    list.push({ value, message });
-    if (withSign && Math.abs(value) > 1e-9) list.push({ value: -value, message: `${message} Also check the sign: counterclockwise is positive.` });
+    list.push({ value, kind, message });
+    if (withSign && Math.abs(value) > 1e-9) list.push({ value: -value, kind, also: "sign", message: `${message} Also check the sign: counterclockwise is positive.` });
   };
   const couples = setup.couples || [];
 
@@ -53,7 +53,7 @@ export function coupleMistakes(setup, name) {
       angled = true;
     }
   }
-  if (angled) add1(solveCouple(s).values[name], "It looks like sin and cos are swapped. Check which axis each angle is measured from.");
+  if (angled) add1(solveCouple(s).values[name], "It looks like sin and cos are swapped. Check which axis each angle is measured from.", "trig");
 
   const replacement = couples.find((c) => c.id === name && c.equivalentTo);
   if (replacement) {
@@ -63,13 +63,13 @@ export function coupleMistakes(setup, name) {
     const d0 = base.values[`d_${orig.id}`], d1 = base.values[`d_${name}`], r1 = base.values[`r_${name}`];
     const F0 = base.values[orig.id];
     const dp = dSymbolOf(replacement);
-    add1(M, `That is the couple moment M (in N·m), not the force. Divide it by the distance ${dp} between the new forces.`, false);
-    add1(M * d1, `Multiplying by ${dp} gives the wrong thing: the new forces must satisfy F·${dp} = M, so F = M / ${dp}.`, false);
-    add1(F0, "Equal forces only give the same moment when the distances are the same too. Here the distances differ.", false);
-    add1((F0 * d1) / d0, "The ratio looks upside down: when the forces are CLOSER together they must be BIGGER to make the same moment.", false);
-    add1((2 * M) / d1, `It looks like you used half the distance (from the middle to one force). ${dp} is the distance between the two lines of action.`, false);
-    add1(M / (2 * d1), "It looks like you split the moment between the two forces. A couple's moment is F × d once, not once per force.", false);
-    if (Math.abs(r1 - d1) > 1e-6) add1(M / r1, "Use the perpendicular distance between the two lines of action, not the distance between the two points.", false);
+    add1(M, `That is the couple moment M (in N·m), not the force. Divide it by the distance ${dp} between the new forces.`, "algebra", false);
+    add1(M * d1, `Multiplying by ${dp} gives the wrong thing: the new forces must satisfy F·${dp} = M, so F = M / ${dp}.`, "algebra", false);
+    add1(F0, "Equal forces only give the same moment when the distances are the same too. Here the distances differ.", "concept", false);
+    add1((F0 * d1) / d0, "The ratio looks upside down: when the forces are CLOSER together they must be BIGGER to make the same moment.", "algebra", false);
+    add1((2 * M) / d1, `It looks like you used half the distance (from the middle to one force). ${dp} is the distance between the two lines of action.`, "momentArm", false);
+    add1(M / (2 * d1), "It looks like you split the moment between the two forces. A couple's moment is F × d once, not once per force.", "concept", false);
+    if (Math.abs(r1 - d1) > 1e-6) add1(M / r1, "Use the perpendicular distance between the two lines of action, not the distance between the two points.", "momentArm", false);
     return list;
   }
 
@@ -79,20 +79,20 @@ export function coupleMistakes(setup, name) {
       const Mc = base.values[`M_${c.id}`];
       const F = base.values[c.id], r = base.values[`r_${c.id}`], d = base.values[`d_${c.id}`];
       if (Math.abs(r - d) > 1e-6) {
-        add1(correct + Math.sign(Mc) * F * (r - d), `For ${pretty(c.symbol)}, use the perpendicular distance between the two lines of action, not the distance between the two points where the forces act.`);
+        add1(correct + Math.sign(Mc) * F * (r - d), `For ${pretty(c.symbol)}, use the perpendicular distance between the two lines of action, not the distance between the two points where the forces act.`, "momentArm");
       }
       if (couples.length + (setup.moments || []).length > 1) {
-        add1(correct - Mc, `Did you leave out the couple of ${pretty(c.symbol)}? Every couple on the body adds its moment.`);
-        add1(correct - 2 * Mc, `Check which way the ${pretty(c.symbol)} couple turns the body: clockwise is negative, counterclockwise positive.`);
+        add1(correct - Mc, `Did you leave out the couple of ${pretty(c.symbol)}? Every couple on the body adds its moment.`, "missing");
+        add1(correct - 2 * Mc, `Check which way the ${pretty(c.symbol)} couple turns the body: clockwise is negative, counterclockwise positive.`, "direction");
       }
-      add1(correct + Mc, `A couple's moment is F × d, counted once — not once for each of its two forces.`);
+      add1(correct + Mc, `A couple's moment is F × d, counted once — not once for each of its two forces.`, "concept");
     }
     for (const m of setup.moments || []) {
-      add1(correct - m.sense * m.magnitude, `Did you leave out the couple moment ${pretty(m.symbol)}? It acts on the body too.`);
-      add1(correct - 2 * m.sense * m.magnitude, `Check the sign of ${pretty(m.symbol)}: its curved arrow shows which way it turns.`);
+      add1(correct - m.sense * m.magnitude, `Did you leave out the couple moment ${pretty(m.symbol)}? It acts on the body too.`, "missing");
+      add1(correct - 2 * m.sense * m.magnitude, `Check the sign of ${pretty(m.symbol)}: its curved arrow shows which way it turns.`, "direction");
     }
   }
-  if (Math.abs(correct) > 1e-9) list.push({ value: -correct, message: "Right size, wrong sign. Counterclockwise moments are positive, clockwise negative." });
+  if (Math.abs(correct) > 1e-9) list.push({ value: -correct, kind: "sign", message: "Right size, wrong sign. Counterclockwise moments are positive, clockwise negative." });
   return list;
 }
 

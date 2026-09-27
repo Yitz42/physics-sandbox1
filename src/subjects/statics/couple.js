@@ -68,6 +68,7 @@ export function coupleEquations(setup, values) {
         factor.alt = { tex: named("r", armSymbolOf(f)), numTex: numM(a.rLen), value: a.rLen };
         factor.swapLabel = "Use the perpendicular distance d";
         factor.swapReason = `uses the distance to ${P} instead of the perpendicular distance to the line of action`;
+        factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
       }
       eq.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value: values[f.id], unit: "N", factor });
     }
@@ -87,6 +88,7 @@ export function coupleEquations(setup, values) {
         factor.alt = { tex: c.rSymbol || named("r", c.symbol), numTex: numM(g.rLen), value: g.rLen };
         factor.swapLabel = "Use the perpendicular distance between the lines";
         factor.swapReason = "uses the distance between the two points instead of the perpendicular distance between the lines of action";
+        factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
       }
       eq.terms.push({ id: c.id, sign: Math.sign(g.perNewton) || 1, symbol: c.symbol, value: values[c.id], unit: "N", factor });
     }

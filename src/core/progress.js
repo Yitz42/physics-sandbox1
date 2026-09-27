@@ -11,6 +11,8 @@
 //               version on their own before the stage counts as done
 //   "complete"  solved without help
 
+import { clearEvents } from "./evidence.js";
+
 const KEY = "ems-progress-v1";
 
 export const STATUS = { NONE: "none", PRACTICE: "practice", COMPLETE: "complete" };
@@ -59,6 +61,8 @@ export function setPartsDone(key, n) {
   save(data);
 }
 
+// "Reset my progress" also clears the record of answers behind the comprehension page.
 export function resetAll() {
   save({});
+  clearEvents();
 }

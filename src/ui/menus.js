@@ -98,7 +98,10 @@ export function renderCourse(root, course, units) {
   }
   root.append(
     el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" })]),
-    el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), mixed(course.description, "lead")]),
+    el("header", { className: "page-header" }, [
+      el("h1", { textContent: course.title }), mixed(course.description, "lead"),
+      el("a", { className: "comp-link", href: `#/comprehension/${course.id}`, textContent: `${course.title} comprehension →` }),
+    ]),
     list,
     el("footer", { className: "page-footer" }, [
       button("Reset my progress", () => {

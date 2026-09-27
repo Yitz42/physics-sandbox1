@@ -101,6 +101,7 @@ export function momentEquations(setup) {
       factor.alt = { tex: named("r", f.symbol), numTex: num(a.rLen), value: a.rLen };
       factor.swapLabel = "Use the perpendicular distance d";
       factor.swapReason = "uses the distance to O instead of the perpendicular distance d to the line of action";
+      factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
     }
     Md.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value: F, unit: "N", factor });
   }

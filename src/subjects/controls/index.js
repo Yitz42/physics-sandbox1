@@ -15,10 +15,17 @@
 // added to src/render/ as general drawing tools, not controls code.
 
 import { registerSolver } from "../../core/registry.js";
+import { registerErrorKinds } from "../../core/diagnosis.js";
 import { solveBlocks, blockQuantities, blockMistakes, blockSummary, blockChoices, blockDebug } from "./block-tools.js";
 import { blockScene } from "./block-layout.js";
 import { solveSignalFlow, signalQuantities, signalMistakes, signalSummary, signalChoices, signalDebug } from "./signal-flow-tools.js";
 import { signalScene } from "./signal-flow-scene.js";
+
+// Controls' own kinds of mistake (on top of the general ones in core/diagnosis.js).
+registerErrorKinds({
+  blockRule: { area: "object", label: "Block rules (series multiply, parallel add, loop G/(1 ± GH))" },
+  touching: { area: "object", label: "Which loops touch (Δ and Δₖ in Mason's rule)" },
+});
 
 // Wording for the challenges (their defaults talk about force arrows).
 const texts = {

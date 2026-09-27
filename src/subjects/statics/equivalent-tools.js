@@ -16,9 +16,9 @@ export function equivalentMistakes(setup, name) {
   const v = base.values;
   const correct = v[name];
   const list = [];
-  const add1 = (value, message) => {
+  const add1 = (value, message, kind) => {
     if (!Number.isFinite(value) || Math.abs(value - correct) < 1e-6 * Math.max(1, Math.abs(correct))) return;
-    list.push({ value, message });
+    list.push({ value, kind, message });
   };
   const forces = allForces(setup);
   const vec = (f) => scale(directionOf(f), magnitudeOf(f));
@@ -29,20 +29,20 @@ export function equivalentMistakes(setup, name) {
     const R = [v["R.x"], v["R.y"]];
     // Plain average of where the forces act: ignores that bigger forces pull harder.
     const avg = forces.reduce((s, f) => s + dot(sub(f.at, O), u), 0) / forces.length;
-    add1(avg, "That's the average of the positions. Bigger forces pull the resultant toward them: use x̄ = (total moment about O) ÷ (resultant force), counting every force's moment.");
-    add1(-correct, "Right distance, wrong side. Check the signs: the single force must turn the body the same way as all the loads together — a downward force to the right of O turns it clockwise.");
+    add1(avg, "That's the average of the positions. Bigger forces pull the resultant toward them: use x̄ = (total moment about O) ÷ (resultant force), counting every force's moment.", "concept");
+    add1(-correct, "Right distance, wrong side. Check the signs: the single force must turn the body the same way as all the loads together — a downward force to the right of O turns it clockwise.", "direction");
     // A force left out of the moment sum (but still in F_R).
-    for (const f of forces) add1((v.M - v[`M_${f.id}`]) / across(R), `Did you leave ${pretty(f.symbol)} out of the moment sum? Every force's moment about O counts.`);
-    for (const m of setup.moments || []) add1((v.M - m.sense * m.magnitude) / across(R), `Did you leave out the couple moment ${pretty(m.symbol)}? It changes the total moment about O, so it moves the resultant.`);
+    for (const f of forces) add1((v.M - v[`M_${f.id}`]) / across(R), `Did you leave ${pretty(f.symbol)} out of the moment sum? Every force's moment about O counts.`, "missing");
+    for (const m of setup.moments || []) add1((v.M - m.sense * m.magnitude) / across(R), `Did you leave out the couple moment ${pretty(m.symbol)}? It changes the total moment about O, so it moves the resultant.`, "missing");
     // Dividing by the sum of the sizes when forces point different ways.
     const sizes = forces.reduce((s, f) => s + magnitudeOf(f), 0);
-    add1(Math.abs(v.M) / sizes * Math.sign(correct || 1), "The resultant is the vector sum of the forces, not the sum of their sizes: forces pointing opposite ways partly cancel.");
+    add1(Math.abs(v.M) / sizes * Math.sign(correct || 1), "The resultant is the vector sum of the forces, not the sum of their sizes: forces pointing opposite ways partly cancel.", "vector");
     return list;
   }
   if (name === "R") {
     const sizes = forces.reduce((s, f) => s + magnitudeOf(f), 0);
-    add1(sizes, "You added the sizes of the forces. Forces add as vectors: add their x-components and y-components, then take √(x² + y²).");
-    for (const f of forces) add1(mag(sub([v["R.x"], v["R.y"]], vec(f))), `Did you leave out ${pretty(f.symbol)}? Every force on the body is part of the resultant.`);
+    add1(sizes, "You added the sizes of the forces. Forces add as vectors: add their x-components and y-components, then take √(x² + y²).", "vector");
+    for (const f of forces) add1(mag(sub([v["R.x"], v["R.y"]], vec(f))), `Did you leave out ${pretty(f.symbol)}? Every force on the body is part of the resultant.`, "missing");
     return list;
   }
   if (name === "R.x" || name === "R.y") {
@@ -50,10 +50,10 @@ export function equivalentMistakes(setup, name) {
     for (const f of forces) {
       const c = vec(f)[i];
       if (Math.abs(c) < 1e-9) continue;
-      add1(correct - c, `Did you leave out ${pretty(f.symbol)}'s ${name === "R.x" ? "x" : "y"}-component?`);
-      add1(correct - 2 * c, `Check the sign of ${pretty(f.symbol)}'s ${name === "R.x" ? "x" : "y"}-component: which way does it point?`);
+      add1(correct - c, `Did you leave out ${pretty(f.symbol)}'s ${name === "R.x" ? "x" : "y"}-component?`, "missing");
+      add1(correct - 2 * c, `Check the sign of ${pretty(f.symbol)}'s ${name === "R.x" ? "x" : "y"}-component: which way does it point?`, "sign");
     }
-    if (Math.abs(correct) > 1e-9) list.push({ value: -correct, message: "Right size, wrong sign: + is right (x) and up (y)." });
+    if (Math.abs(correct) > 1e-9) list.push({ value: -correct, kind: "sign", message: "Right size, wrong sign: + is right (x) and up (y)." });
     return list;
   }
   if (name === "M") {
@@ -62,10 +62,10 @@ export function equivalentMistakes(setup, name) {
     for (const f of forces) {
       const Mf = v[`M_${f.id}`];
       if (!Mf) continue;
-      add1(correct - Mf, `Did you leave out the moment of ${pretty(f.symbol)}? Every force with a moment arm about O counts.`);
-      add1(correct - 2 * Mf, `Check which way ${pretty(f.symbol)} turns the body about O: clockwise is negative, counterclockwise positive.`);
+      add1(correct - Mf, `Did you leave out the moment of ${pretty(f.symbol)}? Every force with a moment arm about O counts.`, "missing");
+      add1(correct - 2 * Mf, `Check which way ${pretty(f.symbol)} turns the body about O: clockwise is negative, counterclockwise positive.`, "direction");
       const r = mag(sub(f.at, setup.about.at)), d = v[`d_${f.id}`];
-      if (d > 1e-9 && Math.abs(r - d) > 1e-6) add1(correct + Mf * (r / d - 1), `For ${pretty(f.symbol)}, use the perpendicular distance from O to its line of action, not the distance to the point where it acts.`);
+      if (d > 1e-9 && Math.abs(r - d) > 1e-6) add1(correct + Mf * (r / d - 1), `For ${pretty(f.symbol)}, use the perpendicular distance from O to its line of action, not the distance to the point where it acts.`, "momentArm");
     }
     return list;
   }

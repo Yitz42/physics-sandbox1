@@ -5,6 +5,7 @@
 // Later units add more registrations here (statics.rigidBody, statics.truss …).
 
 import { registerSolver } from "../../core/registry.js";
+import { registerErrorKinds } from "../../core/diagnosis.js";
 import { solveParticle, particleQuantities } from "./particle.js";
 import { particleScene } from "./particle-scene.js";
 import { particleSummary } from "./particle-summary.js";
@@ -19,6 +20,16 @@ import { coupleHandles, coupleDrag, coupleMistakes, coupleSummary } from "./coup
 import { solveEquivalent, equivalentQuantities } from "./equivalent.js";
 import { equivalentScene } from "./equivalent-scene.js";
 import { equivalentMistakes, equivalentSummary } from "./equivalent-tools.js";
+
+// Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
+// sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
+// Every likely-slip a statics solver recognises names one of these, so the
+// comprehension page can say where a student is failing.
+registerErrorKinds({
+  weight: { area: "object", label: "Using the mass instead of the weight (W = mg)" },
+  momentArm: { area: "object", label: "Wrong moment arm (not the perpendicular distance)" },
+  springLength: { area: "object", label: "Spring stretch vs. length" },
+});
 
 // Units 1–2: forces through one point.
 registerSolver("statics.particle", {

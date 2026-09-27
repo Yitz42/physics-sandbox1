@@ -3,7 +3,8 @@
 // Like equation-pick.js, but the options come ready-made from the solver
 // (solver.choices(setup)), so any subject can use it — e.g. each step of a
 // block diagram reduction, or the parts of Mason's rule:
-//   groups: [{ title, options: [{ tex, correct?, feedback? }] }]
+//   groups: [{ title, options: [{ tex, correct?, feedback?, kind? }] }]
+// (kind: what sort of mistake a wrong option is — see src/core/diagnosis.js)
 // title may contain $math$; tex is KaTeX. Every wrong option carries the
 // feedback shown when it's picked.
 
@@ -32,6 +33,7 @@ export function createChoicePick(groups, { onCorrect, onWrong }) {
 
   function check() {
     const problems = [];
+    const kinds = []; // what sort of mistake each wrong pick is (option.kind), for comprehension
     for (const m of made) {
       m.buttons.forEach((b) => b.classList.remove("is-wrong", "is-right"));
       const s = m.selected;
@@ -41,9 +43,12 @@ export function createChoicePick(groups, { onCorrect, onWrong }) {
       }
       const b = m.buttons[m.g.options.indexOf(s)];
       b.classList.add(s.correct ? "is-right" : "is-wrong");
-      if (!s.correct) problems.push(s.feedback || "That line has a slip in it. Check it against the rule.");
+      if (!s.correct) {
+        problems.push(s.feedback || "That line has a slip in it. Check it against the rule.");
+        kinds.push(s.kind || "unexplained");
+      }
     }
-    if (problems.length) onWrong([...new Set(problems)]);
+    if (problems.length) onWrong([...new Set(problems)], kinds);
     else {
       made.forEach((m) => m.buttons.forEach((b) => (b.disabled = true)));
       checkBtn.remove();

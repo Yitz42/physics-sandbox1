@@ -44,7 +44,7 @@ export function mount(ctx) {
       showMessage(ctx.el.feedback, "info", "Make your prediction first", "Type a number in every box, then press Test.");
       return;
     }
-    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise);
+    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record);
     if (allOk) {
       delete ws.sceneOpts.guesses;
       testBtn.disabled = true;

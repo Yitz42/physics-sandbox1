@@ -3,6 +3,7 @@
 //   #/statics                            the units of a course
 //   #/statics/force-components           one unit's stages
 //   #/statics/force-components/2-predict one stage
+//   #/comprehension/statics              how well the course is understood (from every answer)
 // Using the part after "#" means the browser's Back button works and every
 // stage has its own link, with no server needed.
 
@@ -10,15 +11,40 @@ import { loadCourseList, loadCourse, loadUnit, loadUnitStages, loadStage, unitPl
 import { runStage } from "./core/runner.js";
 import { renderHome, renderCourse, renderUnit } from "./ui/menus.js";
 import { createStageView } from "./ui/stage-view.js";
+import { comprehensionPanel, renderComprehension } from "./ui/comprehension-view.js";
+import { courseComprehension } from "./core/comprehension.js";
+import { getEvents } from "./core/evidence.js";
 
 const app = document.getElementById("app");
+
+// A course with its built units loaded, and its comprehension from the record of answers.
+async function courseSummary(courseId, events) {
+  const course = await loadCourse(courseId);
+  const units = await Promise.all(course.units.map((u) => loadUnit(courseId, u)));
+  return { course, summary: courseComprehension(events, course, units) };
+}
 
 async function route() {
   const [courseId, unitId, stageFile] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   window.scrollTo(0, 0);
   document.querySelector(".center-card-backdrop")?.remove(); // close a "Stage complete" card
   try {
-    if (!courseId) return renderHome(app, await loadCourseList());
+    if (!courseId) {
+      // The course cards, then the Comprehension window (one card per course).
+      const courses = await loadCourseList();
+      renderHome(app, courses);
+      const events = getEvents();
+      const summaries = {};
+      for (const c of courses.filter((x) => !x.comingSoon)) summaries[c.id] = (await courseSummary(c.id, events)).summary;
+      if (location.hash.replace(/^#\/?/, "") === "") app.appendChild(comprehensionPanel(courses, summaries)); // still on the home page
+      return;
+    }
+    if (courseId === "comprehension") {
+      if (!unitId) return (location.hash = "#/");
+      const { course, summary } = await courseSummary(unitId, getEvents());
+      document.title = `${course.title} comprehension — Mechanics Sandbox`;
+      return renderComprehension(app, course, summary);
+    }
     const course = await loadCourse(courseId);
     const units = await Promise.all(course.units.map((u) => loadUnit(courseId, u)));
     if (!unitId) return renderCourse(app, course, units);

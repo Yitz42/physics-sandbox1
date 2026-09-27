@@ -5,6 +5,7 @@ import { test, ok, equal, close, setFile } from "../harness.js";
 import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts, stageSituations } from "../../src/core/content.js";
 import { getSolver } from "../../src/core/registry.js";
 import { makeVariant, clone, setPath } from "../../src/core/paths.js";
+import { isKnownKind } from "../../src/core/diagnosis.js";
 
 setFile("content / every stage");
 
@@ -67,6 +68,29 @@ for (const { unit, file, whole, stage: part } of stages) {
         for (const f of s.forces || []) if (f.kind === "cable") ok(r.values[f.id] > 0, `cable ${f.id} not pulling`);
         for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]));
       }
+    });
+  }
+
+  // Every slip the game can recognise names a known kind of mistake (math or
+  // object — see src/core/diagnosis.js), so the comprehension page can use it.
+  if (stage.ask && solver.mistakes) {
+    test(`${stage.id}: every recognised mistake has a known kind`, () => {
+      for (const ask of [].concat(stage.ask)) {
+        for (const m of solver.mistakes(stage.setup, ask.quantity)) {
+          ok(isKnownKind(m.kind), `${ask.quantity}: "${m.message.slice(0, 50)}…" has kind ${m.kind}`);
+          if (m.also) ok(isKnownKind(m.also), `also: ${m.also}`);
+        }
+      }
+    });
+  }
+  if (stage.challenge === "solve" && solver.choices) {
+    test(`${stage.id}: every wrong line to choose from has a known kind`, () => {
+      for (const g of solver.choices(stage.setup)) for (const o of g.options) if (!o.correct) ok(isKnownKind(o.kind), `${g.title}: ${o.kind}`);
+    });
+  }
+  if (stage.debug && stage.debug.view === "steps") {
+    test(`${stage.id}: every planted mistake has a known kind`, () => {
+      for (const m of stage.debug.mutations) ok(isKnownKind(solver.debugSteps(stage.setup, m).kind), JSON.stringify(m));
     });
   }
 

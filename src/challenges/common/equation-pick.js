@@ -28,6 +28,13 @@ function pickMistakes(eq) {
   return chosen;
 }
 
+// The kind of mistake each wrong option is (see src/core/diagnosis.js).
+const KIND = {
+  swap: (term) => (term && term.factor && term.factor.swapKind) || "trig",
+  sign: () => "sign",
+  missing: () => "missing",
+};
+
 const REASONS = {
   swap: (s, term) => `the $${s}$ term ${(term && term.factor && term.factor.swapReason) || "has sin and cos swapped — cos goes with the axis the angle is measured from"}`,
   sign: (s) => `the $${s}$ term has the wrong sign — check which way that component points`,
@@ -59,6 +66,7 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong, mo
 
   function check() {
     const problems = [];
+    const kinds = [];
     for (const g of groups) {
       g.buttons.forEach((b) => b.classList.remove("is-wrong", "is-right"));
       const s = g.selected;
@@ -72,9 +80,10 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong, mo
         b.classList.add("is-wrong");
         const name = g.eq.lhs.split("=").pop().trim();
         problems.push(`In your $${name}$ choice, ${REASONS[s.kind](symbolOf(s.termId), s.term)}.`);
+        kinds.push(KIND[s.kind](s.term));
       }
     }
-    if (problems.length) onWrong(problems);
+    if (problems.length) onWrong(problems, kinds);
     else {
       groups.forEach((g) => g.buttons.forEach((b) => (b.disabled = true)));
       checkBtn.remove();

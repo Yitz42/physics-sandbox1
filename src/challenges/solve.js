@@ -54,6 +54,13 @@ export function mount(ctx) {
     showMessage(ctx.el.feedback, "bad", "Not yet", problems.map((p) => "• " + p).join("\n\n"));
     attempts.wrong();
   };
+  // A step's check, for the comprehension record (the answer step records each
+  // number itself, in checkRows). kinds: what sort of mistakes (core/diagnosis.js).
+  const stepWrong = (problems, kinds = []) => {
+    ctx.record({ q: steps[index], ok: false, kinds: kinds.length ? kinds : ["unexplained"] });
+    wrong(problems);
+  };
+  const stepRight = () => ctx.record({ q: steps[index], ok: true, kinds: [] });
 
   // After a step is right, let the student read the feedback, then move on
   // when THEY are ready (no automatic jump).
@@ -83,6 +90,7 @@ export function mount(ctx) {
     if (step === "fbd") {
       current = createFbdTool(ctx, ws, stage.solve.candidates, {
         onCorrect: () => {
+          stepRight();
           ws.sceneOpts.hide = [];
           ws.extraShapes = () => [];
           ws.onPointer = null;
@@ -90,35 +98,37 @@ export function mount(ctx) {
           showMessage(ctx.el.feedback, "good", "FBD correct ✓", "The unknown forces are shown in orange.");
           waitForNext();
         },
-        onWrong: wrong,
+        onWrong: stepWrong,
       });
       body.appendChild(current.element);
     } else if (step === "equations") {
       current = createEquationPick(solver.equations(ws.setup, ws.result), symbolOf, {
         mode: stage.solve.equationMode || "symbolic",
         onCorrect: () => {
+          stepRight();
           ws.showEquations(true);
           showMessage(ctx.el.feedback, "good", "Equations correct ✓", "They're now in the Equations panel. Click a term to see its arrow.");
           waitForNext();
         },
-        onWrong: wrong,
+        onWrong: stepWrong,
       });
       body.appendChild(current.element);
     } else if (step === "choices") {
       current = createChoicePick(solver.choices(ws.setup, ws.result), {
         onCorrect: () => {
+          stepRight();
           ws.showEquations(true);
           ws.setReveal(true);
           showMessage(ctx.el.feedback, "good", "All correct ✓", "The working is now in the Equations panel.");
           waitForNext();
         },
-        onWrong: wrong,
+        onWrong: stepWrong,
       });
       body.appendChild(current.element);
     } else if (step === "answer") {
       const inputs = answerInputs(body, [].concat(stage.ask), solver.quantities(ws.setup));
       const check = () => {
-        if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q), solver.texts && solver.texts.otherwise)) done(false);
+        if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q), solver.texts && solver.texts.otherwise, ctx.record)) done(false);
         else {
           ws.sceneOpts.guesses = guessesFrom(inputs); // faint "shadow" of their answer
           ws.redraw();

@@ -57,6 +57,10 @@ const MESSAGES = {
   missPath: "Did you miss a forward path? Look for every route from the input to the output.",
 };
 
+// What kind of mistake each slip is (see src/core/diagnosis.js; "touching" is
+// registered in index.js).
+const SLIP_KIND = { noPairs: "touching", loopSign: "sign", deltaOne: "touching", deltaFull: "touching", missLoop: "missing", missPath: "missing" };
+
 function allMistakes(m) {
   const list = [{ kind: "noPairs" }, { kind: "loopSign" }];
   m.paths.forEach((_, k) => list.push({ kind: "deltaOne", path: k }, { kind: "deltaFull", path: k }, { kind: "missPath", path: k }));
@@ -71,13 +75,13 @@ export function signalMistakes(setup, name) {
   for (const mk of allMistakes(base)) {
     const v = solveSignalFlow(setup, mk).values[name];
     if (!Number.isFinite(v) || (correct != null && Math.abs(v - correct) < 1e-6 * Math.max(1, Math.abs(correct)))) continue;
-    out.push({ value: v, message: MESSAGES[mk.kind] });
+    out.push({ value: v, kind: SLIP_KIND[mk.kind], message: MESSAGES[mk.kind] });
   }
   // Counts: one off is usually a missed (or extra) path or loop.
   if (name === "paths" || name === "loops" || name === "pairs") {
     const what = { paths: "forward path", loops: "loop", pairs: "non-touching pair" }[name];
-    out.push({ value: correct + 1, message: `One too many. A ${what} may not pass through any node twice — and don't count the same one twice.` });
-    if (correct > 0) out.push({ value: correct - 1, message: `One ${what} is missing. Trace every route through the graph systematically.` });
+    out.push({ value: correct + 1, kind: "extra", message: `One too many. A ${what} may not pass through any node twice — and don't count the same one twice.` });
+    if (correct > 0) out.push({ value: correct - 1, kind: "missing", message: `One ${what} is missing. Trace every route through the graph systematically.` });
   }
   return out;
 }
@@ -136,7 +140,7 @@ export function signalChoices(setup) {
       const t = line(id, masonLines(setup, mk));
       if (seen.has(t)) continue;
       seen.add(t);
-      options.push({ tex: t, feedback: MESSAGES[mk.kind] });
+      options.push({ tex: t, kind: SLIP_KIND[mk.kind], feedback: MESSAGES[mk.kind] });
       if (options.length === 3) break;
     }
     if (options.length > 1) groups.push({ title, options: shuffle(options) });
@@ -170,6 +174,7 @@ export function signalDebug(setup, mutation) {
       ...others.map((k) => ({ label: FIXES[k], feedback: "That part of this line is right. Compare it with Mason's rule again." })),
     ]),
     explain: MESSAGES[mutation.kind],
+    kind: SLIP_KIND[mutation.kind], // what a student who can't find this line struggles with
     corrected: good.map((l) => l.tex),
   };
 }

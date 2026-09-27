@@ -18,7 +18,8 @@ import { dot } from "../../core/vector.js";
 const SAME_DIRECTION = Math.cos((3 * Math.PI) / 180); // within 3°
 
 // candidates: [{ id, symbol?, feedback?, missing?, wrongDirection? }]
-// onCorrect(): called when the FBD is right. onWrong(): called after a wrong check.
+// onCorrect(): called when the FBD is right. onWrong(problems, kinds): called after
+// a wrong check; kinds lists each mistake's kind ("extra", "direction", "missing").
 export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   const info = ctx.solver.fbd(ws.setup, ws.sceneOpts); // same layout as the picture
   const correct = new Map(info.forces.map((f) => [f.id, f]));
@@ -144,17 +145,24 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   // ---- Checking -----------------------------------------------------------------
   function check() {
     const problems = [];
+    const kinds = []; // what sort of mistakes (see src/core/diagnosis.js), for comprehension
     const matches = sharedMatches();
     for (const [id, dir] of placed) {
       const c = candidates.find((x) => x.id === id);
       const right = correct.get(matches.get(id) || id);
-      if (!right) problems.push(c.feedback || `${labelOf(c)} doesn't act on this point.`);
-      else if (dot(dir, right.dir) < SAME_DIRECTION) problems.push(c.wrongDirection || wrongDirectionText(right));
+      if (!right) {
+        problems.push(c.feedback || `${labelOf(c)} doesn't act on this point.`);
+        kinds.push("extra");
+      } else if (dot(dir, right.dir) < SAME_DIRECTION) {
+        problems.push(c.wrongDirection || wrongDirectionText(right));
+        kinds.push("direction");
+      }
     }
     for (const f of info.forces) {
       if (!placed.has(f.id)) {
         const c = candidates.find((x) => x.id === f.id) || {};
         problems.push(c.missing || missingText(f));
+        kinds.push("missing");
       }
     }
     if (problems.length === 0) {
@@ -164,7 +172,7 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
       hint.remove();
       onCorrect();
     } else {
-      onWrong(problems.slice(0, 2));
+      onWrong(problems.slice(0, 2), kinds);
     }
   }
 

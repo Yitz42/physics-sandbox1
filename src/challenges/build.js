@@ -90,7 +90,7 @@ export function mount(ctx) {
       return false;
     }
     if (inputs.rows.every((r) => r.done || r.input.readOnly)) return true; // checked (or shown) already
-    const ok = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise);
+    const ok = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record);
     if (ok) {
       delete ws.sceneOpts.guesses;
       return true;
@@ -107,6 +107,7 @@ export function mount(ctx) {
     if (inputs && !checkPrediction()) return;
     playing = true;
     const out = goal.check(ws.result, ws.setup);
+    ctx.record({ q: "design", ok: !!out.ok, kinds: [] }); // a design that fails isn't a math/object slip
     ws.sceneOpts.flagged = out.flagged || [];
     ws.setReveal(true);
     playing = false;

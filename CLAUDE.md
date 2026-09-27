@@ -46,6 +46,9 @@ src/
     equations.js           builds symbolic + numeric equation strings for KaTeX
     runner.js              loads a stage, runs its challenge, tracks completion
     progress.js            saves which stages a student finished
+    evidence.js            a quiet record of every answer checked (localStorage)
+    diagnosis.js           kinds of mistake, each a MATH error or an OBJECT error
+    comprehension.js       scores units, chapters and courses from the record
     poly.js                polynomials in s and fractions of them (transfer functions)
     symbolic.js            polynomials in named symbols (G₁G₂/(1 + G₂H₂) …)
   challenges/              reusable ways of testing understanding (see below)
@@ -57,7 +60,7 @@ src/
     scenery.js (traffic light, balloon, street pole)
     blocks.js (block diagrams, signal-flow graphs)
   ui/
-    controls.js  menus.js  feedback.js
+    controls.js  menus.js  feedback.js  comprehension-view.js (the Comprehension window)
   subjects/                one folder per subject; each is a plug-in
     statics/
       index.js             registers the statics solvers with the core
@@ -191,6 +194,16 @@ different situation (all are seen before any repeats), then new numbers from its
   have several `situations`, so a new version is a new picture to read, not the same
   one with new numbers. Started in Unit 2.1 Cables; roll out unit by unit once the
   owner has tried it.
+- **Comprehension, not just completion**: students complete stages and units as
+  usual; in the background every answer is recorded (core/evidence.js) and scored
+  per unit, chapter and course (core/comprehension.js), shown in the Comprehension
+  window on the Courses page (#/comprehension/<course>). Every mistake the game
+  recognises names a kind (core/diagnosis.js), each either a **math error** (signs,
+  sin/cos, algebra, rounding, vectors) or an **object error** (missed or extra force,
+  wrong direction, mass vs. weight, moment arm, concept). New mistakes in solvers,
+  palettes, choices and debug steps must carry a `kind` — a test checks it.
+  Scoring (first proposal, owner may change): right first time 1, after one slip
+  0.6, after more 0.3, with "Show answer" 0; a unit averages its 20 latest questions.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
 

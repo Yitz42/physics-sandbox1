@@ -32,19 +32,19 @@ export function momentDrag(setup, id, point) {
 
 const pretty = (symbol) => symbol.replace(/[{}]/g, "").replace(/_/g, "");
 
-// [{ value, message }] for quantity `name` ("M", "M_F1", "d_F1", "W_B.pos" …).
+// [{ value, kind, message }] for quantity `name` ("M", "M_F1", "d_F1", "W_B.pos" …).
 export function momentMistakes(setup, name) {
   const base = solveMoment(setup);
   const correct = base.values[name];
   const list = [];
-  const add1 = (value, message) => {
+  const add1 = (value, message, kind) => {
     if (!Number.isFinite(value) || Math.abs(value - correct) < 1e-6 * Math.max(1, Math.abs(correct))) return;
-    list.push({ value, message });
-    if (Math.abs(value) > 1e-9) list.push({ value: -value, message: `${message} Also check the sign: counterclockwise is positive.` });
+    list.push({ value, kind, message });
+    if (Math.abs(value) > 1e-9) list.push({ value: -value, kind, also: "sign", message: `${message} Also check the sign: counterclockwise is positive.` });
   };
-  const variant = (s, message) => {
+  const variant = (s, message, kind) => {
     try {
-      add1(solveMoment(s).values[name], message);
+      add1(solveMoment(s).values[name], message, kind);
     } catch {
       /* this mistake doesn't apply */
     }
@@ -52,21 +52,21 @@ export function momentMistakes(setup, name) {
 
   const withR = clone(setup);
   withR._armMode = "r";
-  variant(withR, "It looks like you used the distance from O to the point where the force acts. Use the perpendicular distance d from O to the force's line of action.");
+  variant(withR, "It looks like you used the distance from O to the point where the force acts. Use the perpendicular distance d from O to the force's line of action.", "momentArm");
 
   const angled = setup.forces.filter((f) => f.direction && typeof f.direction === "object");
   if (angled.length) {
     const s = clone(setup);
     s.forces.forEach((f) => f.direction && typeof f.direction === "object" && (f.direction = swapTrig(f.direction)));
-    variant(s, "It looks like sin and cos are swapped. Check which axis each angle is measured from.");
+    variant(s, "It looks like sin and cos are swapped. Check which axis each angle is measured from.", "trig");
   }
 
   if (name === "M" && setup.forces.length > 1) {
     for (const f of setup.forces) {
       const Mf = base.values[`M_${f.id}`];
       if (!Mf) continue;
-      add1(correct - Mf, `Did you leave out the moment of ${pretty(f.symbol)}? Every force with a moment arm about O counts.`);
-      add1(correct - 2 * Mf, `Check which way ${pretty(f.symbol)} turns the body about O: clockwise moments are negative, counterclockwise positive.`);
+      add1(correct - Mf, `Did you leave out the moment of ${pretty(f.symbol)}? Every force with a moment arm about O counts.`, "missing");
+      add1(correct - 2 * Mf, `Check which way ${pretty(f.symbol)} turns the body about O: clockwise moments are negative, counterclockwise positive.`, "direction");
     }
   }
 
@@ -77,9 +77,9 @@ export function momentMistakes(setup, name) {
     const [x, y] = sub(pf.at, setup.about.at);
     const Fv = scale(directionOf(pf), magnitudeOf(pf));
     const c = pretty(componentSymbol(pf.symbol, part[1]));
-    if (part[1] === "y") add1(y * Fv[1], `${c} is vertical, so its moment arm is the SIDEWAYS distance x from O to its line, not the height y.`);
-    else add1(-x * Fv[0], `${c} is horizontal, so its moment arm is the HEIGHT y of its line above or below O, not the sideways distance x.`);
-    add1(base.values[`M_${pf.id}`], `That's the moment of the whole force. Here you need only ${c}'s part — Varignon's theorem adds the two parts up afterwards.`);
+    if (part[1] === "y") add1(y * Fv[1], `${c} is vertical, so its moment arm is the SIDEWAYS distance x from O to its line, not the height y.`, "momentArm");
+    else add1(-x * Fv[0], `${c} is horizontal, so its moment arm is the HEIGHT y of its line above or below O, not the sideways distance x.`, "momentArm");
+    add1(base.values[`M_${pf.id}`], `That's the moment of the whole force. Here you need only ${c}'s part — Varignon's theorem adds the two parts up afterwards.`, "momentArm");
   }
 
   // Balance problems: the ratio upside down (the lighter one must sit farther out).
@@ -87,12 +87,13 @@ export function momentMistakes(setup, name) {
   if (unknown && name === `${unknown.id}.pos` && setup.forces.length === 2) {
     const other = setup.forces.find((f) => f !== unknown);
     const flipped = (magnitudeOf(unknown) * Math.abs(other.at[0] - setup.about.at[0])) / magnitudeOf(other);
-    add1(Math.sign(correct) * flipped, "The ratio looks upside down: the lighter one has to sit FARTHER from the pivot to balance.");
+    add1(Math.sign(correct) * flipped, "The ratio looks upside down: the lighter one has to sit FARTHER from the pivot to balance.", "algebra");
   }
 
   if (Math.abs(correct) > 1e-9) {
     list.push({
       value: -correct,
+      kind: name.endsWith(".pos") ? "direction" : "sign",
       message: name.endsWith(".pos")
         ? "Right distance, wrong side: it has to sit on the other side of the pivot."
         : "Right size, wrong sign. Counterclockwise moments are positive, clockwise negative.",

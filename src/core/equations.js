@@ -112,7 +112,7 @@ export function swapFactor(eq, termId, index = null) {
   const t = pick(out.terms, termId, index);
   if (t && t.factor && t.factor.alt) {
     const { alt, ...rest } = t.factor;
-    // Swap the shown forms and value; keep extras like swapLabel/swapReason.
+    // Swap the shown forms and value; keep extras like swapLabel/swapReason/swapKind.
     const shown = (f) => ({ tex: f.tex, numTex: f.numTex, value: f.value });
     t.factor = { ...rest, ...shown(alt), alt: shown(rest) };
   }

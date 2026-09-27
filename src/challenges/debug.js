@@ -7,7 +7,7 @@
 //                      block diagram reduction); the solver builds the lines with
 //                      solver.debugSteps(setup, mutation) → { lines: [{ id, tex }],
 //                      wrong, follows: [ids that are wrong only because of it],
-//                      fixes: [{ label, correct?, feedback? }], explain, corrected }
+//                      fixes: [{ label, correct?, feedback? }], explain, corrected, kind? }
 // Step 1: click the wrong term/arrow (or press "Something is missing").
 // Step 2: choose how to fix it.
 //
@@ -66,6 +66,16 @@ export function mount(ctx) {
     showMessage(ctx.el.feedback, "info", "Here's the mistake", describeMistake());
     fixed();
   });
+  // For the comprehension record: not finding (or fixing) this mistake counts
+  // as trouble with its kind (see src/core/diagnosis.js).
+  const mistakeKind = () => {
+    if (mutation.kind === "remove" || mutation.kind === "missing") return "missing";
+    if (mutation.kind === "reverse") return "direction";
+    if (mutation.kind === "sign") return "sign";
+    const eq = correctEqs.find((e) => e.id === mutation.equation);
+    const term = eq && eq.terms.find((t) => t.id === mutation.term);
+    return (term && term.factor && term.factor.swapKind) || "trig";
+  };
 
   // Clicking arrows on the canvas (FBD view).
   if (isFbd) {
@@ -90,6 +100,7 @@ export function mount(ctx) {
       highlightTerms(eqBox, id);
       const note = id && dbg.notes && dbg.notes[id];
       showMessage(ctx.el.feedback, "bad", id ? "That one is correct" : "Nothing is missing", note || (id ? "Look again, checking each term's sign and whether it uses sin or cos." : "All the forces are there — one of them is wrong instead."));
+      ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()] });
       attempts.wrong();
       return;
     }
@@ -109,11 +120,13 @@ export function mount(ctx) {
     for (const o of options) {
       box.appendChild(button(o.label, (e) => {
         if (o.correct) {
+          ctx.record({ q: "debug", ok: true, kinds: [] });
           showMessage(ctx.el.feedback, "good", "Fixed! ✓", "");
           fixed();
         } else {
           e.target.classList.add("is-wrong");
           showMessage(ctx.el.feedback, "bad", "That wouldn't fix it", o.feedback);
+          ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()] });
           attempts.wrong();
         }
       }, "btn btn-choice"));
@@ -222,6 +235,7 @@ function mountSteps(ctx, mutation) {
         ? "This line is wrong, but only because it builds on an earlier line. Find the line where the mistake STARTS."
         : (dbg.notes && dbg.notes[id]) || "That line is right. Check each line against the rule it uses.";
       showMessage(ctx.el.feedback, "bad", work.follows.includes(id) ? "Earlier than that" : "That one is correct", msg);
+      ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"] });
       attempts.wrong();
       return;
     }
@@ -233,11 +247,13 @@ function mountSteps(ctx, mutation) {
     for (const f of work.fixes) {
       choices.appendChild(button(f.label, (e) => {
         if (f.correct) {
+          ctx.record({ q: "debug", ok: true, kinds: [] });
           showMessage(ctx.el.feedback, "good", "Fixed! ✓", work.explain);
           fixed();
         } else {
           e.target.classList.add("is-wrong");
           showMessage(ctx.el.feedback, "bad", "That wouldn't fix it", f.feedback || "Look again at what this line does wrong.");
+          ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"] });
           attempts.wrong();
         }
       }, "btn btn-choice"));

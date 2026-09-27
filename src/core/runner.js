@@ -20,6 +20,7 @@ import { getSolver } from "./registry.js";
 import { getStatus, setStatus, getPartsDone, setPartsDone, STATUS } from "./progress.js";
 import { stageParts, stageSituations, nextSituation } from "./content.js";
 import { makeVariant, clone } from "./paths.js";
+import { recordEvent, newRoundId } from "./evidence.js";
 import { createCanvas } from "../render/canvas.js";
 import { showExplanation, buildHints, showMessage, showCenterCard } from "../ui/feedback.js";
 import { button } from "../ui/controls.js";
@@ -64,6 +65,9 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
     lastSetup = setup;
 
     const el = view.resetBody(stage, { index: partIndex, count: parts.length, titles: parts.map((p) => p.partTitle) });
+    // Where this version is, for the quiet record of answers (core/evidence.js).
+    const [courseId, unitId] = key.split("/");
+    const where = { c: courseId, u: unitId, s: stage.id, p: partIndex, v: stage.situation ? stage.situation.name : "", ch: stage.challenge, r: newRoundId() };
     const ctx = {
       stage, solver, setup, round, memory, el, key,
       canvas: createCanvas(el.figure),
@@ -74,6 +78,12 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
       markRevealed() {
         ctx.revealed = true;
         setStatus(key, STATUS.PRACTICE);
+        recordEvent({ ...where, q: "*", shown: true });
+      },
+      // Challenges call this for every answer they check: { q, ok, kinds }.
+      // It's never shown to the student; comprehension.js scores it.
+      record({ q, ok, kinds = [] }) {
+        recordEvent({ ...where, q, ok: !!ok, k: ok ? [] : kinds });
       },
       // Hints are pointless once a question is answered; challenges hide them
       // after a correct answer and bring them back for the next question.

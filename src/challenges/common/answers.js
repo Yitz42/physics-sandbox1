@@ -84,7 +84,8 @@ const OTHERWISE = {
   deg: "That doesn't match. Re-check the angle: which axis it is measured from, and tan⁻¹ of which components.",
 };
 
-// Returns { ok, message }.
+// Returns { ok, message, kinds }. kinds: what sort of mistake a wrong answer
+// looks like (see src/core/diagnosis.js) — recorded for the comprehension page.
 export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "", otherwise } = {}) {
   const typed = parseNumber(text);
   if (typed == null) return { ok: false, empty: true, message: "Type a number (for example 346.4 or -200.0)." };
@@ -95,11 +96,11 @@ export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mist
   // than grading: a slip plus rounding still gets its explanation.)
   const near = (target) => Math.abs(value - target) <= Math.max(0.02 * Math.abs(target), precision);
   const slips = mistakes.filter((m) => near(m.value)).sort((a, b) => Math.abs(value - a.value) - Math.abs(value - b.value));
-  if (slips.length) return { ok: false, message: slips[0].message };
+  if (slips.length) return { ok: false, message: slips[0].message, kinds: [slips[0].kind || "unexplained", slips[0].also].filter(Boolean) };
   if (Math.abs(value - correct) <= Math.max(0.03 * Math.abs(correct), 5 * precision)) {
-    return { ok: false, message: `Very close, but it needs to be within ${precisionText(precision, unit)}. Keep more digits in the middle of your working and round only at the end.` };
+    return { ok: false, kinds: ["rounding"], message: `Very close, but it needs to be within ${precisionText(precision, unit)}. Keep more digits in the middle of your working and round only at the end.` };
   }
-  return { ok: false, message: otherwise || OTHERWISE[unit] || OTHERWISE.N };
+  return { ok: false, kinds: ["unexplained"], message: otherwise || OTHERWISE[unit] || OTHERWISE.N };
 }
 
 // Build one input row per asked quantity.
@@ -211,7 +212,9 @@ export function answerInputs(container, asks, quantities) {
 // Check every not-yet-correct row. Returns true when all rows are right.
 // otherwise: the nudge for a wrong answer that matches no known slip (a solver
 // can give its own, via solver.texts.otherwise; an ask's own wins).
-export function checkRows(inputs, result, mistakesFor, otherwise) {
+// record (optional): called with { q, ok, kinds } for each row checked — the
+// challenges pass ctx.record, so every answer counts toward comprehension.
+export function checkRows(inputs, result, mistakesFor, otherwise, record = null) {
   let allOk = true;
   for (const r of inputs.rows) {
     if (r.done) continue;
@@ -219,6 +222,7 @@ export function checkRows(inputs, result, mistakesFor, otherwise) {
     const correct = result.values[r.ask.quantity];
     const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise || otherwise });
     inputs.mark(r, out.ok, out.ok ? "✓ Correct" : out.message);
+    if (record && !out.empty) record({ q: r.ask.quantity, ok: out.ok, kinds: out.kinds || [] });
     if (!out.ok) allOk = false;
   }
   return allOk;

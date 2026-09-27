@@ -56,7 +56,11 @@ const MESSAGES = {
   signs: () => "Check the signs at the summing junction: a minus there subtracts that branch.",
 };
 
-// [{ value, message }] for quantity `name`: the same diagram reduced with one
+// What kind of mistake each slip is (see src/core/diagnosis.js; "blockRule" is
+// registered in index.js): a rule for combining blocks misapplied, a sign, or a part left out.
+export const SLIP_KIND = { sign: "sign", noH: "missing", noLoop: "missing", HinNum: "blockRule", sum: "blockRule", product: "blockRule", signs: "sign" };
+
+// [{ value, kind, message }] for quantity `name`: the same diagram reduced with one
 // wrong rule somewhere.
 export function blockMistakes(setup, name) {
   const correct = solveBlocks(setup).values[name];
@@ -67,10 +71,10 @@ export function blockMistakes(setup, name) {
       if (!mistakeApplies(step.kind, step.node, kind)) continue;
       const v = solveBlocks(setup, { step: step.index, kind }).values[name];
       if (!Number.isFinite(v) || (correct != null && Math.abs(v - correct) < 1e-6 * Math.max(1, Math.abs(correct)))) continue;
-      out.push({ value: v, message: MESSAGES[kind](step.node) });
+      out.push({ value: v, kind: SLIP_KIND[kind], message: MESSAGES[kind](step.node) });
     }
   }
-  if (correct != null && Math.abs(correct) > 1e-9) out.push({ value: -correct, message: "Right size, wrong sign. Check the signs at each summing junction." });
+  if (correct != null && Math.abs(correct) > 1e-9) out.push({ value: -correct, kind: "sign", message: "Right size, wrong sign. Check the signs at each summing junction." });
   return out;
 }
 
@@ -131,7 +135,7 @@ export function blockChoices(setup) {
       const tex = stepTex(red, { ...step, stepSym: bad.stepSym });
       if (seen.has(tex)) continue;
       seen.add(tex);
-      options.push({ tex, feedback: MESSAGES[kind](step.node) });
+      options.push({ tex, kind: SLIP_KIND[kind], feedback: MESSAGES[kind](step.node) });
       if (options.length === 3) break;
     }
     const parts = step.parts.map((p) => `$${p.tex}$`).join(kindOf(step.node) === "loop" ? " and " : ", ");
@@ -170,6 +174,7 @@ export function blockDebug(setup, mutation) {
     follows: bad.steps.map((_, i) => `step${i}`).filter((id, i) => i > mutation.step && exprTex(bad, bad.steps[i].fullSym) !== exprTex(good, good.steps[i].fullSym)),
     fixes,
     explain: MESSAGES[mutation.kind](good.steps[mutation.step].node),
+    kind: SLIP_KIND[mutation.kind], // what a student who can't find this line struggles with
     corrected: good.steps.map((s, i) => stepTex(good, s, { full: i === good.steps.length - 1 })),
   };
 }
