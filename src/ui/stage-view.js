@@ -61,7 +61,9 @@ export function createStageView(root, stage, where) {
     resetBody(part = stage, partInfo = { index: 0, count: 1, titles: [] }) {
       body.innerHTML = "";
       const parts = {
-        figure: el("div", { className: "figure" }),
+        // tallPicture: drawings stacked one above another (a beam and its shear and
+        // moment diagrams) get a taller picture, so each stays a readable size.
+        figure: el("div", { className: part.tallPicture || stage.tallPicture ? "figure figure-tall" : "figure" }),
         equations: el("div", { className: "equations" }),
         mission: el("div", { className: "mission" }),
         instructions: el("div", { className: "instructions" }),

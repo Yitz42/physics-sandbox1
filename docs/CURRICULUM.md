@@ -200,8 +200,14 @@ Claude builds from it.
   point of contraflexure); debug a left piece's equations (V's sign, the load's centroid,
   the load missing, A_y's sign); concept check; solve a balcony beam, choosing the piece.
 
-**Unit 7.2: Shear and moment diagrams**
+**Unit 7.2: Shear and moment diagrams** ✅
 - Concept: V and M along a beam; relationships dV/dx = −w, dM/dx = V.
+- Built: move a point load and change a uniform load and watch both diagrams; predict the
+  largest moment (and where) on a shelf beam, a uniform span, a half-loaded beam, an
+  overhang (the negative moment over B wins) and a cantilever; place the roller so the sag
+  and the overhang's hogging balance under a limit; debug a student's walk along the beam
+  (a jump the wrong way, a triangle's area without the ½, the area under V's sign);
+  concept check; solve a loading dock beam: the diagrams' shapes, then M_max and where.
 - Test ideas: sketch the diagram, then compare; find the max moment location.
 - ⭐ Jumps in the diagrams: V jumps at point loads, M jumps at applied couples.
 - Bridge to later: this feeds "stress at a point" in mechanics of materials.

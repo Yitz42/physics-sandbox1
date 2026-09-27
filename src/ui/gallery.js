@@ -157,7 +157,7 @@ export async function renderGallery(root) {
 
 // One picture: its title, the picture, what the clash check found, and buttons.
 function makeCard(p, settings, onChecked) {
-  const figure = el("div", { className: "figure gal-figure" });
+  const figure = el("div", { className: p.stage.tallPicture ? "figure gal-figure figure-tall" : "figure gal-figure" });
   const badge = el("span", { className: "gal-count", textContent: "not drawn yet" });
   const details = el("div", { className: "gal-details" });
   const { courseId, unitId, file } = p.where;

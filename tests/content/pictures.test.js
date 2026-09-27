@@ -21,7 +21,7 @@ document.head.appendChild(css);
 
 function clashesOf(p, reveal) {
   const figure = document.createElement("div");
-  figure.style.cssText = "width:750px;height:440px;";
+  figure.style.cssText = `width:750px;height:${p.stage.tallPicture ? 720 : 440}px;`; // (as the gallery's, style.css)
   holder.appendChild(figure);
   let last = null;
   try {

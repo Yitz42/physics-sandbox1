@@ -332,6 +332,7 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 /* Panels */
 .figure { background: radial-gradient(ellipse at 50% 38%, var(--c-figure-a), var(--c-figure-b)); border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow);
   height: clamp(420px, 58vh, 580px); } /* taller on tall screens, so drawings can be bigger */
+.figure.figure-tall { height: clamp(600px, 84vh, 820px); } /* a stage's tallPicture: a beam with its V and M diagrams */
 .stage-right, .equations { border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow); }
 .stage-right { padding: 18px; }
 
@@ -391,6 +392,7 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
   .stage-header h1 { font-size: 26px; }
   .stage-body { grid-template-columns: 1fr; }
   .figure { height: 340px; }
+  .figure.figure-tall { height: 560px; }
   .unit-card { grid-template-columns: 1fr; gap: 4px; }
   .control-row { grid-template-columns: 90px 1fr 96px; }
 }
@@ -507,6 +509,8 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .gal-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; overflow-wrap: anywhere; }
 .gal-figure { height: 440px; width: 750px; }
 .gal-phone .gal-figure { height: 340px; width: 343px; }
+.gal-figure.figure-tall { height: 720px; }
+.gal-phone .gal-figure.figure-tall { height: 560px; }
 .gal-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
 .gal-count { font-size: 13px; color: var(--c-muted); margin-right: auto; }
 .gal-ok { color: var(--c-good); }

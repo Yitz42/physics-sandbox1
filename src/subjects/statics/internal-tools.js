@@ -316,7 +316,8 @@ export function internalSummary(setup, result, { reveal = true } = {}) {
     segmentForms(setup, result).forEach((f, i) => lines.push(`\\text{Segment ${i + 1}, } ${range(f)}:\\quad V = ${termsTex(f.V)},\\quad M = ${termsTex(f.M)}`));
   }
   if (reveal) {
-    lines.push(`\\text{Largest shear: } ${fixedTex(v.Vmax, "N")} \\text{ at } x = ${fixedTex(v.xV, "m", 2)},\\qquad \\text{largest moment: } ${fixedTex(v.Mmax, "N·m")} \\text{ at } x = ${fixedTex(v.xM, "m", 2)}`);
+    lines.push(`\\text{Largest shear: } V = ${fixedTex(v.Vmax, "N")} \\text{ at } x = ${fixedTex(v.xV, "m", 2)}`);
+    lines.push(`\\text{Largest moment: } M = ${fixedTex(v.Mmax, "N·m")} \\text{ at } x = ${fixedTex(v.xM, "m", 2)}`);
   }
   return lines;
 }

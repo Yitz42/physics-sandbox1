@@ -67,7 +67,7 @@ const chapters = [
     id: "internal-forces", title: "Internal forces",
     units: [
       "internal-forces",
-      soon("Shear and moment diagrams", "How V and M change along a beam, and where the biggest moment is."),
+      "shear-moment-diagrams",
       soon("V(x) and M(x) equations", "Write the shear and moment as equations for each part of the beam."),
     ],
   },

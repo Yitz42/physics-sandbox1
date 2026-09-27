@@ -10,6 +10,8 @@
 //               shear diagram V and the bending-moment diagram M, lined up with it.
 //               setup.cut: a section line through all three (7.3's slider), with its values.
 //               setup.showSegments: the segment boundaries, dashed, and segment numbers.
+//               setup.showDiagrams: the diagrams from the start (else once revealed);
+//               setup.noPlots: the beam alone.
 // opts: { reveal } — reactions and values shown once the answer is revealed
 // (setup.knownReactions: the reactions are given from the start).
 
@@ -136,15 +138,17 @@ function cutScene(setup, res, opts) {
 function diagramScene(setup, res, opts) {
   const rb = res.rigid || res;
   const known = knownNow(setup, res, opts);
-  const shapes = rigidBodyScene({ ...setup, showReactions: "always" }, rb, { ...opts, reveal: known });
-  if (res.status !== "determinate") return shapes;
+  // (Shorter arrows than usual, so the reactions stay clear of the shear diagram.)
+  const shapes = rigidBodyScene({ ...setup, showReactions: "always", arrowSize: 0.18 }, rb, { ...opts, reveal: known });
+  // setup.noPlots: the beam alone (a debug stage whose working the diagrams would give away).
+  if (res.status !== "determinate" || setup.noPlots) return shapes;
   const size = bodySize(setup);
   const [x0, x1] = beamEnds(setup);
   const y = beamY(setup);
   const segs = res.segments;
   const show = opts.reveal || setup.showDiagrams;
-  const gapV = setup.plotGap ?? 0.62 * size; // beam → V's zero line
-  const gapM = gapV + (setup.plotSpacing ?? 0.5 * size); // beam → M's zero line
+  const gapV = setup.plotGap ?? 0.6 * size; // beam → V's zero line
+  const gapM = gapV + (setup.plotSpacing ?? 0.46 * size); // beam → M's zero line
   const hV = 0.16 * size, hM = 0.18 * size; // the tallest value's height
   const yV = y - gapV, yM = y - gapM;
   const events = eventPoints(setup, res.actions);
@@ -189,21 +193,22 @@ function sample(p, a, b, n = 24) {
 function plotShape(segs, which, base, perUnit, tint, unitName, x0, x1, setup) {
   const pts = [[x0, base]];
   const marks = [];
-  const mark = (x, v) => {
+  // side: which side of its point a value's label prefers — a segment's first value to
+  // the right (after a jump), its last to the left (before the next jump), a peak above.
+  const mark = (x, v, side) => {
     if (Math.abs(v) < 1e-6) return;
     if (marks.some((m) => Math.abs(m.x - x) < 1e-6 && Math.abs(m.v - v) < 1e-6)) return;
-    marks.push({ x, v, at: [x, base + v * perUnit], text: format(v, unitName), below: v < 0 });
+    marks.push({ x, v, at: [x, base + v * perUnit], text: format(v, unitName), below: v < 0, side });
   };
   for (const s of segs) {
     const poly = s[which];
     for (const [x, v] of sample(poly, s.a, s.b)) pts.push([x, base + v * perUnit]);
-    mark(s.a, evalPoly(poly, s.a));
-    mark(s.b, evalPoly(poly, s.b));
-    if (which === "M") for (const r of rootsOfV(s)) mark(r, evalPoly(poly, r));
+    mark(s.a, evalPoly(poly, s.a), 1);
+    mark(s.b, evalPoly(poly, s.b), -1);
+    if (which === "M") for (const r of rootsOfV(s)) mark(r, evalPoly(poly, r), 0);
   }
   pts.push([x1, base]);
-  // Two values at the same x (a jump): the one before above-left, the one after above-right.
-  return { type: "plot", points: pts, base, name: which, tint, marks: marks.map(({ at, text, below }) => ({ at, text, below })) };
+  return { type: "plot", points: pts, base, name: which, tint, marks: marks.map(({ at, text, below, side }) => ({ at, text, below, side })) };
 }
 
 function rootsOfV(s) {

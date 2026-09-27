@@ -22,11 +22,12 @@ import { rigidBodyShadow } from "./rigid-body-tools.js";
 import { concurrency } from "./rigid-body-count.js";
 import { angleMarks } from "./particle-scene.js";
 
-// Picture metres per newton: the biggest force drawn 0.3 of the body's size.
+// Picture metres per newton: the biggest force drawn 0.3 of the body's size
+// (setup.arrowSize: another fraction, e.g. shorter arrows above a beam's diagrams).
 export function lengthPerNewton(setup, result, size) {
   const known = knownForces(setup).filter((f) => !f.fromLoad).map(magnitudeOf);
   const reactions = result && result.status === "determinate" ? (result.unknowns || []).map((id) => Math.abs(result.values[id] || 0)) : [];
-  return (0.3 * size) / Math.max(1, ...known, ...reactions);
+  return ((setup.arrowSize ?? 0.3) * size) / Math.max(1, ...known, ...reactions);
 }
 
 export function rigidBodyScene(setup, result, opts = {}) {
@@ -63,7 +64,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
 
   // Loads: point forces (a push has its arrowhead on the body), distributed loads, couples.
   for (const f of setup.forces || []) {
-    const len = Math.max(0.1 * size, magnitudeOf(f) * k);
+    const len = Math.max((setup.arrowSize ? 0.06 : 0.1) * size, magnitudeOf(f) * k);
     const u = directionOf(f);
     const tail = f.push ? add(f.at, scale(u, -len)) : f.at;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
@@ -95,7 +96,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
         continue;
       }
       const dir = v != null && v < 0 ? scale(r.dir, -1) : r.dir;
-      const len = v == null ? 0.2 * size : Math.max(0.1 * size, Math.abs(v) * k);
+      const len = v == null ? (setup.arrowSize ? 0.12 : 0.2) * size : Math.max((setup.arrowSize ? 0.06 : 0.1) * size, Math.abs(v) * k);
       const text = v == null ? "?" : format(Math.abs(v), "N");
       shapes.push({ type: "arrow", id: r.id, ...placeArrow(r.at, dir, len, outwardAt(fs, { ...r, dir })), role: "unknown", label: `${r.symbol} = ${text}` });
     }

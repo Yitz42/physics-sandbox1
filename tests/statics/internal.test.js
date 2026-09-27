@@ -148,3 +148,46 @@ test("mistakes: V's sign, and the whole distributed load counted", () => {
   const mm = internalMistakes(s, "M");
   ok(mm.some((x) => x.kind === "centroid"), "the load at its far end");
 });
+
+// ---- The stages' own numbers ----------------------------------------------------------------
+import { makeVariant, setPath, clone } from "../../src/core/paths.js";
+import { rampLoad } from "../../content/statics/library/internal.js";
+import splice from "../../content/statics/internal-forces/3-build.js";
+import balance from "../../content/statics/shear-moment-diagrams/3-build.js";
+import dock from "../../content/statics/shear-moment-diagrams/6-solve.js";
+
+// Every setting of a slider, from its min to its max.
+const settings = (e) => Array.from({ length: Math.round((e.max - e.min) / e.step) + 1 }, (_, i) => +(e.min + i * e.step).toFixed(6));
+
+test("slanted load: its push along the beam puts the piece in tension — N = +600 N, V = 320 N, M = 480 N·m", () => {
+  const v = solveInternal(rampLoad.setup).values;
+  close(v.N, 600);
+  close(v.V, 320);
+  close(v.M, 480);
+});
+
+test("7.1 splice: every version has a slider spot with |M| ≤ 100 N·m, and the start isn't one", () => {
+  const e = splice.editable[0];
+  for (let i = 0; i < 25; i++) {
+    const s = makeVariant(splice.setup, splice.vary);
+    ok(!splice.goal.check(solveInternal(s), s).ok, "start already done");
+    ok(settings(e).some((x) => { const t = clone(s); setPath(t, e.path, x); return splice.goal.check(solveInternal(t), t).ok; }), JSON.stringify(s.loads));
+  }
+});
+
+test("7.2 balance: for every load, some roller position keeps |M| ≤ 500 N·m; B at 5 m doesn't", () => {
+  const e = balance.editable[0];
+  for (let w = 255; w <= 305; w += 5) {
+    const s = clone(balance.setup);
+    s.loads[0].w = w;
+    ok(!balance.goal.check(solveInternal(s), s).ok, `w = ${w}: start already done`);
+    ok(settings(e).some((b) => { const t = clone(s); setPath(t, e.path, b); return balance.goal.check(solveInternal(t), t).ok; }), `w = ${w}`);
+  }
+});
+
+test("7.2 loading dock: M_max = 1378.1 N·m at 2.625 m; in every version V reaches 0 under the uniform load", () => {
+  const v = solveInternal(dock.setup).values;
+  close(v.Mmax, 1378.125, 1e-3);
+  close(v.xM, 2.625);
+  for (let i = 0; i < 30; i++) ok(solveInternal(makeVariant(dock.setup, dock.vary)).values.xM < 3, "peak under the load");
+});

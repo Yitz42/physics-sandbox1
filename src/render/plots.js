@@ -1,5 +1,5 @@
 // plots.js — shear and moment diagrams drawn under a beam (Units 7.2–7.3).
-//   plot { points: [[x, y], …], base: y, name: "V", tint: 0 | 1, marks: [{ at: [x, y], text, below? }],
+//   plot { points: [[x, y], …], base: y, name: "V", tint: 0 | 1, marks: [{ at: [x, y], text, below?, side? }],
 //          dashed?, alpha? }
 // points: the curve in metres, already scaled (the scene turns newtons into
 // metres), from the baseline at the left end to the baseline at the right end —
@@ -72,8 +72,11 @@ export function drawPlot(cv, s, env) {
     const [x, y] = cv.toScreen(m.at);
     const up = !m.below;
     const d = up ? -13 : 13;
-    const spots = [[x, y + d, "center"], [x + 8, y + d, "left"], [x - 8, y + d, "right"], [x, y + 2 * d, "center"], [x + 10, y, "left"], [x - 10, y, "right"]];
-    out.labels.push({ text: m.text, pos: [x, y + d], spots, align: "center", size: 12, weight: 600, color: env.ink, maxMove: 30, yields: true });
+    // m.side: +1 prefers the right of the point, −1 the left, 0 straight above (below).
+    const right = [[x + 7, y + d, "left"], [x + 10, y, "left"]], left = [[x - 7, y + d, "right"], [x - 10, y, "right"]];
+    const middle = [[x, y + d, "center"], [x, y + 2 * d, "center"]];
+    const spots = m.side > 0 ? [...right, ...middle, ...left] : m.side < 0 ? [...left, ...middle, ...right] : [...middle, ...right, ...left];
+    out.labels.push({ text: m.text, pos: spots[0].slice(0, 2), spots, align: spots[0][2], size: 12, weight: 600, color: env.ink, maxMove: 30, yields: true });
   }
   return out;
 }
