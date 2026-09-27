@@ -84,21 +84,26 @@ Claude builds from it.
 - Concept: replace several forces with one resultant force plus a moment.
 - Test ideas: find where a single force must act to replace a set of loads.
 
-**Unit 3.6: Moments in 3D**
+**Unit 3.6: Distributed loads** ✅
+- Concept: a distributed load is replaced by its area, acting at its centroid.
+- Covers rectangles, triangles, trapezoids (rectangle + triangle) and curved loads by
+  integration (F_R = ∫w dx, x̄ = ∫x w dx / ∫w dx).
+- Built: shape a load and watch its resultant; predict a triangular load's resultant;
+  spread gravel over a trailer's axle; debug a trapezoid split; solve a curved load.
+
+**Unit 3.7: Moments in 3D**
 - Concept: M_O = r × F (cross product); the moment vector points along the turning axis.
 
-**Unit 3.7: Moment about an axis**
+**Unit 3.8: Moment about an axis**
 - Concept: how hard a force turns something about a given axis (a door about its hinges).
-
-**Unit 3.8: Distributed loads**
-- Concept: a distributed load is replaced by its area, acting at its centroid.
-- Test ideas: uniform and triangular loads on a beam; predict the equivalent force and location.
 
 ### Chapter 4: Rigid body equilibrium (textbook ch. 5)
 
-**Unit 4.1: Supports and free-body diagrams**
+**Unit 4.1: Supports and free-body diagrams** ✅
 - Concept: each support type provides specific reactions (roller, pin, fixed, cable, smooth surface).
-- Test ideas: pick the correct reactions for each support; debug FBDs.
+- Built: swap the supports and see their reactions; count the unknowns; choose a bridge's
+  supports (stable, determinate, free to expand); debug a boom's FBD; draw a beam's FBD
+  and find its reactions.
 
 **Unit 4.2: Equilibrium of a rigid body**
 - Concept: ΣFx = 0, ΣFy = 0, ΣM = 0; choosing a smart moment point.

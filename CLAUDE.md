@@ -238,14 +238,14 @@ different situation (all are seen before any repeats), then new numbers from its
   0.6, after more 0.3, with "Show answer" 0; a unit averages its 20 latest questions.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
-- Distributed loads (Unit 6) cover rectangles, triangles, trapezoids AND curved
-  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 6 takes down as positive.
-- FBD reaction arrows (Unit 7 on), textbook rule: pin and fixed-support components
+- Distributed loads (Unit 3.6) cover rectangles, triangles, trapezoids AND curved
+  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 3.6 takes down as positive.
+- FBD reaction arrows (Unit 4.1 on), textbook rule: pin and fixed-support components
   (and the fixed-end moment) may point either way; rollers and smooth surfaces must
   push, cables must pull, weight points down. Some beams have mass, so the student
   must remember the weight W at the centre.
-- Unit 7's solve stage goes all the way to the reactions (FBD → equations → answers);
-  Unit 8 then goes deeper (choosing a smart moment point, harder shapes).
+- Unit 4.1's solve stage goes all the way to the reactions (FBD → equations → answers);
+  Unit 4.2 then goes deeper (choosing a smart moment point, harder shapes).
 
 ## Physics conventions
 - SI units by default: m, kg, N, N·m, g = 9.81 m/s².
