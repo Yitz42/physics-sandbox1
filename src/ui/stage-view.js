@@ -41,7 +41,8 @@ function partBar({ index, count, titles }) {
 // where: { course, unit, unitNumber, stages (the unit's loaded stages), current (stage file) }
 export function createStageView(root, stage, where) {
   root.innerHTML = "";
-  const bar = progressBar(where.course, where.unit);
+  // A tool (e.g. the workbench) isn't graded: no progress bar.
+  const bar = where.unit.tool ? null : progressBar(where.course, where.unit);
   const header = el("header", { className: "stage-header" }, [
     el("h1", { textContent: stage.title }),
     bar,
@@ -52,7 +53,7 @@ export function createStageView(root, stage, where) {
   return {
     // A stage was just completed (or needs practice): refresh the unit's progress bar.
     setStatus() {
-      bar.refresh();
+      if (bar) bar.refresh();
     },
     // Fresh, empty areas for a new round (a new version of the problem).
     // part: the part being played (the stage itself if it has no parts);

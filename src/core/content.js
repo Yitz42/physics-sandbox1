@@ -161,7 +161,9 @@ function checkOne(stage) {
   if (needsSolver && !stage.solver) p.push(`missing "solver"`);
   if (needsSolver && !stage.setup) p.push(`missing "setup"`);
   if (["predict", "solve"].includes(stage.challenge) && !stage.ask) p.push(`${stage.challenge} stages need "ask"`);
-  if (stage.challenge === "build" && !(stage.goal && stage.goal.check)) p.push(`build stages need "goal" with a check() function`);
+  // (The free block diagram workbench is a build stage without a goal.)
+  if (stage.challenge === "build" && !stage.workbench && !(stage.goal && stage.goal.check)) p.push(`build stages need "goal" with a check() function`);
+  if (stage.workbench && stage.goal && !stage.goal.check) p.push(`a workbench goal needs a check() function`);
   if (stage.challenge === "debug" && !(stage.debug && stage.debug.mutations && stage.debug.mutations.length)) p.push(`debug stages need "debug.mutations"`);
   if (stage.challenge === "concept-check" && !(stage.questions && stage.questions.length)) p.push(`concept-check stages need "questions"`);
   if (stage.challenge === "solve" && !stage.solve) p.push(`solve stages need "solve" (steps, candidates)`);

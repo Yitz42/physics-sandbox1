@@ -22,10 +22,10 @@
 import { tf, fromDescending, fractionOps } from "../../core/poly.js";
 import * as S from "../../core/symbolic.js";
 
-const SF = fractionOps(S.symRing); // fractions of symbolic polynomials
+export const SF = fractionOps(S.symRing); // fractions of symbolic polynomials
 
 export const kindOf = (n) => (n.block != null ? "block" : n.series ? "series" : n.parallel ? "parallel" : n.loop ? "loop" : null);
-const childrenOf = (n) => (n.series || n.parallel || (n.loop ? [n.loop, ...(n.back ? [n.back] : [])] : []));
+export const childrenOf = (n) => (n.series || n.parallel || (n.loop ? [n.loop, ...(n.back ? [n.back] : [])] : []));
 
 // Default KaTeX name of a block: "G1" → "G_1", "H12" → "H_{12}".
 export function blockTex(b) {
@@ -71,7 +71,7 @@ export const MISTAKES = {
 
 // Combine the parts of one group, in any fraction arithmetic (ops), optionally
 // with a mistake. parts: the parts' values; for a loop, [forward, back|null].
-function combine(kind, node, parts, ops, mistake) {
+export function combine(kind, node, parts, ops, mistake) {
   if (kind === "series") {
     return mistake === "sum" ? parts.reduce(ops.add) : parts.reduce(ops.mul);
   }

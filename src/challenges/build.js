@@ -10,6 +10,7 @@
 //   editable, draggable        what the student may change
 //   goal: { text, check(result, setup) → { ok, message, flagged?: [ids] },
 //           predict? }
+//   workbench: true — build a block diagram by hand instead (workbench.js)
 //   goal.predict (optional): numbers the student must work out for THEIR OWN
 //     design before it is load-tested, e.g. [{ quantity: "T_AB" }, …] (same
 //     format as a predict stage's `ask`). Test checks them first (with the
@@ -24,11 +25,14 @@ import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
 import { anglesIn } from "../core/classify.js";
 import { designOf } from "./common/design.js";
+import * as workbench from "./workbench.js";
 import { el, testButton } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
 
 export function mount(ctx) {
+  // A workbench stage builds by putting blocks in by hand (see workbench.js).
+  if (ctx.stage.workbench) return workbench.mount(ctx);
   const { stage, solver } = ctx;
   const goal = stage.goal;
   let solved = false;

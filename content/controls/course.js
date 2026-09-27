@@ -127,4 +127,8 @@ export default {
   description: "An intro automatic controls course following Nise's Control Systems Engineering: modeling, time response, stability, steady-state error, root locus, frequency response and design.",
   chapters,
   units: chapters.flatMap((c) => c.units.filter((u) => typeof u === "string")), // the built units, in order
+  // Tools: free pages (not graded, not part of progress), each a folder like a
+  // unit, opened from the course page. The workbench: build any block diagram
+  // by hand and combine its blocks, writing each formula.
+  tools: ["workbench"],
 };

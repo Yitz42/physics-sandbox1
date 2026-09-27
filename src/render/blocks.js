@@ -2,13 +2,16 @@
 //   tfblock      { at, w, h, label | fraction: [top, bottom], name?, role? }  a block (box);
 //                name: its symbol (e.g. "G_{2}"), written just above it when the box shows numbers
 //                role "reduced": a block that replaced a group (drawn in purple);
+//                role "selected": picked on the workbench, to combine (accent, tinted);
+//                role "ghost": dashed and faint — a preview of a block not yet put in;
 //                role "tunable": a block a slider controls (drawn in the sliders' colour,
 //                with a soft tint and a "set by slider" tag above it)
 //   sumjunction  { at, r, signs: [{ at, text }] }  a summing junction (circle with ×)
 //   wire         { points, arrow? }       a signal line; arrow: arrowhead at the end
 //   pickoff      { at }                   a pickoff point (dot)
 //   signal       { at, text, align? }     a signal's name, e.g. R(s)
-//   groupbox     { from, to, label }      dashed outline around a group (the next step)
+//   groupbox     { from, to, label, role? } dashed outline around a group (the next step);
+//                role "target": the workbench spot under the pointer
 //   sfgnode      { at, label, labelAt }   a signal-flow graph node
 //   sfgbranch    { from, to, bend, label, role? }  a branch: a curved arrow, arrowhead in
 //                the middle; bend = how far the middle bows out (sideways, in units)
@@ -46,16 +49,17 @@ export function drawBlockShape(cv, s, env, roleColor) {
       case "tfblock": {
         const [x, y] = S(s.at);
         const w = s.w * cv.view.scale, h = s.h * cv.view.scale;
-        const tunable = s.role === "tunable";
+        const tunable = s.role === "tunable", selected = s.role === "selected", ghost = s.role === "ghost";
         const accent = cssColor("--c-accent", "#1f5fbf");
-        const color = s.role === "reduced" ? purple : tunable ? accent : env.lit ? roleColor("known") : ink;
+        const color = s.role === "reduced" ? purple : tunable || selected ? accent : ghost ? faint : env.lit ? roleColor("known") : ink;
         ctx.fillStyle = paper;
         ctx.strokeStyle = color;
-        ctx.lineWidth = s.role === "reduced" || tunable ? 2.6 : 2;
+        ctx.lineWidth = s.role === "reduced" || tunable || selected ? 2.6 : 2;
+        if (ghost) ctx.setLineDash([6, 4]); // a block that isn't in yet (a preview), or an empty spot
         ctx.beginPath();
         ctx.rect(x - w / 2, y - h / 2, w, h);
         ctx.fill();
-        if (tunable) {
+        if (tunable || selected) {
           // A soft tint of the accent colour inside, so the box reads as "the one you change".
           ctx.save();
           ctx.globalAlpha = 0.12;
@@ -64,6 +68,7 @@ export function drawBlockShape(cv, s, env, roleColor) {
           ctx.restore();
         }
         ctx.stroke();
+        ctx.setLineDash([]);
         if (tunable) drawLabel(ctx, "set by slider", x, y - h / 2 - 9, { color: accent, size: 11, weight: 700 });
         else if (s.name) drawLabel(ctx, s.name, x, y - h / 2 - 11, { color: s.role === "reduced" ? purple : env.faint, size: 14, weight: 700 });
         if (s.fraction) {
@@ -138,15 +143,25 @@ export function drawBlockShape(cv, s, env, roleColor) {
         const a = S(s.from), b = S(s.to);
         const x0 = Math.min(a[0], b[0]), y0 = Math.min(a[1], b[1]);
         const w = Math.abs(b[0] - a[0]), h = Math.abs(b[1] - a[1]);
-        ctx.strokeStyle = purple;
-        ctx.lineWidth = 1.8;
+        // role "target": the workbench spot under the pointer (accent, a soft fill).
+        const gc = s.role === "target" ? cssColor("--c-accent", "#1f5fbf") : purple;
+        if (s.role === "target") {
+          ctx.save();
+          ctx.globalAlpha = 0.1;
+          ctx.fillStyle = gc;
+          ctx.fillRect(x0, y0, w, h);
+          ctx.restore();
+        }
+        ctx.strokeStyle = gc;
+        ctx.lineWidth = s.role === "target" ? 2.4 : 1.8;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, 10);
         else ctx.rect(x0, y0, w, h);
         ctx.stroke();
         ctx.setLineDash([]);
-        if (s.label) out.boxes.push(drawLabel(ctx, s.label, x0 + 6, y0 - 10, { color: purple, size: 13, weight: 600, align: "left" }));
+        // (A target's label goes under it: above sit the blocks' names.)
+        if (s.label) out.boxes.push(drawLabel(ctx, s.label, x0 + 6, s.role === "target" ? y0 + h + 14 : y0 - 10, { color: gc, size: 13, weight: 600, align: "left" }));
         return out;
       }
       case "sfgnode": {

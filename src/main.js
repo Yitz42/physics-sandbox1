@@ -57,7 +57,19 @@ async function route() {
     }
     const course = await loadCourse(courseId);
     const units = await Promise.all(course.units.map((u) => loadUnit(courseId, u)));
-    if (!unitId) return renderCourse(app, course, units);
+    // Tools (course.tools): free pages such as the block diagram workbench.
+    const tools = await Promise.all((course.tools || []).map((t) => loadUnit(courseId, t)));
+    if (!unitId) return renderCourse(app, course, units, tools);
+
+    const tool = tools.find((t) => t.id === unitId);
+    if (tool) {
+      const file = stageFile || tool.stages[0];
+      const stage = await loadStage(courseId, unitId, file);
+      const view = createStageView(app, stage, { course, unit: tool, unitNumber: "", current: file, stages: [stage], units });
+      document.title = `${stage.title} — Mechanics Sandbox`;
+      playing = runStage({ stage, view, key: `${courseId}/${stage.id}`, next: `#/${courseId}`, nextLabel: `Back to ${course.title} →` });
+      return;
+    }
 
     const unitIndex = course.units.indexOf(unitId);
     const unit = units[unitIndex];

@@ -249,6 +249,18 @@ different situation (all are seen before any repeats), then new numbers from its
 - Block diagrams: a block that shows numbers (10, 1/(s + 2)) also has its name
   (G_1, H_2 …) written above it, so the symbols in the equations and choices
   can be matched to the picture.
+- **Block diagram workbench** (agreed with the owner): the student makes a block
+  (a name, and optionally a transfer function in s), chooses how it connects
+  (series after/before, parallel ±, negative/positive feedback, or a unity loop),
+  then drags it onto a block or group — or clicks it, hovers (the spot lights up
+  and a preview under the picture shows the result) and clicks. To combine, they
+  click the blocks of one group, name the rule, and TYPE the combined block's
+  formula (G1 G2/(1 + G1 G2 H1)); it's checked by value, a classic slip is
+  explained, Show answer after 2 tries; the group becomes G_e1, G_e2 …, with its
+  formula in symbols and numbers. Lives in challenges/workbench.js (a build stage
+  with `workbench: true`) and subjects/controls/block-edit.js / block-combine.js.
+  It's both a free page (course.tools, shown at the top of the course page) and
+  part 2 of the Block diagrams build stage.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

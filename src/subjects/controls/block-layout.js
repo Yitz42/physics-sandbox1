@@ -17,7 +17,7 @@ import { fromDescending, polyText, coeffText } from "../../core/poly.js";
 import { kindOf, blockTex, partialDiagram, coeff } from "./block-diagram.js";
 import { ruleName } from "./block-tools.js";
 
-const H = 0.9; // block height
+export const H = 0.9; // block height
 const GAP = 0.9; // arrow length between parts
 const R = 0.24; // summing junction radius
 const LEAD = 0.45; // pickoff to branch start
@@ -44,7 +44,8 @@ function blockLabel(b, params, tunable = []) {
     const text = polyText(fromDescending(b.tf.num.map((c) => coeff(c, params))));
     return { label: `${blockTex(b)} = ${text}`, tuned: true };
   }
-  if (b.tf && !b.reduced) {
+  // (A block combined on the workbench shows its numbers too: showTf.)
+  if (b.tf && (!b.reduced || b.showTf)) {
     const text = (list) => polyText(fromDescending(list.map((c) => coeff(c, params))));
     const num = text(b.tf.num), den = text(b.tf.den || [1]);
     return den === "1" ? { label: num } : { fraction: [num, den] };
@@ -56,7 +57,7 @@ const textWidth = (t) => 0.14 * String(t).replace(/[_{}]/g, "").length + 0.55;
 
 // Lay out one node. Returns { w, up, down, place(x, y, out) } where (x, y) is
 // where the signal enters (left end of the line) and place() pushes shapes.
-function layout(node, ctx) {
+export function layout(node, ctx) {
   const kind = kindOf(node);
   if (kind === "block") {
     const { tuned, ...lab } = blockLabel(node, ctx.params, ctx.tunable);
@@ -69,7 +70,9 @@ function layout(node, ctx) {
         const name = blockTex(node);
         const shown = lab.label != null ? String(lab.label) : null;
         const named = !tuned && shown !== name && shown !== name.replace(/[{}]/g, "");
-        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, name: named ? name : null, role: node.reduced ? "reduced" : tuned ? "tunable" : "block" });
+        // Workbench marks: a block being previewed (ghost) or picked to combine (selected).
+        const role = node.ghost ? "ghost" : ctx.selected.includes(node.block) ? "selected" : node.reduced ? "reduced" : tuned ? "tunable" : "block";
+        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, name: named ? name : null, role });
         ctx.boxes.set(node.src || node, [x, y - H / 2, x + w, y + H / 2]);
       },
     };
@@ -165,12 +168,16 @@ function layout(node, ctx) {
 // Every shape for the picture.
 // opts.highlightStep: outline that group (default: the next one to reduce,
 // when setup.reduce is set).
+// Workbench extras (opts): selected: [block names] to mark; target: a path
+// (block-edit.js) whose block or group is outlined, with targetLabel.
+// An empty diagram (setup.diagram null) is drawn as R(s) → a dashed "?" → C(s).
 export function blockScene(setup, result, opts = {}) {
+  if (!setup.diagram) return emptyScene(setup, opts);
   const n = setup.reduce ?? 0;
   const { diagram, red } = partialDiagram(setup, n);
   // Parameters a slider changes ("params.K" → "K"), for marking their blocks.
   const tunable = (opts.tunable || []).filter((p) => p.startsWith("params.")).map((p) => p.slice(7));
-  const ctx = { params: setup.params || {}, boxes: new Map(), tunable };
+  const ctx = { params: setup.params || {}, boxes: new Map(), tunable, selected: opts.selected || [] };
   const L = layout(diagram, ctx);
   const shapes = [];
   const IN = 1.1, OUT = 1.1;
@@ -186,7 +193,31 @@ export function blockScene(setup, result, opts = {}) {
     const box = ctx.boxes.get(step.node);
     if (box) shapes.push({ type: "groupbox", from: [box[0] - 0.12, box[1] - 0.12], to: [box[2] + 0.12, box[3] + 0.12], label: `next: ${ruleName(step.kind)}` });
   }
+  // The workbench's hovered spot.
+  if (opts.target) {
+    const box = ctx.boxes.get(nodeAtPath(setup.diagram, opts.target));
+    if (box) shapes.push({ type: "groupbox", from: [box[0] - 0.14, box[1] - 0.16], to: [box[2] + 0.14, box[3] + 0.16], label: opts.targetLabel || "here", role: "target" });
+  }
   // A frame around everything (with room for the labels), for fitting the view.
   shapes.push({ type: "frame", frame: { xmin: -IN - 0.3, xmax: L.w + OUT + 0.3, ymin: -L.down - 0.5, ymax: L.up + 0.8 } });
   return shapes;
+}
+
+function nodeAtPath(tree, path) {
+  return path.reduce((n, [k, i]) => (i == null ? n[k] : n[k][i]), tree);
+}
+
+// Nothing built yet: the input, one dashed "?" box to put the first block on, the output.
+function emptyScene(setup, opts) {
+  const w = 1.4;
+  const on = opts.target && opts.target.length === 0;
+  return [
+    { type: "wire", points: [[-1.1, 0], [0, 0]], arrow: true },
+    { type: "signal", at: [-1.1, 0.32], text: setup.input || "R(s)", align: "left" },
+    { type: "tfblock", id: "?", at: [w / 2, 0], w, h: H, label: "?", role: "ghost" },
+    { type: "wire", points: [[w, 0], [w + 1.1, 0]], arrow: true },
+    { type: "signal", at: [w + 1.1, 0.32], text: setup.output || "C(s)", align: "right" },
+    ...(on ? [{ type: "groupbox", from: [-0.14, -H / 2 - 0.16], to: [w + 0.14, H / 2 + 0.16], label: opts.targetLabel || "here", role: "target" }] : []),
+    { type: "frame", frame: { xmin: -1.4, xmax: w + 1.4, ymin: -1.2, ymax: 1.4 } },
+  ];
 }

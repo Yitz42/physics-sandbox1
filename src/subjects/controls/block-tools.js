@@ -24,6 +24,8 @@ function numericValues(T) {
 }
 
 export function solveBlocks(setup, mistake = null) {
+  // Nothing built yet (the workbench starts empty): nothing to solve.
+  if (!setup.diagram) return { status: "resultant", values: {}, red: null, equations: [] };
   const red = reduce(setup, mistake);
   return {
     status: "resultant",
@@ -44,7 +46,7 @@ export function blockQuantities(setup) {
 
 // ---- Classic slips -----------------------------------------------------------------
 
-const MESSAGES = {
+export const MESSAGES = {
   sign: (node) => ((node.sign ?? -1) < 0
     ? "Check the loop's sign: NEGATIVE feedback gives G/(1 + GH), with a plus in the bottom."
     : "Check the loop's sign: POSITIVE feedback gives G/(1 − GH), with a minus in the bottom."),
@@ -98,6 +100,7 @@ export function stepTex(red, step, { full = false } = {}) {
 // setup.reduce: how many steps are done (pictures that collapse step by step).
 export function blockSummary(setup, result, { mode = "symbolic", reveal = true } = {}) {
   const red = result.red;
+  if (!red) return []; // nothing built yet (the workbench)
   const n = setup.reduce == null ? red.steps.length : setup.reduce;
   const lines = [];
   if (!reveal) return lines;

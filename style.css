@@ -457,3 +457,32 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .data-panel { margin-top: 28px; background: var(--c-panel); border: 1px solid var(--c-edge); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); }
 .data-panel h2 { margin-bottom: 6px; }
 .data-summary { font-weight: 600; }
+
+/* ---- Block diagram workbench (challenges/workbench.js) ---------------------- */
+.wb-panel { border-top: 1px solid var(--c-line); padding-top: 10px; margin-top: 10px; }
+.wb-row[hidden] { display: none; }
+.wb-row { display: grid; grid-template-columns: 130px 1fr; gap: 10px; align-items: center; margin: 6px 0; font-size: 15px; }
+.wb-label { color: var(--c-muted); font-size: 14px; }
+.wb-input, .wb-select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--c-line); background: var(--c-canvas); color: var(--c-ink); min-width: 0; }
+.wb-name { max-width: 110px; }
+.wb-chip-row { display: flex; gap: 12px; align-items: center; margin: 10px 0 4px; flex-wrap: wrap; }
+.wb-chip { font: inherit; font-size: 17px; padding: 8px 14px; border-radius: 8px; border: 2px dashed var(--c-accent); background: var(--c-panel); color: var(--c-accent); cursor: grab; touch-action: none; }
+.wb-chip.active { border-style: solid; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-accent) 30%, transparent); }
+.wb-chip-bad { border-color: var(--c-faint); color: var(--c-faint); cursor: not-allowed; }
+.wb-help { color: var(--c-muted); font-size: 14px; flex: 1; min-width: 180px; margin: 0; }
+.wb-note { color: var(--c-wrong, #dc2626); font-size: 14px; min-height: 1em; }
+.wb-preview-box { margin-top: 10px; }
+.wb-preview-figure { height: 320px; border: 1px dashed var(--c-line); border-radius: 8px; background: var(--c-canvas); }
+.wb-preview-figure canvas { width: 100%; height: 100%; display: block; }
+.wb-picked { margin: 6px 0; font-size: 15px; }
+.wb-rules { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.wb-entry { margin-top: 10px; }
+.wb-lhs { white-space: nowrap; }
+.wb-entry .wb-row { grid-template-columns: auto 1fr; }
+.wb-keys { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.wb-key { min-width: 38px; }
+.wb-preview { min-height: 2.6em; margin: 6px 0; }
+.wb-list { margin-top: 12px; }
+.wb-formula-row { margin: 6px 0; overflow-x: auto; }
+.wb-total { font-weight: 700; border-top: 1px solid var(--c-line); padding-top: 6px; }
+@media (max-width: 560px) { .wb-row { grid-template-columns: 1fr; gap: 4px; } }

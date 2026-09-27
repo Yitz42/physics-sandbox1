@@ -77,7 +77,8 @@ function soonCard(number, u) {
 // units: [{ id, title, concept, stages: [files] }]. With chapters, the units
 // are listed under their chapter's heading (with its textbook link); planned
 // units appear as "Coming soon".
-export function renderCourse(root, course, units) {
+// tools: loaded tool folders (course.tools), shown as cards above the chapters.
+export function renderCourse(root, course, units, tools = []) {
   root.innerHTML = "";
   const byId = Object.fromEntries(units.map((u) => [u.id, u]));
   const list = el("div", { className: "unit-list" });
@@ -97,6 +98,17 @@ export function renderCourse(root, course, units) {
     });
   } else {
     units.forEach((u) => list.appendChild(unitCard(course, u)));
+  }
+  if (tools.length) {
+    // First on the page, so the free tools are easy to find.
+    list.prepend(el("section", { className: "chapter tools" }, [
+      el("div", { className: "chapter-head" }, [el("h2", { className: "chapter-title" }, [el("span", { className: "chapter-num", textContent: "Tools" }), "Practice freely"])]),
+      ...tools.map((t) => el("a", { className: "unit-card tool-card", href: `#/${course.id}/${t.id}` }, [
+        el("div", { className: "unit-num", textContent: "Tool" }),
+        el("div", { className: "unit-text" }, [el("h2", { textContent: t.title }), mixed(t.concept)]),
+        el("div", { className: "unit-progress", textContent: "Open →" }),
+      ])),
+    ]));
   }
   root.append(
     topNav({ course, units }), // the top tab's menu: Home and every unit
