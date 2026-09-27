@@ -97,10 +97,17 @@ export function measureLabel(ctx, label, size = 14, weight = 500) {
 }
 
 // The rectangle a label covers: { x0, y0, x1, y1 } in pixels.
-export function labelBox(x, y, width, size = 14, align = "center") {
+// tight: a point's or support's letter — a box hugging the letter itself (capitals
+// reach 0.45 size above y; `tight` is how far below y it reaches: 0.42 size for a
+// plain letter, 0.68 with a subscript), so letters can sit right by their points.
+export function labelBox(x, y, width, size = 14, align = "center", tight = 0) {
   const x0 = align === "center" ? x - width / 2 : align === "right" ? x - width : x;
+  if (tight) return { x0: x0 - 1.5, y0: y - size * 0.45, x1: x0 + width + 1.5, y1: y + size * tight };
   return { x0: x0 - 3, y0: y - size * 0.8, x1: x0 + width + 3, y1: y + size * 0.72 };
 }
+
+// A letter's tight box's reach below its y (see labelBox): lower with a subscript.
+export const letterDrop = (text) => (/_/.test(text) ? 0.68 : 0.42);
 
 // Draw a label with subscripts. align: "left" | "center" | "right".
 // Returns the rectangle it covers (so other labels can keep clear of it).

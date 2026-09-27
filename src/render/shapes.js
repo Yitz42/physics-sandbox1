@@ -11,6 +11,8 @@ import { drawExtraShape } from "./shapes-extra.js";
 
 const ROLE_COLORS = {
   known: ["--c-force", "#1f5fbf"],
+  knownOver: ["--c-force-2", "#3730a3"], // a point load drawn through a distributed load: its own shade
+
   unknown: ["--c-unknown", "#c2410c"],
   resultant: ["--c-resultant", "#7c3aed"],
   component: ["--c-component", "#64748b"],
@@ -129,7 +131,9 @@ export function drawShape(cv, s, env) {
       ctx.arc(x, y, s.style === "ring" ? 6 : 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      out.boxes.push({ ...circleBox(x, y, 7), heavy: true }); // labels must never hide a point
+      // Its true outline (4.5 px dot or 6 px ring, plus half the 2.2 px stroke):
+      // labels must never hide a point — but its letter may come right up to it.
+      out.boxes.push({ ...circleBox(x, y, s.style === "ring" ? 7.1 : 5.6), heavy: true });
       // The point's name (e.g. "A") is placed by diagrams.js with the arrow labels.
       break;
     }

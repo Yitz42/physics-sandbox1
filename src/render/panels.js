@@ -17,16 +17,34 @@ const PAD = 36; // the canvas's pixel border (see canvas.js)
 
 // Where a shape "is", to decide which group it belongs to.
 function anchorX(s) {
-  const p = s.at || s.from || s.center || (s.points && s.points[0]);
+  const p = s.at || s.from || s.center || (s.points && s.points[0]) || (s.profile && s.profile[0]);
   return p ? p[0] : null;
 }
 
-function shift(s, dx) {
+// A shape moved sideways by dx metres: every point it's drawn from (a distributed
+// load's outline and its labels, a support's far anchor, too).
+export function shiftShape(s, dx) {
   const move = (p) => (p ? [p[0] + dx, p[1]] : p);
   const out = { ...s };
-  for (const k of ["at", "from", "to", "center"]) if (s[k]) out[k] = move(s[k]);
+  for (const k of ["at", "from", "to", "center", "anchor", "labelAt"]) if (s[k]) out[k] = move(s[k]);
   if (s.points) out.points = s.points.map(move);
+  if (s.profile) out.profile = s.profile.map(move);
+  if (s.splits) out.splits = s.splits.map(([p, q]) => [move(p), move(q)]);
+  if (Array.isArray(s.labels)) out.labels = s.labels.map((l) => (l && typeof l === "object" && l.at ? { ...l, at: move(l.at) } : l)); // (a load's labels; a triangle's are just text)
+  if (s.text && typeof s.text === "object" && s.text.at) out.text = { ...s.text, at: move(s.text.at) }; // (a caption inside a beam)
   return out;
+}
+const shift = shiftShape;
+
+// How far spreadPanels slides each group (metres): { dxL, dxR } — so a tool that
+// places things on one of the diagrams (the FBD's drawing tool) can follow it.
+export function panelShift({ divider, left, right, y, margin = 0.8, size }) {
+  if (!size) return { dxL: 0, dxR: 0 };
+  const { width: w, height: h } = size;
+  const widest = Math.max(left[1] - left[0], right[1] - right[0]) + 2 * margin;
+  const s = Math.min((h - 2 * PAD) / (y[1] - y[0] + 2 * margin), (w / 2 - PAD) / widest);
+  const quarter = w / 4 / s;
+  return { dxL: divider - quarter - (left[0] + left[1]) / 2, dxR: divider + quarter - (right[0] + right[1]) / 2 };
 }
 
 // shapes:  the scene, in metres, before spreading

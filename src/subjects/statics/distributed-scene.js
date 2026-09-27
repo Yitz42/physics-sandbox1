@@ -99,7 +99,10 @@ export function distributedScene(setup, result, opts = {}) {
   for (const f of setup.forces || []) {
     const F = magnitudeOf(f), up = f.direction === "up";
     const tip = [f.at[0], f.at[1]];
-    shapes.push({ type: "arrow", id: f.id, from: [tip[0], tip[1] + (up ? -1 : 1) * len(F)], to: tip, role: "known", label: `${f.symbol} = ${format(F, "N")}` });
+    // (Down through a distributed load: it starts above the load, as its own force.)
+    const h = up ? 0 : Math.max(0, ...(setup.loads || []).map((l) => intensityAt(l, f.at[0]) * H));
+    const L = Math.max(len(F), h > 0 ? h + 0.07 * size : 0);
+    shapes.push({ type: "arrow", id: f.id, from: [tip[0], tip[1] + (up ? -1 : 1) * L], to: tip, role: "known", label: `${f.symbol} = ${format(F, "N")}` });
   }
 
   // The pieces' resultants (grey, dashed), from just above the load down to the

@@ -90,3 +90,17 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   (LETTER_CLEAR, labels.js; other labels keep 4 px). A dimension's extension lines
   run out to what it measures — a beam, a plate, a truss bar or a joint straight
   across from it (up to ~420 px) — and break where they'd cross a drawn object.
+- **Sketch | free-body diagram** (agreed with the owner): a rigid body's picture shows
+  the full sketch on the left (the body as it is, supports, loads, dimensions) and its
+  FBD on the right: the body simplified to a plain thin bar with no details, the
+  supports replaced by their reactions (their letters kept at their points), the loads
+  and the weight (rigid-body-scene.js, fbdLayout; the FBD drawing tool follows it,
+  fbdShiftX). The beam above a shear and moment diagram stays one picture (overlay).
+- **Letters as close as possible**: point and support letters are measured by a tight
+  box round the letter itself (labelBox `tight`), and points and pin/roller symbols
+  report their true outlines (ring, triangle slices, wheels, hatch), so a letter sits
+  about 2 px from its point. Extension lines stop 2 px short of a body.
+- **Distributed loads touch, never enter**: their arrowheads end on the beam's top
+  surface (touchBeams sets the load's gap to the beam's half-thickness). A point load
+  drawn through a distributed load starts above it and is a slightly different shade
+  (indigo, role "knownOver"), so it reads as a separate force.

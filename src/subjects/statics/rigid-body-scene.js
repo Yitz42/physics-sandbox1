@@ -18,9 +18,11 @@ import { allReactions } from "./supports.js";
 import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt, momentPoint } from "./rigid-body.js";
 import { pointNamed } from "./rigid-body-sets.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
+import { intensityAt } from "./distributed-loads.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
 import { concurrency } from "./rigid-body-count.js";
 import { angleMarks } from "./particle-scene.js";
+import { spreadPanels, shiftShape, panelShift } from "../../render/panels.js";
 
 // Picture metres per newton: the biggest force drawn 0.3 of the body's size
 // (setup.arrowSize: another fraction, e.g. shorter arrows above a beam's diagrams).
@@ -30,7 +32,65 @@ export function lengthPerNewton(setup, result, size) {
   return ((setup.arrowSize ?? 0.3) * size) / Math.max(1, ...known, ...reactions);
 }
 
+// The picture (agreed with the owner): the full SKETCH on the left — the body as it
+// really is, its supports, loads and dimensions — and on the right its FREE-BODY
+// DIAGRAM: the body simplified to a plain thin bar with no details, the supports
+// replaced by their reactions (their letters kept), the loads and the weight.
+// opts.overlay: the old single picture, the FBD drawn over the sketch with the
+// supports faded (the beam above a shear and moment diagram, Unit 7.2, uses it).
 export function rigidBodyScene(setup, result, opts = {}) {
+  if (opts.overlay) return overlayScene(setup, result, opts);
+  const res = result || solveRigidBody(setup);
+  const lay = fbdLayout(setup);
+  // The sketch: no reactions and no weight arrow (those belong to the FBD).
+  const sketch = overlayScene({ ...setup, showReactions: "reveal" }, res, { ...opts, reveal: false, hide: [], fbdSetup: null, guesses: null })
+    .filter((sh) => sh.type !== "axes");
+  // The FBD: everything that acts on the body, on a plain body — nothing else.
+  const full = overlayScene(setup, res, opts);
+  const extras = new Set(setup.extras || []);
+  const fbd = [];
+  for (const sh of full) {
+    if (sh.type === "axes" || extras.has(sh)) continue;
+    if (["support", "supportSymbol", "dim", "text"].includes(sh.type)) continue;
+    if (sh.type === "beam") fbd.push({ type: "beam", points: sh.points, width: 7 }); // (no caption, no details)
+    else fbd.push(sh);
+  }
+  // The supports' letters stay on the FBD, at their points.
+  for (const q of setup.supports || []) if (q.type !== "none") fbd.push({ type: "point", at: q.at, label: q.id, style: "dot" });
+  const captions = [
+    { type: "text", at: [(lay.left[0] + lay.left[1]) / 2, lay.capY], text: "Sketch" },
+    { type: "text", at: [(lay.left[0] + lay.left[1]) / 2 + lay.offset, lay.capY], text: "Free-body diagram" },
+  ];
+  const shapes = [{ type: "axes" }, ...sketch, ...fbd.map((sh) => shiftShape(sh, lay.offset)), ...captions];
+  return spreadPanels(shapes, { divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: opts.canvasSize });
+}
+
+// Where the two diagrams go (metres, from the geometry only — not from arrow
+// lengths — so revealing an answer never moves the picture): the sketch where the
+// setup puts it, the FBD `offset` to its right; each diagram's [xmin, xmax] with
+// room for arrows and labels; the divider between them; the captions' height.
+export function fbdLayout(setup) {
+  const size = bodySize(setup);
+  const pts = [...((setup.body && setup.body.points) || []), ...(setup.supports || []).flatMap((q) => [q.at, q.anchor].filter(Boolean)),
+    ...(setup.forces || []).map((f) => f.at)];
+  for (const l of setup.loads || []) pts.push([l.from, l.y ?? 0], [l.to, l.y ?? 0]);
+  for (const x of setup.extras || []) for (const p of [x.at, x.from, x.to, ...(x.points || [])]) if (Array.isArray(p)) pts.push(p);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const padX = 0.2 * size, padY = 0.36 * size; // room round each diagram for arrows and their labels
+  const x0 = Math.min(...xs) - padX, x1 = Math.max(...xs) + padX;
+  const offset = x1 - x0 + 0.12 * size;
+  const capY = Math.min(...ys) - 0.56 * size; // (under the sketch's dimension lines)
+  return { offset, left: [x0, x1], right: [x0 + offset, x1 + offset], divider: x1 + 0.06 * size, capY, y: [capY - 0.06 * size, Math.max(...ys) + padY] };
+}
+
+// How far the FBD is drawn from where the setup puts the body (metres), for the
+// FBD drawing tool: the offset plus the panels' slide for this canvas size.
+export function fbdShiftX(setup, sceneOpts = {}) {
+  const lay = fbdLayout(setup);
+  return lay.offset + panelShift({ divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: sceneOpts.canvasSize }).dxR;
+}
+
+function overlayScene(setup, result, opts = {}) {
   const res = result || solveRigidBody(setup);
   const size = bodySize(setup);
   const k = lengthPerNewton(setup, res, size);
@@ -63,8 +123,11 @@ export function rigidBodyScene(setup, result, opts = {}) {
   }
 
   // Loads: point forces (a push has its arrowhead on the body), distributed loads, couples.
+  const H = heightPerLoad(setup, size);
   for (const f of setup.forces || []) {
-    const len = Math.max((setup.arrowSize ? 0.06 : 0.1) * size, magnitudeOf(f) * k);
+    // A push down through a distributed load starts above the load, so it shows as its own force.
+    const over = f.push ? overLoad(setup, f, H, size) : 0;
+    const len = Math.max((setup.arrowSize ? 0.06 : 0.1) * size, magnitudeOf(f) * k, over);
     const u = directionOf(f);
     const tail = f.push ? add(f.at, scale(u, -len)) : f.at;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
@@ -72,7 +135,6 @@ export function rigidBodyScene(setup, result, opts = {}) {
     // at the arrow's outer end, where there's room (setup.hideAngles turns it off).
     if (!setup.hideAngles) shapes.push(...angleMarks(f, tail, len, 0, { onBody: true }));
   }
-  const H = heightPerLoad(setup, size);
   for (const l of setup.loads || []) shapes.push(loadShape(l, H));
   for (const m of setup.moments || []) shapes.push({ type: "moment", id: m.id, center: m.at, sense: m.sense, rPx: 30, role: "known", label: `${m.symbol} = ${format(m.magnitude, "N·m")}` });
 
@@ -153,7 +215,7 @@ function autoDims(setup, size) {
   // prop doesn't run through the dimension lines.
   const under = (setup.supports || []).filter((q) => (q.type === "link" || q.type === "cable") && q.anchor && q.anchor[1] < y).map((q) => q.anchor[1]);
   const floor = Math.min(y, ...under);
-  const row1 = floor - 0.12 * size, row2 = row1 - Math.max(0.08 * size, 0.4); // rows far enough apart for their labels
+  const row1 = floor - 0.16 * size, row2 = row1 - Math.max(0.08 * size, 0.4); // below the support symbols; rows far enough apart for their labels
   // A link or cable anchored on a wall at the beam's end: its height on the wall.
   for (const q of setup.supports || []) {
     if (!(q.type === "link" || q.type === "cable") || !q.anchor || Math.abs(q.anchor[1] - y) < 1e-9) continue;
@@ -166,4 +228,13 @@ function autoDims(setup, size) {
   for (let i = 1; i < stops.length; i++) out.push({ type: "dim", from: [stops[i - 1], row1], to: [stops[i], row1], label: format(stops[i] - stops[i - 1], "m") });
   if (stops.length > 2) out.push({ type: "dim", from: [stops[0], row2], to: [stops[stops.length - 1], row2], label: format(stops[stops.length - 1] - stops[0], "m") });
   return out;
+}
+
+// How long a push must be to start above a distributed load under it (0 if none):
+// the load's drawn height where the force acts, and a little more.
+export function overLoad(setup, f, H, size) {
+  const u = directionOf(f);
+  if (u[1] > -0.5) return 0; // (only forces pushing down onto a load)
+  const h = Math.max(0, ...(setup.loads || []).filter((l) => Math.abs((l.y ?? 0) - f.at[1]) < 1e-9).map((l) => intensityAt(l, f.at[0]) * H));
+  return h > 0 ? (h + 0.07 * size) / -u[1] : 0;
 }

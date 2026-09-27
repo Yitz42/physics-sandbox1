@@ -14,6 +14,7 @@
 
   /* Force roles in pictures and equations */
   --c-force: #1f5fbf;      /* known force */
+  --c-force-2: #3730a3;    /* a point load passing through a distributed load (indigo) */
   --c-unknown: #c2410c;    /* unknown force */
   --c-resultant: #7c3aed;
   --c-component: #64748b;
@@ -34,7 +35,7 @@
   :root {
     --c-bg: #11151c; --c-panel: #1a202b; --c-canvas: #232a36; --c-ink: #e6e9ef;
     --c-muted: #a4adbd; --c-faint: #6b7688; --c-line: #2c3444; --c-accent: #7aa7ff;
-    --c-force: #6ea0ff; --c-unknown: #ff9a5c; --c-resultant: #b794ff; --c-component: #93a3b8;
+    --c-force: #6ea0ff; --c-force-2: #b4b8ff; --c-unknown: #ff9a5c; --c-resultant: #b794ff; --c-component: #93a3b8;
     --c-target: #4ade80; --c-wrong: #f87171; --c-student: #2dd4bf; --c-crate: #6b5a3a; --c-arm: #fbbf24;
     --c-good-bg: #173524; --c-good: #86efac; --c-bad-bg: #3b1a1a; --c-bad: #fca5a5;
     --c-info-bg: #1b2a44; --c-info: #a8c5ff; --c-warn-bg: #3a2c12; --c-warn: #fcd34d;
@@ -517,3 +518,23 @@ a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: non
 .gal-bad { color: var(--c-bad); font-weight: 600; }
 .gal-details { font-size: 12px; color: var(--c-bad); margin-top: 4px; }
 .gal-badge-float { position: fixed; right: 16px; bottom: 16px; z-index: 50; background: var(--c-bad-bg); color: var(--c-bad); border: 1px solid var(--c-bad); }
+
+/* The course page: one square folder per chapter (its units are on the chapter's page).
+   A folder: a tab on its top left, the chapter's number, title and progress, and its
+   textbook link inside, at the bottom. */
+.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 26px 18px; margin-top: 10px; }
+.folder { position: relative; aspect-ratio: 1 / 1; display: flex; flex-direction: column; background: linear-gradient(var(--c-panel), var(--c-tab-a));
+  border: 1px solid var(--c-edge); border-radius: 4px 14px 14px 14px; box-shadow: var(--shadow); }
+.folder::before { content: ""; position: absolute; left: -1px; top: -13px; width: 44%; height: 13px; background: var(--c-panel);
+  border: 1px solid var(--c-edge); border-bottom: 0; border-radius: 10px 10px 0 0; }
+.folder-link { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 16px 16px 8px; color: var(--c-ink); text-decoration: none; border-radius: inherit; }
+a.folder-link:hover .folder-title { color: var(--c-accent); }
+.folder:has(a.folder-link:hover) { border-color: var(--c-accent); }
+.folder-num { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c-accent); }
+.folder-title { font-size: 1.15rem; line-height: 1.25; margin: 0; }
+.folder-count { margin-top: auto; font-size: 0.9rem; color: var(--c-muted); align-self: flex-start; }
+.folder-book { padding: 8px 16px 12px; font-size: 0.85rem; line-height: 1.3; border-top: 1px dashed var(--c-line); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.folder-soon { opacity: 0.6; box-shadow: none; }
+.folder-soon .folder-title { color: var(--c-muted); }
+.back-link { display: inline-block; margin: 4px 0 8px; font-size: 0.95rem; }
+@media (max-width: 480px) { .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; } .folder-title { font-size: 1rem; } .folder-link { padding: 12px 12px 6px; } }

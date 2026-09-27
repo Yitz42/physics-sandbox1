@@ -1,8 +1,9 @@
 // chrome.js — the parts of the page around the lesson itself:
 //   topNav()      the tab at the top centre of every page ("STATICS SIMULATION LAB").
-//                 Pointing at it (or tapping it) opens a menu: Home, back to the
-//                 unit, the unit's stages (a tick on finished ones), and a place
-//                 for student accounts, which come later.
+//                 Pointing at it (or tapping it) opens a menu: Home, then the courses
+//                 (on the all-chapters page) or the chapters (inside a chapter, unit or
+//                 stage; a stage also lists its unit's stages), and a place for
+//                 student accounts, which come later.
 //   progressBar() "67% COMPLETE": how many stages of the current unit are done.
 
 import { el } from "./controls.js";
@@ -42,54 +43,72 @@ export function progressBar(course, unit) {
 let shownNav = null;
 document.addEventListener("pointerdown", (e) => shownNav && !shownNav.contains(e.target) && shownNav.close());
 
-// The top tab and its menu.
-//   where: { course?, unit?, unitNumber?, stages?: [loaded stage objects], current?: stage file,
-//            units?: [loaded units] }
-// On a stage page it offers: Home, back to the unit, the unit's stages.
-// On a unit page (or the course page), given `units`: Home and every unit, to switch unit.
+// The top tab and its menu (agreed with the owner):
+//   where: { course?, courses?: [every course], chapter?, unit?, unitNumber?,
+//            stages?: [loaded stage objects], current?: stage file, units?: [loaded units] }
+// Looking at all the chapters (the course page, given `courses`): Home and every course.
+// On a chapter page, a unit page or a stage: Home, and every chapter of the course —
+// on a stage, first the way back to its unit and the unit's stages.
+// A course without chapters: Home and every unit.
 export function topNav(where = {}) {
-  const { course, unit, unitNumber, stages = [], current, units = [] } = where;
+  const { course, courses = [], chapter, unit, unitNumber, stages = [], current, units = [] } = where;
   const label = course ? `${course.title} Simulation Lab` : "Engineering Mechanics Sandbox";
   const tab = el("button", { type: "button", className: "topnav-tab", "aria-haspopup": "true", "aria-expanded": "false", textContent: label });
   const menu = el("div", { className: "topnav-menu", role: "menu" });
 
   const link = (href, text, extra = {}) => el("a", { className: "topnav-item", href, role: "menuitem", textContent: text, ...extra });
+  const heading = (text) => menu.appendChild(el("div", { className: "topnav-heading", textContent: text }));
+  // A line with a tick (done) and an optional count, marked when it's the page we're on.
+  const row = (href, text, { here = false, done = false, count = null } = {}) => {
+    const item = el("a", { className: "topnav-item topnav-stage" + (here ? " is-current" : ""), href, role: "menuitem" }, [
+      el("span", { className: "topnav-tick" + (done ? " done" : ""), textContent: done ? "✓" : "" }),
+      el("span", { textContent: text }),
+      count ? el("span", { className: "topnav-count", textContent: count }) : null,
+    ]);
+    if (here) item.setAttribute("aria-current", "page");
+    return menu.appendChild(item);
+  };
   menu.appendChild(link("#/", "⌂  Home"));
-  if (course && units.length && !current) {
-    // Every built unit, numbered by chapter (3.6 …), under its chapter's heading.
-    let chapter = undefined;
-    if (!course.chapters) menu.appendChild(el("div", { className: "topnav-heading", textContent: `${course.title} units` }));
-    units.forEach((u) => {
-      const place = unitPlace(course, u.id);
-      if (place.chapter && place.chapter !== chapter) {
-        chapter = place.chapter;
-        menu.appendChild(el("div", { className: "topnav-heading", textContent: `Chapter ${place.chapterNumber}: ${chapter.title}` }));
+
+  if (courses.length) {
+    // All the chapters are showing: switch course.
+    heading("Courses");
+    for (const c of courses) {
+      if (c.comingSoon) menu.appendChild(el("span", { className: "topnav-item is-disabled", "aria-disabled": "true", textContent: `${c.title} — coming later` }));
+      else row(`#/${c.id}`, c.title, { here: course && c.id === course.id });
+    }
+  } else if (course && course.chapters && (chapter || unit)) {
+    // Inside a chapter, a unit or a stage: the way back, then every chapter.
+    if (unit && current) {
+      menu.appendChild(link(`#/${course.id}/${unit.id}`, `←  Back to Unit ${unitNumber}: ${unit.title}`));
+      if (stages.length) {
+        heading(`Unit ${unitNumber} stages`);
+        stages.forEach((st, i) => {
+          const file = unit.stages[i];
+          row(`#/${course.id}/${unit.id}/${file}`, `${i + 1}. ${st.title}`, { here: file === current, done: getStatus(`${course.id}/${st.id}`) === "complete" });
+        });
       }
+    }
+    const mine = chapter || (unit && unitPlace(course, unit.id).chapter);
+    heading(`${course.title} chapters`);
+    course.chapters.forEach((ch, c) => {
+      const built = ch.units.filter((u) => typeof u === "string");
+      if (!built.length) return; // (planned chapters: on the course page, as "Coming soon")
+      const loaded = built.map((id) => units.find((u) => u.id === id)).filter(Boolean);
+      const done = loaded.length === built.length && loaded.every((u) => { const p = unitProgress(course, u); return p.done === p.total; });
+      row(`#/${course.id}/ch/${ch.id}`, `${c + 1}. ${ch.title}`, { here: ch === mine, done });
+    });
+    menu.appendChild(link(`#/${course.id}`, `▦  All ${course.title} chapters`));
+  } else if (course && units.length && !current) {
+    // A course without chapters: every unit.
+    heading(`${course.title} units`);
+    units.forEach((u) => {
       const { done, total } = unitProgress(course, u);
-      const here = unit && u.id === unit.id;
-      const item = el("a", { className: "topnav-item topnav-stage" + (here ? " is-current" : ""), href: `#/${course.id}/${u.id}`, role: "menuitem" }, [
-        el("span", { className: "topnav-tick" + (done === total ? " done" : ""), textContent: done === total ? "✓" : "" }),
-        el("span", { textContent: `${place.number} ${u.title}` }),
-        el("span", { className: "topnav-count", textContent: `${done}/${total}` }),
-      ]);
-      if (here) item.setAttribute("aria-current", "page");
-      menu.appendChild(item);
+      row(`#/${course.id}/${u.id}`, `${unitPlace(course, u.id).number} ${u.title}`, { here: unit && u.id === unit.id, done: done === total, count: `${done}/${total}` });
     });
   } else if (course && unit) {
     menu.appendChild(link(`#/${course.id}/${unit.id}`, `←  Back to Unit ${unitNumber}: ${unit.title}`));
-    if (stages.length) {
-      menu.appendChild(el("div", { className: "topnav-heading", textContent: `Unit ${unitNumber} stages` }));
-      stages.forEach((s, i) => {
-        const file = unit.stages[i];
-        const done = getStatus(`${course.id}/${s.id}`) === "complete";
-        const item = el("a", { className: "topnav-item topnav-stage" + (file === current ? " is-current" : ""), href: `#/${course.id}/${unit.id}/${file}`, role: "menuitem" }, [
-          el("span", { className: "topnav-tick" + (done ? " done" : ""), textContent: done ? "✓" : "" }),
-          el("span", { textContent: `${i + 1}. ${s.title}` }),
-        ]);
-        if (file === current) item.setAttribute("aria-current", "page");
-        menu.appendChild(item);
-      });
-    }
+    stages.forEach((st, i) => row(`#/${course.id}/${unit.id}/${unit.stages[i]}`, `${i + 1}. ${st.title}`, { here: unit.stages[i] === current, done: getStatus(`${course.id}/${st.id}`) === "complete" }));
   } else if (course) {
     menu.appendChild(link(`#/${course.id}`, `${course.title}: all units`));
   }

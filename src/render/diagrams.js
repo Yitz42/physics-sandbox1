@@ -34,7 +34,7 @@
 // Arrow labels are placed last, each moved to a free spot if its first
 // choice would overlap something (see labels.js).
 
-import { labelPosition, drawLabel, cssColor, measureLabel, labelBox } from "./arrows.js";
+import { labelPosition, drawLabel, cssColor, measureLabel, labelBox, letterDrop } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
 import { placeLabels, placeLegend, segmentHits, overlapArea, LETTER_CLEAR } from "./labels.js";
 import { beamDirAt, surfaceGap } from "./fbd.js";
@@ -57,6 +57,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
   shapes = touchBeams(clearSupports(shapes, cv)); // arrows clear of support symbols, then of beam surfaces
+  shapes = apartFromLoads(shapes); // a point load drawn through a distributed load gets its own shade
   shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines break where arrows cross them; extension lines
   shapes = separateMoments(shapes, cv); // two moment circles never overlap
 
@@ -113,13 +114,16 @@ export function drawScene(cv, shapes, opts = {}) {
       // Point names go first, as close to their point as they can: just below
       // it, else anywhere round it. A dimension line under the name breaks around it.
       // s.labelAway (a direction, e.g. away from a truss's middle) is tried first.
-      const spots = aroundPoint(x, y);
+      const drop = letterDrop(s.label);
+      const r = s.style === "ring" ? RING_R : DOT_R;
+      const spots = aroundPoint(x, y, r, drop);
       if (s.labelAway) {
         const [ux, uy] = s.labelAway, m = Math.hypot(ux, uy) || 1;
-        const sx = x + (ux / m) * 17, sy = y - (uy / m) * 17 + 5;
+        const g = r + LETTER_CLEAR + 7;
+        const sx = x + (ux / m) * g, sy = y - (uy / m) * g + 3;
         spots.unshift([sx, sy, ux / m > 0.35 ? "left" : ux / m < -0.35 ? "right" : "center"]);
       }
-      wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots, clear: LETTER_CLEAR });
+      wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots, clear: LETTER_CLEAR, tight: drop });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
@@ -187,7 +191,7 @@ export function drawScene(cv, shapes, opts = {}) {
     // (It keeps off the spots the other labels want: their first choices.)
     const avoid = wanted.map((l) => {
       const text = moved.includes(l) ? l.text.split(" = ")[0] : l.text; // (a moved one keeps just its name)
-      return labelBox(l.pos[0], l.pos[1], measureLabel(ctx, text, l.size, l.weight), l.size, l.align);
+      return labelBox(l.pos[0], l.pos[1], measureLabel(ctx, text, l.size, l.weight), l.size, l.align, l.tight);
     });
     const legend = placeLegend(ctx, moved.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles], avoid });
     // A shortened name may move a little further to find a clear spot.
@@ -218,10 +222,14 @@ export function drawScene(cv, shapes, opts = {}) {
 
 // Close spots all round a point (pixels), nearest-looking first: below,
 // below-right, below-left, right, left, above-right, above-left, above.
-// (Each just outside the point's marker — 7 px — and a letter's small gap, LETTER_CLEAR.)
-function aroundPoint(x, y) {
-  return [[x, y + 21, "center"], [x + 9, y + 18, "left"], [x - 9, y + 18, "right"], [x + 12, y + 1, "left"],
-    [x - 12, y + 1, "right"], [x + 9, y - 14, "left"], [x - 9, y - 14, "right"], [x, y - 19, "center"]];
+// Each is just outside the point's marker (r: its radius, stroke included) by a
+// letter's small gap, LETTER_CLEAR, measured to the letter's tight box (labelBox):
+// 0.45 × 14 px above the letter's middle, `drop` × 14 px below it.
+const DOT_R = 5.6, RING_R = 7.1; // (a dot: 4.5 px + half its 2.2 px outline; a ring: 6 px + …)
+function aroundPoint(x, y, r = DOT_R, drop = 0.42) {
+  const g = r + LETTER_CLEAR + 0.3, up = 0.45 * 14, down = drop * 14, side = g + 1.5;
+  return [[x, y + g + up, "center"], [x + side, y + 0.8 * r, "left"], [x - side, y + 0.8 * r, "right"], [x + side, y, "left"],
+    [x - side, y, "right"], [x + side, y - 0.8 * r, "left"], [x - side, y - 0.8 * r, "right"], [x, y - g - down, "center"]];
 }
 
 // Does a label's box sit on a faint line (and on nothing else that clearing it would erase)?
@@ -239,6 +247,25 @@ function breaksLine(box, segments, obstacles) {
 // instead, so a push reads as pushing ON the beam, not into it; one that STARTS
 // there (a pull) starts at the surface. A push is marked `onBody`, so its label
 // goes at its outer end. Shapes that set headGap themselves are left alone.
+// A known force whose arrow runs through a distributed load's area (a point load P
+// on top of w) is drawn in a slightly different shade (role "knownOver"), so it
+// reads as a separate force and not as one of the load's arrows.
+function apartFromLoads(shapes) {
+  const areas = shapes.filter((s) => s.type === "distload" && s.profile && s.profile.length > 1).map((s) => {
+    const xs = s.profile.map((p) => p[0]), ys = s.profile.map((p) => p[1]);
+    return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(s.base, ...ys), y1: Math.max(s.base, ...ys) };
+  });
+  if (!areas.length) return shapes;
+  const through = (s) => areas.some((a) => {
+    for (let i = 0; i <= 10; i++) {
+      const x = s.from[0] + ((s.to[0] - s.from[0]) * i) / 10, y = s.from[1] + ((s.to[1] - s.from[1]) * i) / 10;
+      if (x > a.x0 + 1e-6 && x < a.x1 - 1e-6 && y > a.y0 + 1e-6 && y < a.y1 - 1e-6) return true;
+    }
+    return false;
+  });
+  return shapes.map((s) => (s.type === "arrow" && (s.role || "known") === "known" && through(s) ? { ...s, role: "knownOver" } : s));
+}
+
 function touchBeams(shapes) {
   const beams = shapes.filter((s) => s.type === "beam");
   // Plates (boxes drawn under everything) are bodies too: an arrow whose head
@@ -247,6 +274,13 @@ function touchBeams(shapes) {
   const onPlate = (P) => plates.some((b) => Math.abs(P[0] - b.at[0]) <= b.w / 2 + 1e-6 && Math.abs(P[1] - b.at[1]) <= b.h / 2 + 1e-6);
   if (!beams.length && !plates.length) return shapes;
   return shapes.map((s) => {
+    // A distributed load on a beam floats exactly the beam's half-thickness above its
+    // centre line: its arrowheads touch the beam's top surface without entering it.
+    if (s.type === "distload" && s.gapPx == null) {
+      const xm = (s.profile[0][0] + s.profile[s.profile.length - 1][0]) / 2;
+      const b = beams.find((q) => { const d = beamDirAt(q.points, [xm, s.base]); return d && Math.abs(d[1]) < 1e-9; });
+      return b ? { ...s, gapPx: ((b.width || 12) + 3) / 2 } : s;
+    }
     if (s.type !== "arrow" || s.headGap != null) return s;
     if (onPlate(s.to) && !onPlate(s.from)) return { ...s, onBody: true };
     const dir = [s.to[0] - s.from[0], s.to[1] - s.from[1]];

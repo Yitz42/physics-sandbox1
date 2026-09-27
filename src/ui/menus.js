@@ -74,28 +74,46 @@ function soonCard(number, u) {
   ]);
 }
 
-// units: [{ id, title, concept, stages: [files] }]. With chapters, the units
-// are listed under their chapter's heading (with its textbook link); planned
-// units appear as "Coming soon".
+// A chapter's built units that are finished (every stage complete), as { done, built }.
+function chapterProgress(course, ch, byId) {
+  const built = ch.units.filter((u) => typeof u === "string" && byId[u]);
+  const done = built.filter((id) => byId[id].stages.every((s) => getStatus(`${course.id}/${id}/${s}`) === "complete")).length;
+  return { done, built: built.length };
+}
+
+// One chapter as a square folder (agreed with the owner): its number and title open
+// the chapter's page; its textbook link sits inside the folder, underneath.
+function chapterFolder(course, ch, c, byId) {
+  const { done, built } = chapterProgress(course, ch, byId);
+  const soon = built === 0;
+  const count = soon ? "Coming soon" : `${built} unit${built === 1 ? "" : "s"} · ${done} complete`;
+  const reading = readingFor(course, ch);
+  const book = reading ? el("div", { className: "folder-book" }, [
+    el("span", { textContent: "📖 " }),
+    reading.url ? el("a", { href: reading.url, target: "_blank", rel: "noopener", textContent: reading.chapter }) : el("span", { textContent: reading.chapter }),
+  ]) : null;
+  const inner = [
+    el("span", { className: "folder-num", textContent: `Chapter ${c + 1}` }),
+    el("h2", { className: "folder-title", textContent: ch.title }),
+    el("span", { className: "folder-count" + (soon ? " chip chip-soon" : ""), textContent: count }),
+  ];
+  return el("div", { className: "folder" + (soon ? " folder-soon" : "") }, [
+    soon ? el("div", { className: "folder-link", "aria-disabled": "true" }, inner) : el("a", { className: "folder-link", href: `#/${course.id}/ch/${ch.id}` }, inner),
+    book,
+  ]);
+}
+
+// units: [{ id, title, concept, stages: [files] }]. With chapters, the course
+// page shows one square folder per chapter (its units are on the chapter's own
+// page, renderChapter); without, the units are listed straight away.
 // tools: loaded tool folders (course.tools), shown as cards above the chapters.
-export function renderCourse(root, course, units, tools = []) {
+// courses: every course (the top menu switches between them).
+export function renderCourse(root, course, units, tools = [], courses = []) {
   root.innerHTML = "";
   const byId = Object.fromEntries(units.map((u) => [u.id, u]));
   const list = el("div", { className: "unit-list" });
   if (course.chapters) {
-    course.chapters.forEach((ch, c) => {
-      const allSoon = ch.units.every((u) => typeof u !== "string");
-      list.appendChild(el("section", { className: "chapter" + (allSoon ? " chapter-soon" : "") }, [
-        el("div", { className: "chapter-head" }, [
-          el("h2", { className: "chapter-title" }, [
-            el("span", { className: "chapter-num", textContent: `Chapter ${c + 1}` }), ch.title,
-            allSoon ? el("span", { className: "chip chip-soon", textContent: "Coming soon" }) : null,
-          ]),
-          readMore(readingFor(course, ch), { compact: true }),
-        ]),
-        ...ch.units.map((u, i) => (typeof u === "string" ? unitCard(course, byId[u]) : soonCard(`${c + 1}.${i + 1}`, u))),
-      ]));
-    });
+    list.appendChild(el("div", { className: "folder-grid" }, course.chapters.map((ch, c) => chapterFolder(course, ch, c, byId))));
   } else {
     units.forEach((u) => list.appendChild(unitCard(course, u)));
   }
@@ -111,7 +129,7 @@ export function renderCourse(root, course, units, tools = []) {
     ]));
   }
   root.append(
-    topNav({ course, units }), // the top tab's menu: Home and every unit
+    topNav({ course, courses }), // the top tab's menu: Home and every course
     el("header", { className: "page-header" }, [
       el("h1", { textContent: course.title }), mixed(course.description, "lead"),
       el("a", { className: "comp-link", href: `#/comprehension/${course.id}`, textContent: `${course.title} comprehension →` }),
@@ -121,10 +139,29 @@ export function renderCourse(root, course, units, tools = []) {
       button("Reset my progress", () => {
         if (confirm("Erase all saved progress on this computer?")) {
           resetAll();
-          renderCourse(root, course, units);
+          renderCourse(root, course, units, tools, courses);
         }
       }, "btn btn-quiet btn-small"),
     ]),
+  );
+}
+
+// One chapter's page: its units (planned ones as "Coming soon") and its textbook reading.
+export function renderChapter(root, course, chapterId, units) {
+  const c = (course.chapters || []).findIndex((ch) => ch.id === chapterId);
+  if (c < 0) throw new Error(`No chapter called "${chapterId}" in ${course.title}.`);
+  const ch = course.chapters[c];
+  const byId = Object.fromEntries(units.map((u) => [u.id, u]));
+  root.innerHTML = "";
+  root.append(
+    topNav({ course, chapter: ch, units }), // the top tab's menu: Home and every chapter
+    el("header", { className: "page-header" }, [
+      el("a", { className: "back-link", href: `#/${course.id}`, textContent: `← ${course.title}: all chapters` }),
+      el("div", { className: "unit-num", textContent: `Chapter ${c + 1}` }),
+      el("h1", { textContent: ch.title }),
+    ]),
+    el("div", { className: "unit-list" }, ch.units.map((u, i) => (typeof u === "string" ? unitCard(course, byId[u]) : soonCard(`${c + 1}.${i + 1}`, u)))),
+    readMore(readingFor(course, ch)),
   );
 }
 
@@ -156,6 +193,7 @@ export function renderUnit(root, course, unit, stages, units = []) {
   const where = place.chapter ? `Chapter ${place.chapterNumber}: ${place.chapter.title} · Unit ${place.number}` : `Unit ${place.number}`;
   root.append(
     topNav({ course, unit, unitNumber: place.number, stages, units }),
+    place.chapter ? el("a", { className: "back-link", href: `#/${course.id}/ch/${place.chapter.id}`, textContent: `← Chapter ${place.chapterNumber}: ${place.chapter.title}` }) : null,
     el("header", { className: "page-header unit-header" }, [
       el("div", {}, [el("div", { className: "unit-num", textContent: where }), el("h1", { textContent: unit.title })]),
       progressBar(course, unit),

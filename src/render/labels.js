@@ -103,7 +103,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     for (const { dx, dy, align, base } of tries) {
       if (l.maxMove != null && Math.hypot(dx, dy) > l.maxMove) continue; // e.g. angles stay by their arc
       const pos = [l.pos[0] + dx, l.pos[1] + dy];
-      const box = labelBox(pos[0], pos[1], width, l.size, align);
+      const box = labelBox(pos[0], pos[1], width, l.size, align, l.tight);
       // Prefer the original spot: moving away (or re-aligning) costs a little.
       let cost = base != null ? base : (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
@@ -131,7 +131,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       // Stepping down may hop over dimension lines, but never past an arrow or
       // the body: check the strip the label would slide through.
       if (down && base == null && dy > 18) {
-        const start = labelBox(l.pos[0], l.pos[1], width, l.size, align);
+        const start = labelBox(l.pos[0], l.pos[1], width, l.size, align, l.tight);
         const strip = { x0: start.x0, y0: start.y1, x1: start.x1, y1: box.y0 };
         for (const [p, q, kind] of segments) if (kind !== "dim" && kind !== true && segmentHits(strip, p, q)) cost += 500;
         // …nor through a drawing (an eyebolt, a support): only dimension lines.

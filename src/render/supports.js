@@ -17,6 +17,7 @@
 // keep clear of it (render/labels.js keeps a gap around every box).
 
 import { barBoxes, LETTER_CLEAR } from "./labels.js";
+import { letterDrop } from "./arrows.js";
 
 // A pin's size, the same for every pin (a support's or a link's anchor), in pixels.
 const PIN = { half: 14, depth: 24, ground: 22, ring: 4.5 };
@@ -50,7 +51,12 @@ export function drawSupportSymbol(cv, s, env) {
     poly([apex, pt(-PIN.half, PIN.depth), pt(PIN.half, PIN.depth)]);
     hatch(ctx, pt(0, PIN.depth), along, back, PIN.ground);
     ring(apex, PIN.ring);
-    outline(pt, -PIN.ground, PIN.ground, -PIN.ring, PIN.depth + 8, along);
+    // Its true outline: the ring, the triangle in slices that widen with depth, and
+    // the hatched strip — so a letter can come right up beside the pin.
+    wholeOf(pt, -PIN.ground, PIN.ground, -PIN.ring, PIN.depth + 8);
+    outline(pt, -PIN.ring, PIN.ring, -PIN.ring, PIN.ring, along);
+    triangle(pt, PIN.half, 0, PIN.depth, along);
+    outline(pt, -PIN.ground, PIN.ground, PIN.depth, PIN.depth + 8, along);
   };
   // A symbol's outline, from its extent in its own frame (u along the ground,
   // v back into it): pt(u, v) → pixels. Level or upright, one box covers it
@@ -59,8 +65,19 @@ export function drawSupportSymbol(cv, s, env) {
   // across the ground line instead — the object-boundaries rule: true outlines.
   // symbolBox keeps the whole extent, for placing the support's letter.
   let symbolBox = null;
+  const boxOf = (cs) => ({ x0: Math.min(...cs.map((c) => c[0])), y0: Math.min(...cs.map((c) => c[1])), x1: Math.max(...cs.map((c) => c[0])), y1: Math.max(...cs.map((c) => c[1])) });
+  // The symbol's whole extent (for its letter), when its outline comes in pieces.
+  const wholeOf = (pt, u0, u1, v0, v1) => (symbolBox = boxOf([pt(u0, v0), pt(u1, v0), pt(u0, v1), pt(u1, v1)]));
+  // A triangle with its apex at depth v0, widening to ±half at v1: slices 4 px deep.
+  const triangle = (pt, half, v0, v1, dir = t) => {
+    const n = Math.max(1, Math.ceil((v1 - v0) / 4));
+    for (let i = 0; i < n; i++) {
+      const a = v0 + ((v1 - v0) * i) / n, c = v0 + ((v1 - v0) * (i + 1)) / n;
+      const w = (half * (c - v0)) / (v1 - v0) + 1; // (its 2 px outline)
+      outline(pt, -w, w, a, c, dir);
+    }
+  };
   const outline = (pt, u0, u1, v0, v1, dir = t) => {
-    const boxOf = (cs) => ({ x0: Math.min(...cs.map((c) => c[0])), y0: Math.min(...cs.map((c) => c[1])), x1: Math.max(...cs.map((c) => c[0])), y1: Math.max(...cs.map((c) => c[1])) });
     const whole = boxOf([pt(u0, v0), pt(u1, v0), pt(u0, v1), pt(u1, v1)]);
     if (!symbolBox) symbolBox = whole;
     if (Math.abs(dir[0] * dir[1]) < 0.02) return out.boxes.push(whole);
@@ -110,7 +127,12 @@ export function drawSupportSymbol(cv, s, env) {
       ring(at(6, 21.5), 4);
       hatch(ctx, at(0, 26), t, b, 20);
       ring(p);
-      cover([at(-20, 0), at(20, 34)]);
+      // (Its true outline: ring, triangle, wheels, hatched strip.)
+      wholeOf(at, -20, 20, -4.5, 34);
+      outline(at, -5.5, 5.5, -5.5, 5.5);
+      triangle(at, 12, 0, 17);
+      outline(at, -11, 11, 17, 26);
+      outline(at, -20, 20, 26, 34);
       incline(at(0, 26), 20);
       break;
     }
@@ -203,13 +225,17 @@ export function drawSupportSymbol(cv, s, env) {
   if (s.label) {
     // (A link's or cable's boxes are its bar and far anchor: its letter goes by its point.)
     const box = s.kind === "link" || s.kind === "cable" ? null : symbolBox || out.boxes[0];
-    const mid = box ? (box.y0 + box.y1) / 2 + 4 : p[1];
+    const mid = box ? (box.y0 + box.y1) / 2 : p[1];
     const spots = box
       // (First choice: straight below the symbol, just outside its clear gap — CLEAR, labels.js.)
-      ? [[(box.x0 + box.x1) / 2, box.y1 + 12 + LETTER_CLEAR, "center"], [box.x0 - 6 - LETTER_CLEAR, mid, "right"], [box.x1 + 6 + LETTER_CLEAR, mid, "left"],
-        [p[0] - 12, p[1] + 16, "right"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] - 12, "right"], [p[0] + 12, p[1] - 12, "left"]]
-      : [[p[0], p[1] + 20, "center"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] + 16, "right"]];
-    out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true, clear: LETTER_CLEAR });
+      // (Tight letter boxes, labelBox: 6.3 px above a letter's middle, 1.5 px at its sides.)
+      // Then right beside the pin itself (level with it, clear of the symbol under it), then
+      // beside the symbol.
+      ? [[(box.x0 + box.x1) / 2, box.y1 + 6.6 + LETTER_CLEAR, "center"], [p[0] - 10, p[1] - 1, "right"], [p[0] + 10, p[1] - 1, "left"],
+        [box.x0 - 2 - LETTER_CLEAR, mid, "right"], [box.x1 + 2 + LETTER_CLEAR, mid, "left"],
+        [p[0] - 10, p[1] + 12, "right"], [p[0] + 10, p[1] + 12, "left"], [p[0] - 10, p[1] - 10, "right"], [p[0] + 10, p[1] - 10, "left"]]
+      : [[p[0], p[1] + 14, "center"], [p[0] + 10, p[1] + 10, "left"], [p[0] - 10, p[1] + 10, "right"]];
+    out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true, clear: LETTER_CLEAR, tight: letterDrop(s.label) });
   }
   return out;
 }

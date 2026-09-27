@@ -22,7 +22,7 @@ import { magnitudeOf, directionOf } from "./particle.js";
 import { directionVector } from "./directions.js";
 import { allReactions } from "./supports.js";
 import { bodySize, weightOf, outwardAt } from "./rigid-body.js";
-import { rigidBodyScene, lengthPerNewton } from "./rigid-body-scene.js";
+import { rigidBodyScene, lengthPerNewton, overLoad } from "./rigid-body-scene.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
 import { solveInternal, loadPortion, beamY, beamEnds, evalPoly, eventPoints } from "./internal.js";
 
@@ -78,16 +78,16 @@ function cutScene(setup, res, opts) {
     const len = v == null ? 0.2 * size : Math.max(0.1 * size, Math.abs(v) * k);
     shapes.push({ type: "arrow", id: r.id, ...placeArrow(at(r.at, side), dir, len, outwardAt(setup, { ...r, dir })), role: "unknown", label: `${r.symbol} = ${v == null ? "?" : format(Math.abs(v), "N")}`, ...alpha });
   }
-  // Loads on each piece.
+  // Loads on each piece (a push through a distributed load starts above it).
+  const H = heightPerLoad(setup, size);
   for (const f of setup.forces || []) {
     const side = sideOf(f.at[0]);
-    const len = Math.max(0.1 * size, magnitudeOf(f) * k);
+    const len = Math.max(0.1 * size, magnitudeOf(f) * k, f.push ? overLoad(setup, f, H, size) : 0);
     const u = directionOf(f);
     const p = at(f.at, side);
     const tail = f.push ? add(p, scale(u, -len)) : p;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}`, ...(faint(side) ? { alpha: 0.3 } : {}) });
   }
-  const H = heightPerLoad(setup, size);
   for (const l of setup.loads || []) {
     for (const side of ["left", "right"]) {
       const part = side === "left" ? loadPortion(l, -Infinity, x) : loadPortion(l, x, Infinity);
@@ -139,7 +139,8 @@ function diagramScene(setup, res, opts) {
   const rb = res.rigid || res;
   const known = knownNow(setup, res, opts);
   // (Shorter arrows than usual, so the reactions stay clear of the shear diagram.)
-  const shapes = rigidBodyScene({ ...setup, showReactions: "always", arrowSize: 0.18 }, rb, { ...opts, reveal: known });
+  // (One loaded beam, not sketch | FBD: the diagrams line up under it.)
+  const shapes = rigidBodyScene({ ...setup, showReactions: "always", arrowSize: 0.18 }, rb, { ...opts, reveal: known, overlay: true });
   // setup.noPlots: the beam alone (a debug stage whose working the diagrams would give away).
   if (res.status !== "determinate" || setup.noPlots) return shapes;
   const size = bodySize(setup);

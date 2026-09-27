@@ -10,7 +10,7 @@
 
 import { loadCourseList, loadCourse, loadUnit, loadUnitStages, loadStage, unitPlace } from "./core/content.js";
 import { runStage } from "./core/runner.js";
-import { renderHome, renderCourse, renderUnit } from "./ui/menus.js";
+import { renderHome, renderCourse, renderChapter, renderUnit } from "./ui/menus.js";
 import { createStageView } from "./ui/stage-view.js";
 import { comprehensionPanel, renderComprehension } from "./ui/comprehension-view.js";
 import { courseComprehension } from "./core/comprehension.js";
@@ -66,7 +66,9 @@ async function route() {
     const units = await Promise.all(course.units.map((u) => loadUnit(courseId, u)));
     // Tools (course.tools): free pages such as the block diagram workbench.
     const tools = await Promise.all((course.tools || []).map((t) => loadUnit(courseId, t)));
-    if (!unitId) return renderCourse(app, course, units, tools);
+    if (!unitId) return renderCourse(app, course, units, tools, await loadCourseList());
+    // A chapter's page: #/statics/ch/<chapter id>
+    if (unitId === "ch") return renderChapter(app, course, stageFile, units);
 
     const tool = tools.find((t) => t.id === unitId);
     if (tool) {
@@ -97,10 +99,10 @@ async function route() {
       next = `#/${courseId}`;
       nextLabel = `Back to ${course.title} →`;
     }
-    // The page's top menu lists every stage of this unit.
+    // The page's top menu lists every stage of this unit, then the chapters.
     const view = createStageView(app, stage, {
       course, unit, unitNumber: unitPlace(course, unitId).number, current: stageFile,
-      stages: await loadUnitStages(courseId, unit),
+      stages: await loadUnitStages(courseId, unit), units, // (units: ticks on finished chapters)
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
     playing = runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });

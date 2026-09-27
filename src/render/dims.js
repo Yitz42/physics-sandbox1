@@ -97,7 +97,8 @@ export function extendDims(shapes, cv) {
       if (!best || best.t < cv.pxToWorld(8)) continue; // already touching
       // Stop just short of the body's surface (a beam is drawn thick), start just past the line.
       const halfPx = best.beam ? ((best.beam.width || 12) + 3) / 2 : best.gapPx != null ? best.gapPx - 4 : 0;
-      out.push({ type: "line", style: "extension", from: add(end, scale(best.dir, -cv.pxToWorld(5))), to: add(end, scale(best.dir, best.t)), gapPx: halfPx + 4 });
+      // (It stops 2 px short of the body: close, without touching it.)
+      out.push({ type: "line", style: "extension", from: add(end, scale(best.dir, -cv.pxToWorld(5))), to: add(end, scale(best.dir, best.t)), gapPx: halfPx + 2 });
     }
   }
   return out;

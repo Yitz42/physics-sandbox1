@@ -25,8 +25,12 @@ Read this before writing or changing stages or challenge types. Changing any of 
   numbers. Answer precision: ±0.1 N and ±0.1 N·m for forces and moments, ±0.01 m
   for distances (set per ask with `precision`).
 - Page layout ("simulation lab" look, agreed with the owner): a tab at the top centre
-  ("STATICS SIMULATION LAB") opens a menu on hover or tap: Home, back to the unit, the
-  unit's stages (ticked when done), and a greyed "Account — coming soon" slot. The
+  ("STATICS SIMULATION LAB") opens a menu on hover or tap: Home; on the all-chapters
+  page, every course; inside a chapter, unit or stage, every chapter (a stage first
+  lists the way back to its unit and the unit's stages, ticked when done); and a greyed
+  "Account — coming soon" slot. The course page shows each chapter as a square
+  **folder** (its title, progress, and its textbook link inside); a folder opens the
+  chapter's page with its units. The
   stage title sits top left with a progress bar top right showing **stages done in
   this unit**. No stage-type tag on the stage page. The panel starts with
   **MISSION:** (the stage's `mission` line), explore objectives are titled

@@ -4,6 +4,7 @@
 //   • the lines under the equations (summary) and a shadow of wrong answers.
 
 import { scale } from "../../core/vector.js";
+import { fbdShiftX } from "./rigid-body-scene.js";
 import { clone } from "../../core/paths.js";
 import { fixedTex, format } from "../../core/units.js";
 import { placeArrow } from "../../render/fbd.js";
@@ -15,7 +16,19 @@ import { swapTrig } from "./directions.js";
 
 // { forces, directions, points, arrowLength, origin } — see challenges/common/fbd-tool.js.
 // forces: every reaction, plus the weight if the body has mass.
-export function rigidBodyFbd(setup) {
+// The FBD is drawn to the right of the sketch (rigid-body-scene.js): every place
+// here is moved by the same amount, so the student's arrows land on it.
+export function rigidBodyFbd(setup, sceneOpts = {}) {
+  const info = fbdTool(setup);
+  const dx = fbdShiftX(setup, sceneOpts);
+  const move = (p) => (p ? [p[0] + dx, p[1]] : p);
+  for (const f of info.forces) f.at = move(f.at);
+  for (const q of Object.values(info.points)) q.at = move(q.at);
+  info.origin = move(info.origin);
+  return info;
+}
+
+function fbdTool(setup) {
   const forces = allReactions(setup).map((r) => ({
     id: r.id, symbol: r.symbol, dir: r.dir, at: r.at, outward: r.moment ? null : outwardAt(setup, r),
     either: r.either, kind: r.kind, moment: !!r.moment, sense: r.sense,
@@ -30,7 +43,7 @@ export function rigidBodyFbd(setup) {
   const points = {};
   for (const s of setup.supports || []) points[s.id] = { at: s.at, outward: outwardAt(setup, { support: s.id, at: s.at, kind: "component" }) };
   points.G = { at: W ? W.at : bodyCentre(setup), outward: [0, -1] };
-  return { forces, directions: dedupe(directions), points, arrowLength: 0.2 * bodySize(setup), origin: (setup.supports[0] || { at: [0, 0] }).at };
+  return { forces, directions: dedupe(directions), points, arrowLength: 0.2 * bodySize(setup), origin: [...(setup.supports[0] || { at: [0, 0] }).at] };
 }
 
 function dedupe(dirs) {
