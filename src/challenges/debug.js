@@ -1,8 +1,13 @@
 // debug.js — "a student made a mistake; find it and fix it."
 //
-// Tests: can they spot mistakes. Two kinds of mistake:
+// Tests: can they spot mistakes. Three kinds of mistake:
 //   view: "equations"  one term is wrong (sin/cos swapped, wrong sign) or missing
 //   view: "fbd"        an arrow points the wrong way, or a force is missing
+//   view: "steps"      one line of a student's working is wrong (e.g. one step of a
+//                      block diagram reduction); the solver builds the lines with
+//                      solver.debugSteps(setup, mutation) → { lines: [{ id, tex }],
+//                      wrong, follows: [ids that are wrong only because of it],
+//                      fixes: [{ label, correct?, feedback? }], explain, corrected }
 // Step 1: click the wrong term/arrow (or press "Something is missing").
 // Step 2: choose how to fix it.
 //
@@ -15,7 +20,7 @@
 import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
 import { swapFactor, flipSign, removeTerm, evaluate } from "../core/equations.js";
-import { renderEquations, renderMixed, highlightTerms } from "../render/panel.js";
+import { renderEquations, renderMixed, highlightTerms, renderTex } from "../render/panel.js";
 import { fixedTex } from "../core/units.js";
 import { arrowAt } from "../render/fbd.js";
 import { el, button } from "../ui/controls.js";
@@ -30,6 +35,7 @@ export function mount(ctx) {
   // the next one for each new version. ctx.memory survives new versions.
   if (ctx.memory.firstMutation == null) ctx.memory.firstMutation = Math.floor(Math.random() * dbg.mutations.length);
   const mutation = dbg.mutations[(ctx.memory.firstMutation + ctx.round) % dbg.mutations.length];
+  if (dbg.view === "steps") return mountSteps(ctx, mutation);
   const isFbd = dbg.view === "fbd";
   const wrongSetup = isFbd ? solver.mutate(ctx.setup, mutation) : null;
 
@@ -174,6 +180,81 @@ export function mount(ctx) {
     step.textContent = "Corrected work (the fixed term is highlighted):";
     renderEquations(eqBox, correctEqs, { mode, extra });
     highlightTerms(eqBox, mutation.term || mutation.force);
+    ctx.explain();
+    ctx.finish();
+  }
+}
+
+// ---- view "steps": find the wrong line in a student's working ------------------------
+
+function mountSteps(ctx, mutation) {
+  const { stage, solver } = ctx;
+  const dbg = stage.debug;
+  const ws = createWorkspace(ctx, { equations: "never", reveal: false, sceneOpts: stage.sceneOpts || {} });
+  const work = solver.debugSteps(ws.setup, mutation);
+
+  const intro = el("div", { className: "debug-intro" });
+  renderMixed(intro, dbg.intro || "Here is a student's working. One line is wrong.");
+  const step = el("div", { className: "debug-step", textContent: "Step 1: click the line where the mistake is." });
+  const box = el("div", { className: "eq-list debug-eqs debug-lines" });
+  ctx.el.area.append(intro, step, box);
+
+  let stepNo = 1;
+  const rows = work.lines.map((line) => {
+    const row = el("button", { type: "button", className: "debug-line" });
+    renderTex(row, line.tex);
+    row.onclick = () => pick(line.id, row);
+    box.appendChild(row);
+    return row;
+  });
+
+  const attempts = createAttempts(ctx, ctx.el.area, () => {
+    showMessage(ctx.el.feedback, "info", "Here's the mistake", work.explain);
+    fixed();
+  });
+
+  function pick(id, row) {
+    if (stepNo !== 1) return;
+    rows.forEach((r) => r.classList.remove("is-wrong"));
+    if (id !== work.wrong) {
+      row.classList.add("is-wrong");
+      const msg = work.follows.includes(id)
+        ? "This line is wrong, but only because it builds on an earlier line. Find the line where the mistake STARTS."
+        : (dbg.notes && dbg.notes[id]) || "That line is right. Check each line against the rule it uses.";
+      showMessage(ctx.el.feedback, "bad", work.follows.includes(id) ? "Earlier than that" : "That one is correct", msg);
+      attempts.wrong();
+      return;
+    }
+    stepNo = 2;
+    row.classList.add("is-found");
+    showMessage(ctx.el.feedback, "good", "Found it!", "Now, how should it be fixed?");
+    step.textContent = "Step 2: choose the fix.";
+    const choices = el("div", { className: "choice-list" });
+    for (const f of work.fixes) {
+      choices.appendChild(button(f.label, (e) => {
+        if (f.correct) {
+          showMessage(ctx.el.feedback, "good", "Fixed! ✓", work.explain);
+          fixed();
+        } else {
+          e.target.classList.add("is-wrong");
+          showMessage(ctx.el.feedback, "bad", "That wouldn't fix it", f.feedback || "Look again at what this line does wrong.");
+          attempts.wrong();
+        }
+      }, "btn btn-choice"));
+    }
+    step.appendChild(choices);
+  }
+
+  function fixed() {
+    stepNo = 3;
+    step.textContent = "Corrected working:";
+    box.innerHTML = "";
+    work.corrected.forEach((tex, i) => {
+      const row = el("div", { className: "debug-line" + (work.lines[i] && work.lines[i].id === work.wrong ? " is-fixed" : "") });
+      renderTex(row, tex);
+      box.appendChild(row);
+    });
+    ws.setReveal(true);
     ctx.explain();
     ctx.finish();
   }

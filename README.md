@@ -7,8 +7,9 @@ substituted — so they can see how forces become formulas.
 
 The first course is **Statics**. A second course, **Automatic Controls**, is laid
 out chapter by chapter following Nise's *Control Systems Engineering* (7th ed.),
-with its units marked "Coming soon" until they're built. Mechanics of materials
-and dynamics come later.
+with its units marked "Coming soon" until they're built. Chapter 5 is built:
+block diagram reduction, and signal-flow graphs with Mason's rule. Mechanics of
+materials and dynamics come later.
 
 ## What's in it so far
 

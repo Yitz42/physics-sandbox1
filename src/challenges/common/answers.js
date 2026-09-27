@@ -199,13 +199,15 @@ export function answerInputs(container, asks, quantities) {
 }
 
 // Check every not-yet-correct row. Returns true when all rows are right.
-export function checkRows(inputs, result, mistakesFor) {
+// otherwise: the nudge for a wrong answer that matches no known slip (a solver
+// can give its own, via solver.texts.otherwise; an ask's own wins).
+export function checkRows(inputs, result, mistakesFor, otherwise) {
   let allOk = true;
   for (const r of inputs.rows) {
     if (r.done) continue;
     if (r.tidy) r.tidy(); // show the rounded number that is actually being checked
     const correct = result.values[r.ask.quantity];
-    const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise });
+    const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise || otherwise });
     inputs.mark(r, out.ok, out.ok ? "✓ Correct" : out.message);
     if (!out.ok) allOk = false;
   }

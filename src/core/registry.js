@@ -22,6 +22,11 @@
 //                                common errors (sin/cos swap, wrong sign …)
 //   fbd(setup, sceneOpts)      → { forces, directions, origin } for the draw-the-FBD step
 //   mutate(setup, mutation)    → a deliberately wrong setup for debug challenges
+//   choices(setup, result)     → [{ title, options: [{ tex, correct?, feedback? }] }] for a
+//                                solve stage's "choices" step (pick each line of the working)
+//   debugSteps(setup, mutation) → a student's working with one wrong line (debug view "steps")
+//   texts                      → { wrong, correct }: the solver's own wording after an answer
+//                                (the default talks about force arrows)
 
 const solvers = new Map();
 

@@ -46,11 +46,15 @@ src/
     equations.js           builds symbolic + numeric equation strings for KaTeX
     runner.js              loads a stage, runs its challenge, tracks completion
     progress.js            saves which stages a student finished
+    poly.js                polynomials in s and fractions of them (transfer functions)
+    symbolic.js            polynomials in named symbols (G₁G₂/(1 + G₂H₂) …)
   challenges/              reusable ways of testing understanding (see below)
     explore.js  predict.js  build.js  debug.js  concept-check.js  solve.js
+    (debug view "steps" and solve step "choices" take their lines from the solver)
   render/                  drawing only, no physics
     canvas.js  arrows.js  fbd.js  diagrams.js  panel.js
     objects.js (motor, lamp, eyebolt …)  mechanisms.js (springs, pulleys)
+    blocks.js (block diagrams, signal-flow graphs)
   ui/
     controls.js  menus.js  feedback.js
   subjects/                one folder per subject; each is a plug-in
@@ -67,7 +71,9 @@ src/
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
       geometry.js          centroids, area moments of inertia
-    controls/              automatic controls (index.js lists the planned solvers)
+    controls/              automatic controls: block-diagram.js (+ block-tools.js,
+                           block-layout.js) and signal-flow.js (Mason's rule); index.js
+                           lists the solvers planned for later chapters
     materials/             later: stress, strain, Mohr's circle
     dynamics/              later
 content/

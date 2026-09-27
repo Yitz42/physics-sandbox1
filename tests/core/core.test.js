@@ -227,3 +227,56 @@ test("parts: a stage without parts is one part; checkStage names the part with a
   const broken = { ...twoParts, parts: [twoParts.parts[0], { title: "No ask", instructions: "x", setup: {} }] };
   equal(checkStage(broken), ["part 2: predict stages need \"ask\""]);
 });
+
+// ---- Polynomials, transfer functions, symbolic algebra ------------------------
+
+import * as P from "../../src/core/poly.js";
+import * as S from "../../src/core/symbolic.js";
+
+test("poly: (s + 1)(s + 2) = s² + 3s + 2; its value at s = 1 is 6; TeX and text forms", () => {
+  const p = P.mul(P.fromDescending([1, 1]), P.fromDescending([1, 2]));
+  equal(P.toDescending(p), [1, 3, 2]);
+  equal(P.evaluate(p, 1), 6);
+  equal(P.polyTex(p), "s^{2} + 3s + 2");
+  equal(P.polyText(P.fromDescending([1, -4, 0])), "s² − 4s");
+});
+
+test("poly: division and gcd — (s² + 3s + 2) ÷ (s + 1) = s + 2; gcd with (s + 1)(s + 5) is s + 1", () => {
+  const { q, r } = P.divmod(P.fromDescending([1, 3, 2]), P.fromDescending([1, 1]));
+  equal(P.toDescending(q), [1, 2]);
+  ok(P.isZero(r));
+  const g = P.gcd(P.fromDescending([1, 3, 2]), P.fromDescending([1, 6, 5]));
+  equal(P.toDescending(g).map((c) => +c.toFixed(9)), [1, 1]);
+});
+
+test("transfer functions: 1/(s+1) + 2/(s+1) = 3/(s+1) (common factor cancelled, monic bottom)", () => {
+  const a = P.tf.of([1], P.fromDescending([1, 1]));
+  const b = P.tf.of([2], P.fromDescending([1, 1]));
+  const sum = P.tf.add(a, b);
+  equal(P.toDescending(sum.num).map((c) => +c.toFixed(9)), [3]);
+  equal(P.toDescending(sum.den).map((c) => +c.toFixed(9)), [1, 1]);
+});
+
+test("transfer functions: G = 10/(s(s + 1)) with unity negative feedback → T = 10/(s² + s + 10)", () => {
+  const G = P.tf.of([10], P.fromDescending([1, 1, 0]));
+  const T = P.tf.feedback(G, P.tf.one(), -1);
+  equal(P.toDescending(T.num), [10]);
+  equal(P.toDescending(T.den), [1, 1, 10]);
+  // Positive feedback: 10/(s² + s − 10)
+  equal(P.toDescending(P.tf.feedback(G, P.tf.one(), +1).den), [1, 1, -10]);
+});
+
+test("symbolic: an inner loop inside an outer loop → G₁G₂ / (1 + G₂H₂ + G₁G₂H₁)", () => {
+  const F = P.fractionOps(S.symRing);
+  const sym = (id) => F.of(S.symbol(id));
+  const inner = F.feedback(sym("G2"), sym("H2"), -1);
+  const T = F.feedback(F.mul(sym("G1"), inner), sym("H1"), -1);
+  const tex = (id) => id.replace(/(\d+)/, "_$1");
+  const order = ["G1", "G2", "H1", "H2"];
+  equal(S.fracTex(T, tex, order), "\\dfrac{G_1G_2}{1 + G_2H_2 + G_1G_2H_1}");
+  // Substituting G1 = 2, G2 = 3, H1 = 1, H2 = 0.5: 6 / (1 + 1.5 + 6) = 0.70588
+  const vals = { G1: 2, G2: 3, H1: 1, H2: 0.5 };
+  const num = S.substitute(T.num, { zero: 0, add: (a, b) => a + b, mul: (a, b) => a * b }, (id) => vals[id], (c) => c);
+  const den = S.substitute(T.den, { zero: 0, add: (a, b) => a + b, mul: (a, b) => a * b }, (id) => vals[id], (c) => c);
+  close(num / den, 6 / 8.5);
+});

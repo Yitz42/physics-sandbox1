@@ -1,6 +1,8 @@
 // solve.js — a full textbook problem, step by step:
 //   1. draw the free-body diagram   ("fbd")
 //   2. choose the right equations   ("equations")
+//      or choose each line of the working, from the solver ("choices": e.g. each
+//      step of a block diagram reduction; needs solver.choices)
 //   3. solve for the unknowns        ("answer")
 //
 // Tests: can they do the whole process. Stages can skip steps that don't
@@ -9,31 +11,35 @@
 // "needs practice" and they must finish a new version without help.
 //
 // Stage fields used:
-//   solve: { steps, candidates }   candidates = forces offered in the FBD palette
+//   solve: { steps, candidates, choicesName }   candidates = forces offered in the FBD
+//          palette; choicesName = what the "choices" step is called (e.g. "Reduce the diagram")
 //   ask:   what to solve for (as in predict)
 
 import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
 import { createFbdTool } from "./common/fbd-tool.js";
 import { createEquationPick } from "./common/equation-pick.js";
+import { createChoicePick } from "./common/choice-pick.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
-const STEP_NAMES = { fbd: "Draw the FBD", equations: "Write the equations", answer: "Solve" };
+const STEP_NAMES = { fbd: "Draw the FBD", equations: "Write the equations", choices: "Work it out", answer: "Solve" };
 const STEP_INTRO = {
   fbd: "Draw the free-body diagram: isolate the point and show **every** force acting on it.",
   equations: "Choose the correct equation in each group.",
+  choices: "Choose the correct line in each group.",
   answer: "Solve the equations. Enter your answers:",
 };
 
 export function mount(ctx) {
   const { stage, solver } = ctx;
   const steps = stage.solve.steps || ["fbd", "equations", "answer"];
+  const names = { ...STEP_NAMES, ...(stage.solve.choicesName ? { choices: stage.solve.choicesName } : {}) };
   const ws = createWorkspace(ctx, { equations: "hidden", reveal: false, sceneOpts: stage.sceneOpts });
 
   // Step tracker ("1 Draw the FBD › 2 Write the equations › 3 Solve").
-  const tracker = el("ol", { className: "steps" }, steps.map((s) => el("li", { textContent: STEP_NAMES[s] })));
+  const tracker = el("ol", { className: "steps" }, steps.map((s) => el("li", { textContent: names[s] })));
   const intro = el("div", { className: "step-intro" });
   const body = el("div", { className: "step-body" });
   const actions = el("div", { className: "actions" });
@@ -71,7 +77,7 @@ export function mount(ctx) {
     if (index >= steps.length) return; // all done: leave the last step's work on screen
     body.innerHTML = "";
     const step = steps[index];
-    showMessage(intro, "info", `Step ${index + 1}: ${STEP_NAMES[step]}`, STEP_INTRO[step]);
+    showMessage(intro, "info", `Step ${index + 1}: ${names[step]}`, STEP_INTRO[step]);
     ctx.el.feedback.innerHTML = "";
 
     if (step === "fbd") {
@@ -98,14 +104,25 @@ export function mount(ctx) {
         onWrong: wrong,
       });
       body.appendChild(current.element);
+    } else if (step === "choices") {
+      current = createChoicePick(solver.choices(ws.setup, ws.result), {
+        onCorrect: () => {
+          ws.showEquations(true);
+          ws.setReveal(true);
+          showMessage(ctx.el.feedback, "good", "All correct ✓", "The working is now in the Equations panel.");
+          waitForNext();
+        },
+        onWrong: wrong,
+      });
+      body.appendChild(current.element);
     } else if (step === "answer") {
       const inputs = answerInputs(body, [].concat(stage.ask), solver.quantities(ws.setup));
       const check = () => {
-        if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q))) done(false);
+        if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q), solver.texts && solver.texts.otherwise)) done(false);
         else {
           ws.sceneOpts.guesses = guessesFrom(inputs); // faint "shadow" of their answer
           ws.redraw();
-          wrong(["The faint red dashed arrows show what your numbers would look like. Read the note under each red box, fix it, and check again."]);
+          wrong([(solver.texts && solver.texts.wrong) || "The faint red dashed arrows show what your numbers would look like. Read the note under each red box, fix it, and check again."]);
         }
       };
       const checkBtn = button("Check answers", check, "btn btn-play");

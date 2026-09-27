@@ -44,19 +44,20 @@ export function mount(ctx) {
       showMessage(ctx.el.feedback, "info", "Make your prediction first", "Type a number in every box, then press Test.");
       return;
     }
-    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []));
+    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise);
     if (allOk) {
       delete ws.sceneOpts.guesses;
       testBtn.disabled = true;
       ws.setReveal(true);
-      showMessage(ctx.el.feedback, "good", "Correct!", "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
+      showMessage(ctx.el.feedback, "good", "Correct!", (solver.texts && solver.texts.correct) || "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
       ctx.explain();
       ctx.finish();
     } else {
       // Draw a faint "shadow" of what their numbers would look like.
       ws.sceneOpts.guesses = guessesFrom(inputs);
       ws.redraw();
-      showMessage(ctx.el.feedback, "bad", "Not yet", "The faint red dashed arrows show what your numbers would look like — compare them with the picture. Read the note under each red box, fix it, and press Test again.");
+      // (A solver can word this itself, e.g. when its pictures have no shadows.)
+      showMessage(ctx.el.feedback, "bad", "Not yet", (solver.texts && solver.texts.wrong) || "The faint red dashed arrows show what your numbers would look like — compare them with the picture. Read the note under each red box, fix it, and press Test again.");
       attempts.wrong();
     }
   }

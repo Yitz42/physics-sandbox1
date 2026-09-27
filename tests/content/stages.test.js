@@ -469,3 +469,69 @@ test("Moving a force debug and solve: (M_R)_O = −288 N·m (d = 0.96 m); and {2
   close(v["R.y"], 280);
   close(v.M, 161);
 });
+
+// ---- Automatic controls, chapter 5 -------------------------------------------------
+
+test("Block diagrams predict: 8·2 with H = 0.25 → T = 3.2; K/(s(s + 3)), H = 1 → 20/(s² + 3s + 20); inner loop → 6/(s + 11)", () => {
+  const solver = getSolver("controls.blockDiagram");
+  close(solver.solve(find("block-diagrams/2-predict", 1).setup).values.dc, 3.2);
+  const v2 = solver.solve(find("block-diagrams/2-predict", 2).setup).values;
+  equal([v2.b0, v2.a1, v2.a0], [20, 3, 20]);
+  const v3 = solver.solve(find("block-diagrams/2-predict", 3).setup).values;
+  close(v3.b0, 6);
+  close(v3.a0, 11);
+});
+
+test("Block diagrams build: start fails; K = 25, K_t = 0.2 gives 25/(s² + 6s + 25)", () => {
+  const st = find("block-diagrams/3-build");
+  const solver = getSolver(st.solver);
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok);
+  const s = clone(st.setup);
+  s.params = { K: 25, Kt: 0.2 };
+  ok(st.goal.check(solver.solve(s), s).ok);
+});
+
+test("Block diagrams solve: default numbers give T = (10s + 50)/(s² + 8s + 25)", () => {
+  const v = getSolver("controls.blockDiagram").solve(find("block-diagrams/6-solve").setup).values;
+  equal([v.b1, v.b0, v.a1, v.a0].map((x) => +x.toFixed(9)), [10, 50, 8, 25]);
+});
+
+test("Mason predict: 2 paths, 3 loops, 1 pair; build: k = 0.3 gives T = 2; solve: Δ = 4.2, T = 1.929", () => {
+  const solver = getSolver("controls.signalFlow");
+  const c = solver.solve(find("signal-flow-graphs/2-predict", 1).setup).values;
+  equal([c.paths, c.loops, c.pairs], [2, 3, 1]);
+  const st = find("signal-flow-graphs/3-build");
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should not already work");
+  const s = clone(st.setup);
+  s.symbols.k.value = 0.3;
+  ok(st.goal.check(solver.solve(s), s).ok, "k = 0.3");
+  const v = solver.solve(find("signal-flow-graphs/6-solve").setup).values;
+  close(v.Delta, 4.2);
+  close(v.T, (6 + 0.5 * 4.2) / 4.2);
+});
+
+test("controls debug stages: every mutation builds a working with the wrong line in it, and one right fix", () => {
+  for (const id of ["block-diagrams/4-debug", "signal-flow-graphs/4-debug"]) {
+    const st = find(id);
+    const solver = getSolver(st.solver);
+    for (const m of st.debug.mutations) {
+      const w = solver.debugSteps(st.setup, m);
+      ok(w.lines.some((l) => l.id === w.wrong), `${id}: the wrong line is listed`);
+      equal(w.fixes.filter((f) => f.correct).length, 1);
+      equal(w.corrected.length, w.lines.length);
+    }
+  }
+});
+
+test("controls solve stages: every choice group has exactly one right option, in every version", () => {
+  for (const id of ["block-diagrams/6-solve", "signal-flow-graphs/6-solve"]) {
+    const st = find(id);
+    const solver = getSolver(st.solver);
+    for (let i = 0; i < 10; i++) {
+      for (const g of solver.choices(makeVariant(st.setup, st.vary))) {
+        equal(g.options.filter((o) => o.correct).length, 1, `${id} "${g.title}":`);
+        ok(g.options.length >= 2, `${id} "${g.title}" needs a wrong option`);
+      }
+    }
+  }
+});

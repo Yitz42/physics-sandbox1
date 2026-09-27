@@ -52,10 +52,7 @@ const chapters = [
   },
   {
     id: "reduction", title: "Reduction of multiple subsystems",
-    units: [
-      soon("Block diagram reduction", "Series, parallel and feedback forms; the closed loop is $\\frac{G}{1 + GH}$."),
-      soon("Signal-flow graphs and Mason's rule", "The same systems as graphs, and a formula for the transfer function."),
-    ],
+    units: ["block-diagrams", "signal-flow-graphs"],
   },
   {
     id: "stability", title: "Stability",

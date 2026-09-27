@@ -17,6 +17,7 @@
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment     see shapes-extra.js
 //   spring, pulley                           see mechanisms.js
+//   tfblock, sumjunction, wire, pickoff, signal, groupbox, sfgnode, sfgbranch   see blocks.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   divider  { x, frame? }                   soft grey vertical line between two diagrams (frame: the
 //                                            exact view to show; see panels.js);

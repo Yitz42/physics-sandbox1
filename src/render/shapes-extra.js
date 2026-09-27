@@ -8,11 +8,12 @@
 //              rPx its radius in pixels, maxR a largest radius in metres (to fit on a plate)
 // Like shapes.js, each returns { boxes, segments, labels } for label placement.
 // Pictures of real objects (motor, lamp, eyebolt, bracket) are in objects.js,
-// springs and pulleys in mechanisms.js.
+// springs and pulleys in mechanisms.js, block diagrams and signal-flow graphs in blocks.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
 import { drawObject } from "./objects.js";
 import { drawMechanism } from "./mechanisms.js";
+import { drawBlockShape } from "./blocks.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
   const { ctx } = cv;
@@ -166,7 +167,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
     }
     default: {
       // Pictures of real objects (motor, lamp, eyebolt …) live in objects.js.
-      const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env);
+      const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawBlockShape(cv, s, env, roleColor);
       if (obj) return obj;
     }
   }

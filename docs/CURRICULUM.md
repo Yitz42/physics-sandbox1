@@ -186,7 +186,10 @@ The owner is taking this course. Chapters follow Nise chapter for chapter
 "Coming soon" until it is built. Same rules as statics: one concept per unit,
 six stages each, hand-checked tests.
 
-**What the engine will need first** (general tools, added to render/ and core/):
+**Engine for controls** (general tools in core/ and render/). Built for chapter 5:
+polynomials and transfer functions (core/poly.js), symbolic algebra (core/symbolic.js),
+block diagrams drawn from a tree, signal-flow graphs (render/blocks.js).
+Still needed for later chapters:
 - a plot shape: curves against time or frequency, with axes and grid (step
   responses, Bode plots), and markers (%OS, Ts, Tp read off the curve);
 - an s-plane shape: poles (×) and zeros (○), the jω axis, root locus branches;
@@ -216,8 +219,11 @@ How the six challenge types fit controls (examples):
 4.1 Poles, zeros and the response · 4.2 First-order systems · 4.3 Second-order systems ·
 4.4 Underdamped specifications (%OS, Tp, Ts, Tr) · 4.5 Higher-order systems (dominant poles)
 
-### Chapter 5: Reduction of multiple subsystems
-5.1 Block diagram reduction · 5.2 Signal-flow graphs and Mason's rule
+### Chapter 5: Reduction of multiple subsystems ✅
+5.1 Block diagram reduction ✅ (step-by-step collapse; closed loops with numbers; tune K and
+rate feedback; find the wrong step; reduce, then T(s)) ·
+5.2 Signal-flow graphs and Mason's rule ✅ (trace paths, loops, non-touching loops; count, then
+Δ and T; set a feedback gain; check a student's Mason's rule; Mason step by step)
 
 ### Chapter 6: Stability
 6.1 Stability and pole locations · 6.2 Routh–Hurwitz criterion · 6.3 Stability with a gain

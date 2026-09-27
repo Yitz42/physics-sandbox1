@@ -229,6 +229,14 @@ p { margin: 0 0 8px; }
 .cc-progress { font-size: 13px; color: var(--c-muted); font-weight: 600; }
 .cc-prompt { font-size: 17px; }
 .debug-step, .palette-hint { font-size: 14px; color: var(--c-muted); margin: 6px 0; }
+/* Debug, view "steps": each line of the student's working is a button */
+.debug-lines { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; }
+.debug-line { display: block; width: 100%; text-align: left; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: 8px; padding: 2px 10px; color: inherit; cursor: pointer; overflow-x: auto; }
+button.debug-line:hover { border-color: var(--c-accent); }
+.debug-line.is-wrong { border-color: var(--c-wrong); background: var(--c-bad-bg); }
+.debug-line.is-found { border-color: var(--c-accent); box-shadow: 0 0 0 2px var(--c-info-bg); }
+.debug-line.is-fixed { border-color: var(--c-good); background: var(--c-good-bg); }
+div.debug-line { cursor: default; }
 .debug-eqs { background: var(--c-bg); border-radius: 8px; padding: 4px 10px; }
 .debug-eqs .katex-display > .katex, .eq-choice .katex-display > .katex { font-size: 1.05em; }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 6px; counter-reset: step; font-size: 13px; }
