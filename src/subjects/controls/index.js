@@ -23,8 +23,8 @@ import { signalScene } from "./signal-flow-scene.js";
 
 // Controls' own kinds of mistake (on top of the general ones in core/diagnosis.js).
 registerErrorKinds({
-  blockRule: { area: "object", label: "Block rules (series multiply, parallel add, loop G/(1 ± GH))" },
-  touching: { area: "object", label: "Which loops touch (Δ and Δₖ in Mason's rule)" },
+  blockRule: { area: "physics", label: "Block rules (series multiply, parallel add, loop G/(1 ± GH))" },
+  touching: { area: "physics", label: "Which loops touch (Δ and Δₖ in Mason's rule)" },
 });
 
 // Wording for the challenges (their defaults talk about force arrows).

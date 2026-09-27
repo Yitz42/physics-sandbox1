@@ -1,6 +1,6 @@
 // comprehension.js — turns the record of answers (evidence.js) into
 // comprehension scores for each unit, chapter and course, and a breakdown of
-// the mistakes: math errors vs. object errors (diagnosis.js). Pure functions:
+// the mistakes: math, object and physics errors (diagnosis.js). Pure functions:
 // they take the events and return numbers, so they're easy to test.
 //
 // How a unit's score is worked out:
@@ -18,6 +18,7 @@
 // the average of its chapters.
 
 import { errorKind, AREAS } from "./diagnosis.js";
+import { paceSignals, usualPace } from "./pace.js";
 
 const RECENT = 20; // questions per unit that count
 const NOT_SCORED = new Set(["design"]);
@@ -58,11 +59,11 @@ export function questionScores(events) {
   return out.sort((a, b) => a.end - b.end);
 }
 
-// The mistakes in some events: by area (math / object / unknown) and by kind,
+// The mistakes in some events: by area (math / object / physics / unknown) and by kind,
 // most frequent first. `rounds` = in how many different versions it happened
 // (the same slip in several problems is a pattern, not a one-off).
 export function mistakeBreakdown(events) {
-  const byArea = { math: 0, object: 0, unknown: 0 };
+  const byArea = { math: 0, object: 0, physics: 0, unknown: 0 };
   const kinds = {};
   for (const e of events) {
     if (e.ok || e.shown || !e.k) continue;
@@ -77,7 +78,7 @@ export function mistakeBreakdown(events) {
   const byKind = Object.values(kinds)
     .map((r) => ({ ...r, rounds: r.rounds.size }))
     .sort((a, b) => b.count - a.count || b.rounds - a.rounds);
-  const total = byArea.math + byArea.object + byArea.unknown;
+  const total = byArea.math + byArea.object + byArea.physics + byArea.unknown;
   return { total, byArea, byKind };
 }
 
@@ -94,8 +95,9 @@ export function levelOf(score, answered) {
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 
 // One unit: { score (0–100 or null), answered, types (challenge types seen),
-// situations (different problems seen), level, mistakes }.
-export function unitComprehension(events, courseId, unitId) {
+// situations (different problems seen), level, mistakes, pace (pace.js) }.
+// usual: the student's usual pace across the course (pace.js usualPace), or null.
+export function unitComprehension(events, courseId, unitId, usual = null) {
   const mine = events.filter((e) => e.c === courseId && e.u === unitId);
   const qs = questionScores(mine);
   const recent = qs.slice(-RECENT);
@@ -108,6 +110,7 @@ export function unitComprehension(events, courseId, unitId) {
     situations: new Set(qs.map((q) => `${q.s}|${q.v || ""}`)).size,
     level: levelOf(score, qs.length),
     mistakes: mistakeBreakdown(mine),
+    pace: paceSignals(mine, usual),
   };
 }
 
@@ -116,11 +119,13 @@ export function unitComprehension(events, courseId, unitId) {
 //   units:  loaded unit objects ({ id, title }) for the built ones
 export function courseComprehension(events, course, units = []) {
   const byId = Object.fromEntries(units.map((u) => [u.id, u]));
+  const mine = events.filter((e) => e.c === course.id);
+  const usual = usualPace(mine); // this student's usual pace, to spot answers far off it
   const chapters = (course.chapters || [{ id: "all", title: course.title, units: course.units || [] }]).map((ch, c) => {
     const list = ch.units.map((u, i) => {
       const number = `${c + 1}.${i + 1}`;
       if (typeof u !== "string") return { number, title: u.title, comingSoon: true };
-      return { number, id: u, title: (byId[u] && byId[u].title) || u, ...unitComprehension(events, course.id, u) };
+      return { number, id: u, title: (byId[u] && byId[u].title) || u, ...unitComprehension(events, course.id, u, usual) };
     });
     const scored = list.filter((u) => u.score != null);
     const score = scored.length ? Math.round(mean(scored.map((u) => u.score))) : null;
@@ -134,7 +139,7 @@ export function courseComprehension(events, course, units = []) {
   const scored = chapters.filter((c) => c.score != null);
   const score = scored.length ? Math.round(mean(scored.map((c) => c.score))) : null;
   const answered = scored.reduce((n, c) => n + c.answered, 0);
-  return { score, answered, level: levelOf(score, answered), chapters, mistakes: mistakeBreakdown(events.filter((e) => e.c === course.id)) };
+  return { score, answered, level: levelOf(score, answered), chapters, mistakes: mistakeBreakdown(mine), pace: paceSignals(mine, usual) };
 }
 
 export { AREAS };

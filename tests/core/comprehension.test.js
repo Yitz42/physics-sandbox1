@@ -56,7 +56,7 @@ test("unit: cables = (1 + 0.6 + 0.3 + 0 + 1) / 5 = 58%; 2 challenge types, 3 dif
 
 test("mistakes: cables has 3 math (trig ×2, sign) and 1 object (missing); trig is the most common, in 2 versions", () => {
   const m = mistakeBreakdown(record.filter((e) => e.u === "cables"));
-  equal(m.byArea, { math: 3, object: 1, unknown: 0 });
+  equal(m.byArea, { math: 3, object: 1, physics: 0, unknown: 0 });
   equal(m.total, 4);
   equal([m.byKind[0].kind, m.byKind[0].count, m.byKind[0].rounds], ["trig", 2, 2]);
 });
@@ -77,7 +77,7 @@ test("course: chapter = average of its units with answers; course = average of c
   equal(cc.chapters[0].units[2].number, "1.3");
   equal(cc.chapters[1].score, null); // no answers yet
   equal(cc.score, 59); // only chapter 1 has answers
-  equal(cc.mistakes.byArea, { math: 4, object: 1, unknown: 0 });
+  equal(cc.mistakes.byArea, { math: 4, object: 1, physics: 0, unknown: 0 });
 });
 
 test("levels: few answers → Just started; then Needs work / Developing / Good / Strong", () => {
@@ -88,12 +88,14 @@ test("levels: few answers → Just started; then Needs work / Developing / Good 
 test("kinds: general ones are built in; subjects add their own; unknown ones count as not identified", () => {
   equal(errorKind("trig").area, "math");
   equal(errorKind("missing").area, "object");
+  equal(errorKind("concept").area, "physics");
+  equal(errorKind("weight").area, "physics"); // statics registers it (a principle: W = mg)
   equal(errorKind("no-such-kind").area, "unknown");
   registerErrorKinds({ testKind: { area: "object", label: "A test kind" } });
   ok(isKnownKind("testKind"));
   let threw = false;
   try {
-    registerErrorKinds({ bad: { area: "physics", label: "no such area" } });
+    registerErrorKinds({ bad: { area: "chemistry", label: "no such area" } });
   } catch {
     threw = true;
   }

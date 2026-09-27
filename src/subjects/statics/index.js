@@ -26,9 +26,11 @@ import { equivalentMistakes, equivalentSummary } from "./equivalent-tools.js";
 // Every likely-slip a statics solver recognises names one of these, so the
 // comprehension page can say where a student is failing.
 registerErrorKinds({
-  weight: { area: "object", label: "Using the mass instead of the weight (W = mg)" },
-  momentArm: { area: "object", label: "Wrong moment arm (not the perpendicular distance)" },
-  springLength: { area: "object", label: "Spring stretch vs. length" },
+  weight: { area: "physics", label: "Using the mass instead of the weight (W = mg)" },
+  momentArm: { area: "physics", label: "Wrong moment arm (not the perpendicular distance)" },
+  springLength: { area: "physics", label: "Spring stretch vs. length (F = ks, l = l₀ + s)" },
+  cablePull: { area: "physics", label: "Cables and springs only pull" },
+  pulleyTension: { area: "physics", label: "A cable over a pulley pulls on both sides, with the same tension" },
 });
 
 // Units 1–2: forces through one point.

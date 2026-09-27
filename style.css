@@ -293,6 +293,7 @@ div.debug-line { cursor: default; }
 .comp-split { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--c-line); }
 .comp-area-math { background: var(--c-force); }
 .comp-area-object { background: var(--c-unknown); }
+.comp-area-physics { background: var(--c-resultant); }
 .comp-area-unknown { background: var(--c-faint); }
 .comp-key { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 14px; }
 .comp-key-item { display: inline-flex; align-items: center; gap: 6px; }
@@ -325,3 +326,9 @@ div.debug-line { cursor: default; }
   .comp-unit { grid-template-columns: 36px 1fr; }
   .comp-unit-score { grid-column: 2; }
 }
+.comp-signals { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; vertical-align: middle; }
+.comp-signal { font-weight: 600; font-size: 11px; background: var(--c-warn-bg); color: var(--c-warn); }
+.comp-signal-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.comp-times { border-collapse: collapse; font-size: 14px; width: 100%; }
+.comp-times th { text-align: left; color: var(--c-muted); font-weight: 600; padding: 2px 10px 4px 0; border-bottom: 1px solid var(--c-line); }
+.comp-times td { padding: 4px 10px 4px 0; border-bottom: 1px solid var(--c-line); }

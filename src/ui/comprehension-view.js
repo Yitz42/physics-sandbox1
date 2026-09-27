@@ -4,13 +4,14 @@
 // The numbers come from core/comprehension.js, which scores the quiet record
 // of every answer (core/evidence.js). Students play as normal; this is where
 // the results show up: a score per course, chapter and unit, and where the
-// mistakes are — math errors (working out the numbers) vs. object errors
-// (reading the physical situation).
+// mistakes are — math errors (working out the numbers), object errors
+// (reading the picture) and physics errors (misunderstanding a principle).
 
 import { el } from "./controls.js";
 import { AREAS } from "../core/comprehension.js";
+import { SIGNALS } from "../core/pace.js";
 
-const AREA_ORDER = ["math", "object", "unknown"];
+const AREA_ORDER = ["math", "object", "physics", "unknown"];
 
 // A score bar, e.g. 72% filled, coloured by how good it is.
 function scoreBar(score) {
@@ -40,6 +41,47 @@ function errorSplit(mistakes, { key = true } = {}) {
   ]);
 }
 
+// ---- Time and pace ----------------------------------------------------------------
+
+const TYPE_NAMES = { number: "A number to work out", fbd: "Drawing an FBD", equations: "Choosing equations", choices: "Choosing each line", debug: "Finding a mistake", concept: "A concept question" };
+const time = (sec) => (sec < 60 ? `${sec} s` : `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} min`);
+const SIGNAL_ORDER = ["fastRight", "leftPage", "fasterThanUsual", "fastWrong", "slow", "slowerThanUsual"];
+
+// Small chips for a unit row, e.g. "⚡ 2 very fast".
+const SIGNAL_ICON = { fastRight: "⚡", leftPage: "↗", fasterThanUsual: "⏩", fastWrong: "🎲", slow: "🐢", slowerThanUsual: "⏳" };
+function signalChips(counts) {
+  const list = SIGNAL_ORDER.filter((k) => counts[k]);
+  if (!list.length) return null;
+  return el("span", { className: "comp-signals" }, list.map((k) =>
+    el("span", { className: "chip comp-signal", title: SIGNALS[k].about, textContent: `${SIGNAL_ICON[k]} ${counts[k]} ${SIGNALS[k].label.toLowerCase()}` })));
+}
+
+function paceBox(pace) {
+  const types = Object.entries(pace.typical);
+  const flagged = SIGNAL_ORDER.filter((k) => pace.counts[k]);
+  return el("div", { className: "comp-box" }, [
+    el("h2", { textContent: "Time and pace" }),
+    types.length
+      ? el("table", { className: "comp-times" }, [
+        el("tr", {}, ["Kind of question", "Usual first try", "Expected", "Answers"].map((h) => el("th", { textContent: h }))),
+        ...types.map(([t, v]) => el("tr", {}, [
+          el("td", { textContent: TYPE_NAMES[t] || t }), el("td", { textContent: time(v.seconds) }),
+          el("td", { textContent: `about ${time(v.expected)}` }), el("td", { textContent: String(v.count) }),
+        ])),
+      ])
+      : el("div", { className: "comp-muted", textContent: "No timed answers yet." }),
+    flagged.length
+      ? el("ul", { className: "comp-signal-list" }, flagged.map((k) => el("li", {}, [
+        el("strong", { textContent: `${SIGNAL_ICON[k]} ${SIGNALS[k].label}: ${pace.counts[k]}` }), " — ", SIGNALS[k].about,
+      ])))
+      : types.length ? el("div", { className: "comp-muted", textContent: "Nothing unusual about the timing so far." }) : null,
+    el("div", { className: "comp-muted" }, [
+      pace.usual ? `Usual pace: ${pace.usual < 1 ? `${Math.round(100 / pace.usual) / 100}× faster` : `${Math.round(pace.usual * 100) / 100}× slower`} than expected. ` : "The student's usual pace is known after 8 first tries. ",
+      "Only time with the page open counts; time on other tabs is noted separately. These are signs to look into, not proof.",
+    ]),
+  ]);
+}
+
 // ---- The window on the Courses page ----------------------------------------------
 
 // courses: the course list; summaries: { courseId: courseComprehension(...) }
@@ -61,6 +103,7 @@ export function comprehensionPanel(courses, summaries) {
         scoreBar(s.score),
         el("div", { className: "comp-muted", textContent: s.answered ? `From ${plural(s.answered, "answer")}` : "No answers yet" }),
         s.mistakes.total ? errorSplit(s.mistakes, { key: false }) : null,
+        signalChips(s.pace.counts),
       ]);
     })),
   ]);
@@ -95,9 +138,9 @@ function unitRow(u) {
     el("span", { className: "comp-unit-num", textContent: u.number }),
     el("a", { href: `#/${u.course}/${u.id}`, textContent: u.title }),
     el("div", { className: "comp-unit-score" }, [scoreBar(u.score), el("span", { textContent: `${pct(u.score)} ${u.answered ? u.level : ""}` })]),
-    el("span", { className: "comp-muted comp-unit-detail", textContent: u.answered
-      ? `${plural(u.answered, "answer")} · ${plural(u.types, "challenge type")} · ${plural(u.situations, "problem")} · math errors ${m.math}, object errors ${m.object}${m.unknown ? `, not identified ${m.unknown}` : ""}`
-      : "Not tried yet" }),
+    el("span", { className: "comp-muted comp-unit-detail" }, [u.answered
+      ? `${plural(u.answered, "answer")} · ${plural(u.types, "challenge type")} · ${plural(u.situations, "problem")} · math ${m.math}, object ${m.object}, physics ${m.physics}${m.unknown ? `, not identified ${m.unknown}` : ""}`
+      : "Not tried yet", " ", signalChips(u.pace.counts)]),
   ]);
 }
 
@@ -130,12 +173,12 @@ export function renderComprehension(root, course, summary) {
         el("div", { className: "comp-muted", textContent: summary.answered ? `From ${plural(summary.answered, "answer")}. Each unit counts its 20 most recent answers: right first time counts fully, after one slip 60%, after more 30%, with "Show answer" 0.` : "No answers yet — play some stages and come back." }),
       ]),
       el("div", { className: "comp-box" }, [
-        el("h2", { textContent: "Math or object errors?" }),
+        el("h2", { textContent: "Math, object or physics errors?" }),
         errorSplit(summary.mistakes),
-        el("div", { className: "comp-muted comp-about" }, AREA_ORDER.slice(0, 2).map((a) => el("div", {}, [el("strong", { textContent: `${AREAS[a].label}: ` }), AREAS[a].about]))),
+        el("div", { className: "comp-muted comp-about" }, AREA_ORDER.slice(0, 3).map((a) => el("div", {}, [el("strong", { textContent: `${AREAS[a].label}: ` }), AREAS[a].about]))),
       ]),
     ]),
-    mistakeList(summary.mistakes),
+    el("div", { className: "comp-top" }, [mistakeList(summary.mistakes) || el("div", { className: "comp-box" }, [el("h2", { textContent: "Where the mistakes are" }), el("div", { className: "comp-muted", textContent: "No mistakes recorded yet." })]), paceBox(summary.pace)]),
     ...chapters,
   );
 }

@@ -3,10 +3,13 @@
 //
 // Every mistake the game recognises (the likely-slip feedback, a wrong force
 // on an FBD, a wrong equation line …) carries a `kind`. Each kind belongs to
-// one of two AREAS:
-//   math    working out the numbers: signs, sin/cos, algebra, rounding …
-//   object  reading the physical situation: which forces act on the object,
-//           which way they point, what a cable or a spring does …
+// one of three AREAS:
+//   math     working out the numbers: signs, sin/cos, algebra, rounding …
+//   object   reading the picture: which forces act on the object, which way
+//            they point, what is attached to what …
+//   physics  misunderstanding a principle: W = mg, cables only pull, the moment
+//            arm is the perpendicular distance, a pulley keeps the tension …
+//            (in controls: the block and loop rules)
 // A wrong answer the game can't explain gets the kind "unexplained".
 //
 // This file knows no physics: it holds the general kinds, and each subject
@@ -15,7 +18,8 @@
 
 export const AREAS = {
   math: { label: "Math errors", about: "Working out the numbers: signs, sin and cos, algebra, rounding." },
-  object: { label: "Object errors", about: "Reading the situation: which forces act on the object, which way they point, what each part does." },
+  object: { label: "Object errors", about: "Reading the picture: which forces act on the object, which way they point, what is attached to what." },
+  physics: { label: "Physics errors", about: "Misunderstanding a principle: W = mg, cables only pull, the moment arm is the perpendicular distance (in controls: the block and loop rules)." },
   unknown: { label: "Not identified", about: "Wrong answers that didn't match any known slip." },
 };
 
@@ -31,7 +35,8 @@ const KINDS = {
   missing: { area: "object", label: "Leaving out a force or part" },
   extra: { area: "object", label: "Adding a force or part that isn't there" },
   direction: { area: "object", label: "Wrong direction or turning sense" },
-  concept: { area: "object", label: "Concept questions" },
+  // physics
+  concept: { area: "physics", label: "Concept questions" },
   // neither
   unexplained: { area: "unknown", label: "Wrong answer, cause not identified" },
 };

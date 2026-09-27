@@ -49,6 +49,7 @@ src/
     evidence.js            a quiet record of every answer checked (localStorage)
     diagnosis.js           kinds of mistake, each a MATH error or an OBJECT error
     comprehension.js       scores units, chapters and courses from the record
+    pace.js                how long answers take: fast/slow/rushing/left-the-page signals
     poly.js                polynomials in s and fractions of them (transfer functions)
     symbolic.js            polynomials in named symbols (G₁G₂/(1 + G₂H₂) …)
   challenges/              reusable ways of testing understanding (see below)
@@ -198,10 +199,19 @@ different situation (all are seen before any repeats), then new numbers from its
   usual; in the background every answer is recorded (core/evidence.js) and scored
   per unit, chapter and course (core/comprehension.js), shown in the Comprehension
   window on the Courses page (#/comprehension/<course>). Every mistake the game
-  recognises names a kind (core/diagnosis.js), each either a **math error** (signs,
-  sin/cos, algebra, rounding, vectors) or an **object error** (missed or extra force,
-  wrong direction, mass vs. weight, moment arm, concept). New mistakes in solvers,
+  recognises names a kind (core/diagnosis.js) in one of three areas: **math errors**
+  (signs, sin/cos, algebra, rounding, vectors), **object errors** (reading the
+  picture: missed or extra force, wrong direction) and **physics errors** (a
+  principle: W = mg, cables only pull, perpendicular moment arm, pulley tension,
+  concept questions; in controls the block and loop rules). New mistakes in solvers,
   palettes, choices and debug steps must carry a `kind` — a test checks it.
+- **Timing** (core/pace.js): every try is timed (only while the page is visible;
+  time on other tabs is kept separately) and compared with an expected time
+  (60 s per number, 60 s per FBD, 25 s per concept question …; a stage may set
+  `expectedTime`) and with the student's own usual pace. Signals, never proof:
+  very fast and right (outside help / AI?), rushing (fast and wrong — "lazy"),
+  much slower than expected (struggling), left the page and came back right,
+  much faster / slower than their usual pace (someone else doing the work?).
   Scoring (first proposal, owner may change): right first time 1, after one slip
   0.6, after more 0.3, with "Show answer" 0; a unit averages its 20 latest questions.
 - Every unit uses all six challenge types: explore → predict → build → debug →

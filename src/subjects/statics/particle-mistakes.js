@@ -75,7 +75,7 @@ function variants(setup) {
     const s = clone(setup);
     const g = s.forces.find((x) => x.id === f.id);
     g.direction = reverse(g.direction);
-    out.push({ setup: s, kind: "direction", message: f.kind === "spring"
+    out.push({ setup: s, kind: "cablePull", message: f.kind === "spring"
       ? `Check the direction of ${pretty(f.symbol)}. A stretched spring pulls: its arrow points away from the point, along the spring toward its anchor.`
       : `Check the direction of ${pretty(f.symbol)}. A cable always pulls: its arrow points away from the point, along the cable.` });
   }
@@ -83,7 +83,7 @@ function variants(setup) {
   for (const f of setup.forces.filter((x) => x.shared)) {
     const s = clone(setup);
     s.forces = s.forces.filter((x) => x.id !== f.id);
-    out.push({ setup: s, kind: "missing", message: `The cable runs over the pulley, so it pulls on it TWICE — once on each side — and both pulls have the same tension ${pretty(f.symbol)}. Put both in ΣFx and ΣFy.` });
+    out.push({ setup: s, kind: "pulleyTension", message: `The cable runs over the pulley, so it pulls on it TWICE — once on each side — and both pulls have the same tension ${pretty(f.symbol)}. Put both in ΣFx and ΣFy.` });
   }
   return out;
 }

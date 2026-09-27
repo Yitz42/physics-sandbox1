@@ -20,7 +20,7 @@ import { getSolver } from "./registry.js";
 import { getStatus, setStatus, getPartsDone, setPartsDone, STATUS } from "./progress.js";
 import { stageParts, stageSituations, nextSituation } from "./content.js";
 import { makeVariant, clone } from "./paths.js";
-import { recordEvent, newRoundId } from "./evidence.js";
+import { recordEvent, newRoundId, activeNow, hiddenNow } from "./evidence.js";
 import { createCanvas } from "../render/canvas.js";
 import { showExplanation, buildHints, showMessage, showCenterCard } from "../ui/feedback.js";
 import { button } from "../ui/controls.js";
@@ -68,6 +68,25 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
     // Where this version is, for the quiet record of answers (core/evidence.js).
     const [courseId, unitId] = key.split("/");
     const where = { c: courseId, u: unitId, s: stage.id, p: partIndex, v: stage.situation ? stage.situation.name : "", ch: stage.challenge, r: newRoundId() };
+    // Timing each try: from the start of the version (or the previous check) to
+    // this check, counting only time the page is visible. Numbers checked with
+    // one press of Test share one time. core/pace.js judges fast and slow.
+    // Time on another tab or window during the try is kept too (h).
+    const clock = { since: activeNow(), hiddenSince: hiddenNow(), lastAt: -Infinity, lastMs: 0, lastHidden: 0, chk: 0, tries: {} };
+    const timeTry = () => {
+      const now = activeNow();
+      if (now - clock.lastAt > 80) {
+        // A new press of a check button.
+        clock.lastMs = now - clock.since;
+        clock.lastHidden = hiddenNow() - clock.hiddenSince;
+        clock.since = now;
+        clock.hiddenSince = hiddenNow();
+        clock.chk++;
+      }
+      clock.lastAt = now;
+      return { ms: Math.round(clock.lastMs), h: Math.round(clock.lastHidden), chk: clock.chk };
+    };
+    if (stage.expectedTime) where.x = stage.expectedTime; // seconds; a stage can say how long its questions should take
     const ctx = {
       stage, solver, setup, round, memory, el, key,
       canvas: createCanvas(el.figure),
@@ -78,12 +97,13 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
       markRevealed() {
         ctx.revealed = true;
         setStatus(key, STATUS.PRACTICE);
-        recordEvent({ ...where, q: "*", shown: true });
+        recordEvent({ ...where, q: "*", shown: true, ...timeTry() });
       },
       // Challenges call this for every answer they check: { q, ok, kinds }.
       // It's never shown to the student; comprehension.js scores it.
       record({ q, ok, kinds = [] }) {
-        recordEvent({ ...where, q, ok: !!ok, k: ok ? [] : kinds });
+        const a = (clock.tries[q] = (clock.tries[q] || 0) + 1); // 1 = first try at this question
+        recordEvent({ ...where, q, ok: !!ok, k: ok ? [] : kinds, a, ...timeTry() });
       },
       // Hints are pointless once a question is answered; challenges hide them
       // after a correct answer and bring them back for the next question.
