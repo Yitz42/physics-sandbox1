@@ -30,6 +30,8 @@ import { classifySteps } from "./rigid-body-count.js";
 import { solveTruss, trussQuantities } from "./truss.js";
 import { trussScene, trussFbd, trussMistakes, trussEquations } from "./truss-scene.js";
 import { solveTrussZero, trussZeroSummary, zeroSteps, zeroMistakes } from "./truss-zero.js";
+import { solveFrame, frameQuantities, frameMistakes } from "./frame.js";
+import { frameScene, frameFbd, frameSummary } from "./frame-scene.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -134,4 +136,16 @@ registerSolver("statics.truss", {
   mistakes: (setup, name) => (name === "zeroCount" ? zeroMistakes(setup) : trussMistakes(setup, name)),
   fbd: trussFbd,
   debugSteps: zeroSteps, // a student's inspection for zero-force members, one line wrong (Unit 5.2)
+});
+
+// Unit 5.4: frames and machines — several bodies pinned together, taken apart:
+// three equations per body, equal and opposite pin forces, two-force links.
+registerSolver("statics.frame", {
+  solve: solveFrame,
+  equations: (setup, result) => (result || solveFrame(setup)).equations,
+  summary: frameSummary,
+  scene: frameScene,
+  quantities: frameQuantities,
+  mistakes: frameMistakes,
+  fbd: frameFbd,
 });

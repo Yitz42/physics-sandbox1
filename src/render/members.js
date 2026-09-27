@@ -45,8 +45,9 @@ export function drawMember(cv, s, env, roleColor) {
       const n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]; // across the bar
       const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
       const at = (k, d) => [mid[0] + n[0] * d * k, mid[1] + n[1] * d * k]; // k = ±1: which side of the bar
-      const spots = [at(1, 15), at(-1, 15), at(1, 24), at(-1, 24)];
-      out.labels.push({ text: s.label, pos: spots[0], spots, align: "center", size: 13, weight: 600, color, maxMove: 34 });
+      // (Further out if it must — e.g. a short crossbar between two legs — but still by its own bar.)
+      const spots = [at(1, 15), at(-1, 15), at(1, 24), at(-1, 24), at(1, 36), at(-1, 36), at(1, 50), at(-1, 50)];
+      out.labels.push({ text: s.label, pos: spots[0], spots, align: "center", size: 13, weight: 600, color, maxMove: 56 });
     }
   }
   return out;

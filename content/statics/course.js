@@ -53,7 +53,7 @@ const chapters = [
       "trusses",
       "zero-force-members",
       "truss-sections",
-      soon("Frames and machines", "Take multi-part structures apart into separate free-body diagrams."),
+      "frames",
     ],
   },
   {

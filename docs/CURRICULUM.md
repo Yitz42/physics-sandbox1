@@ -161,9 +161,14 @@ Claude builds from it.
   equation each (one load, two loads); plan a cut and point that give F_GH alone; debug a
   section's equations; concept check; solve the right part of a two-load bridge.
 
-**Unit 5.4: Frames and machines**
+**Unit 5.4: Frames and machines** ✅
 - Concept: multi-body structures with multi-force members; take them apart into separate FBDs.
-- Test ideas: pliers, a crane arm, an A-frame; equal and opposite forces at the connecting pins.
+- Built (all on a stepladder / A-frame): take it apart and see the equal and opposite pin
+  forces, raise the crossbar, move the load; predict the floor's push and the crossbar's
+  pull (load at the top, load on a leg); place an A-frame hoist's chain within its rating
+  and the headroom; debug leg BC's equations (the reversed pin force); concept check;
+  solve leg BC after spotting the two-force member.
+- Still to add: pliers and a crane arm (a machine and a second frame shape).
 
 ### Chapter 6: Centroids (textbook ch. 7)
 

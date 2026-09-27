@@ -42,8 +42,11 @@ src/
       distributed.js       distributed loads: area and centroid (rectangle, triangle, trapezoid, ∫w dx)
       supports.js          support types → reactions (pin, roller, smooth, cable, fixed)
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
-      truss.js             method of joints and method of sections
-      frame.js             frames and machines, multi-body
+      rigid-body-sets.js   other sets of three equations (two moments + a force, three moments), Unit 4.3
+      truss.js             method of joints
+      truss-zero.js        zero-force members by inspection, Unit 5.2
+      truss-section.js     method of sections, Unit 5.3
+      frame.js             frames and machines, multi-body (frame-scene.js: put together / taken apart)
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
       geometry.js          centroids, area moments of inertia
@@ -60,7 +63,7 @@ content/
     shared/                setups used by several units (angle-options.js, crate.js,
                            hanging.js: traffic light, balloon, lamp pulled aside)
     library/               the lesson library: situations with their questions, used by
-                           any stage (hanging.js, beams.js; see docs/STAGES.md)
+                           any stage (hanging.js, beams.js, trusses.js, frames.js; see docs/STAGES.md)
     force-components/      one folder per unit (one concept), named after it
       unit.js              concept, learning goals, ordered list of stages
       1-explore.js  2-predict.js  3-build.js  4-debug.js  5-concept-check.js  6-solve.js
