@@ -21,7 +21,9 @@ export default {
     points: { O: [0, 0, 0], A: [0, 0, 6], B: [3, 3, 0] },
     pole: ["O", "A"],
     cables: [["A", "B"]],
-    ground: [-6, 6, -6, 6],
+    groundCentre: [0, 0], // (the ground stays put while the anchor moves)
+    // Everywhere the anchor sliders can put B stays in view, so the picture never rescales.
+    keepInView: [[-6, -6, 0], [6, -6, 0], [6, 6, 0], [-6, 6, 0]],
     axisLength: 7,
     forces: [{ id: "T", symbol: "T", magnitude: 1500, dir: { from: "A", to: "B" } }],
     showComponents: "reveal", // (not before: T_y and T_z are what the student works out)

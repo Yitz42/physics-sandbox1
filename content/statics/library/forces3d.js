@@ -64,7 +64,7 @@ export const antennaForce = scenario({
 export const flagpoleCable = scenario({
   name: "flagpole cable",
   story: "A cable runs from the top of a flagpole, A, to an anchor B on the ground, pulling on the pole with tension $T$. The coordinates of A and B are in the key (metres).",
-  setup: { points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0] }, pole: ["O", "A"], cables: [["A", "B"]], ground: [-1, 4, -4, 4],
+  setup: { points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0] }, pole: ["O", "A"], cables: [["A", "B"]],
     forces: [{ id: "T", symbol: "T", magnitude: 700, dir: { from: "A", to: "B" } }], showComponents: "reveal" },
   vary: [
     { path: "points.B", values: SEVEN },

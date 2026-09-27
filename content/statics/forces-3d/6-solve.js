@@ -17,7 +17,6 @@ export default {
     points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0], C: [-4.5, 0, 0] },
     pole: ["O", "A"],
     cables: [["A", "B"], ["A", "C"]],
-    ground: [-5, 3, -4, 3],
     forces: [
       { id: "T_AB", symbol: "T_{AB}", magnitude: 700, dir: { from: "A", to: "B" } },
       { id: "T_AC", symbol: "T_{AC}", magnitude: 750, dir: { from: "A", to: "C" } },

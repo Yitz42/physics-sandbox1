@@ -4,8 +4,9 @@
 // corner, as in the 2D pictures; faint dashed lines along the axes mark where angles
 // and components are measured from.
 //   setup.view3d: { yaw, pitch }  where it's looked at from (default: the textbook look)
-//   setup.ground: [xmin, xmax, ymin, ymax]  the patch of the x-y plane drawn (gridded; default:
-//                 round O and under everything); setup.gridStep: its grid spacing
+//   the ground: the x-y plane, gridded, fading at its edges, as big as fits in the picture
+//                 box, round the objects' feet (setup.groundCentre: round that point instead —
+//                 one a slider doesn't move); setup.gridStep: its grid spacing
 //   setup.pole: ["O", "A"]  a post between two points;  setup.cables: [["A", "B"], …]
 //   setup.showComponents: the box of F_x, F_y, F_z (dashed) and their arrows — or
 //     "reveal": once the answer is shown
@@ -105,42 +106,81 @@ export function force3dScene(setup, result, opts = {}) {
     shapes.push({ type: "arrow", id: "R", from: at(start), to: at(add3(start, scale3(R, k))), role: "resultant", label: `F_R = ${format(v.R, "N")}` });
   }
 
-  // The ground — the x-y plane — lightly filled with a grid on it, so the plane (and
-  // what's above or below it) is easy to see (agreed with the owner). setup.ground sets
-  // its extent; otherwise it's a patch round O under everything in the picture.
-  // (With sliders, setup.reach: exactly the patch under the box they can reach, so
-  // the floor doesn't make the picture any smaller.)
-  const reachFloor = setup.reach && kFixed ? [-setup.reach[0] * kFixed, setup.reach[0] * kFixed, -setup.reach[1] * kFixed, setup.reach[1] * kFixed] : null;
-  const [gx0, gx1, gy0, gy1] = setup.ground || reachFloor || floorAround(fixed, size);
-  const corners = [[gx0, gy0, 0], [gx1, gy0, 0], [gx1, gy1, 0], [gx0, gy1, 0]];
-  shapes.push({ type: "region", points: corners.map(at), tint: 0, alpha: 0.3, background: true });
-  const step = setup.gridStep ?? (Math.max(gx1 - gx0, gy1 - gy0) > 5 ? 1 : 0.5);
-  const first = (v) => Math.ceil(v / step - 1e-9) * step;
-  const lines = [];
-  for (let x = first(gx0); x <= gx1 + 1e-9; x += step) lines.push([at([x, gy0, 0]), at([x, gy1, 0])]);
-  for (let y = first(gy0); y <= gy1 + 1e-9; y += step) lines.push([at([gx0, y, 0]), at([gx1, y, 0])]);
-  shapes.push({ type: "grid", lines });
-  fixed.push(...corners);
-
   // The key: each named point's coordinates.
   const named = Object.entries(pts).filter(([n]) => n !== "O");
   if (named.length && setup.showCoords !== false) shapes.push({ type: "note", lines: named.map(([n, p]) => `${n} (${p.map(nice).join(", ")}) m`) });
 
-  // The frame: round the fixed geometry, with room for labels.
+  // The frame (agreed with the owner): the objects as big as possible — round what's
+  // drawn (points, pole, forces, and anything setup.keepInView names, e.g. where a slider
+  // can move a point), with a slight cushion for labels. The ground doesn't set it.
+  for (const p of setup.keepInView || []) fixed.push(p);
   const flat = fixed.map(at);
   const xs = flat.map((p) => p[0]), ys = flat.map((p) => p[1]);
-  const m = 0.14 * size;
-  shapes.push({ type: "frame", frame: { xmin: Math.min(...xs) - m, xmax: Math.max(...xs) + m, ymin: Math.min(...ys) - m, ymax: Math.max(...ys) + m } });
+  const m = 0.07 * size;
+  const frame = { xmin: Math.min(...xs) - m, xmax: Math.max(...xs) + m, ymin: Math.min(...ys) - m, ymax: Math.max(...ys) + m };
+  shapes.push({ type: "frame", frame });
+
+  // The ground — the x-y plane — lightly shaded with a grid on it, fading to the
+  // background toward its edges (no outline), so the plane — and what is above or
+  // below it — is easy to see. It is as big as fits in the picture box.
+  // (It shrinks round the objects' feet: the middle of the named points on the plane, or O.)
+  const feet = Object.values(pts).filter((p) => Math.abs(p[2]) < 1e-9);
+  const centre = feet.length ? [(Math.min(...feet.map((p) => p[0])) + Math.max(...feet.map((p) => p[0]))) / 2, (Math.min(...feet.map((p) => p[1])) + Math.max(...feet.map((p) => p[1]))) / 2] : [0, 0];
+  // It may use all of the picture box round the frame (the canvas's border and any
+  // room at the sides), less a small cushion: the box's edges are its limit.
+  const box = visibleBox(frame, opts.canvasSize) || frame;
+  // (It starts large — twice the picture's size each way — and shrinks until it fits.)
+  const [gcx, gcy] = setup.groundCentre || centre;
+  // Its centre may move a little (behind the objects, say, when they stand at the bottom
+  // of the box) — the biggest patch that still covers their feet wins.
+  const lim = [gcx - 2 * size, gcx + 2 * size, gcy - 2 * size, gcy + 2 * size];
+  let ground = fitGround(lim, at, box, 0, [gcx, gcy]);
+  const area = (g) => (g[1] - g[0]) * (g[3] - g[2]);
+  for (const dx of [-1, -0.5, 0, 0.5, 1]) for (const dy of [-1, -0.5, 0, 0.5, 1]) {
+    const c = [gcx + dx * 0.3 * size, gcy + dy * 0.3 * size];
+    const g = fitGround(lim, at, box, 0, c);
+    if (gcx > g[0] && gcx < g[1] && gcy > g[2] && gcy < g[3] && area(g) > area(ground) * 1.05) ground = g;
+  }
+  const [gx0, gx1, gy0, gy1] = ground;
+  const corners = [[gx0, gy0, 0], [gx1, gy0, 0], [gx1, gy1, 0], [gx0, gy1, 0]];
+  const span = Math.max(gx1 - gx0, gy1 - gy0);
+  const step = setup.gridStep ?? [0.25, 0.5, 1, 2].find((q) => span / q <= 12) ?? 5;
+  const first = (v) => Math.ceil(v / step - 1e-9) * step;
+  const lines = [];
+  for (let x = first(gx0); x <= gx1 + 1e-9; x += step) lines.push([at([x, gy0, 0]), at([x, gy1, 0])]);
+  for (let y = first(gy0); y <= gy1 + 1e-9; y += step) lines.push([at([gx0, y, 0]), at([gx1, y, 0])]);
+  shapes.push({ type: "ground", corners: corners.map(at), lines });
   return shapes;
 }
 
-// A patch of the x-y plane under everything (and round O), a little bigger than it,
-// its edges on a half-metre.
-function floorAround(pts, size) {
-  const pad = 0.15 * size, snap = (v, up) => (up ? Math.ceil(v * 2) : Math.floor(v * 2)) / 2;
-  const xs = [0, ...pts.map((p) => p[0])], ys = [0, ...pts.map((p) => p[1])];
-  return [snap(Math.min(...xs) - pad, false), snap(Math.max(...xs) + pad, true), snap(Math.min(...ys) - pad, false), snap(Math.max(...ys) + pad, true)];
+// What the canvas shows round a frame (workspace.js fits the frame inside a 36 px border,
+// centred): its whole box, less a 10 px cushion — in picture metres. Null without a canvas.
+const PAD = 36;
+function visibleBox(f, size) {
+  if (!size) return null;
+  const s = Math.min((size.width - 2 * PAD) / (f.xmax - f.xmin), (size.height - 2 * PAD) / (f.ymax - f.ymin));
+  const cx = (f.xmin + f.xmax) / 2, cy = (f.ymin + f.ymax) / 2, hw = size.width / 2 / s - 10 / s, hh = size.height / 2 / s - 10 / s;
+  return { xmin: cx - hw, xmax: cx + hw, ymin: cy - hh, ymax: cy + hh };
 }
+
+// The biggest ground patch round (cx, cy) whose corners, as drawn, are inside the box:
+// its half-widths along x and along y grow in turn (each by 5%) while it still fits, up
+// to g's size. [x0, x1, y0, y1].
+function fitGround(g, at, box, cushion, [cx, cy]) {
+  const inside = (hx, hy) => [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => {
+    const q = at([cx + a * hx, cy + b * hy, 0]);
+    return q[0] >= box.xmin + cushion && q[0] <= box.xmax - cushion && q[1] >= box.ymin + cushion && q[1] <= box.ymax - cushion;
+  });
+  const maxX = (g[1] - g[0]) / 2, maxY = (g[3] - g[2]) / 2;
+  let hx = 0.02 * maxX, hy = 0.02 * maxY;
+  for (let grew = true, n = 0; grew && n < 400; n++) {
+    grew = false;
+    if (hx * 1.05 <= maxX && inside(hx * 1.05, hy)) { hx *= 1.05; grew = true; }
+    if (hy * 1.05 <= maxY && inside(hx, hy * 1.05)) { hy *= 1.05; grew = true; }
+  }
+  return [cx - hx, cx + hx, cy - hy, cy + hy];
+}
+
 
 // The box of a force's components: dashed edges from its tip down to the x-y plane
 // and across to the axes, and the three component arrows along the axes from its start.

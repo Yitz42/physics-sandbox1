@@ -9,7 +9,7 @@
 //              line with end ticks; its label sits in a break in the middle of the line
 //              (labelOn: false puts it beside the line). noExt: no extension lines (dims.js)
 //   rightangle { at, u, v }                    small square marking a 90° corner
-//   grid       { lines: [[p, q], …] }         faint background grid lines (a 3D picture's ground)
+//   ground     { corners, lines }              a 3D picture's ground: shaded, gridded, fading at its edges
 //   curve      { points, label?, role?, dashed?, labelAway? } a thin curved line (a direction
 //              angle in a 3D picture), labelled by its middle, away from labelAway
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
@@ -21,7 +21,7 @@
 // a wrench and a trailer in hardware.js, filled regions and leaders in regions.js,
 // shear and moment diagrams in plots.js.
 
-import { drawLabel, measureLabel } from "./arrows.js";
+import { drawLabel, measureLabel, cssColor } from "./arrows.js";
 import { barBoxes, overlapArea } from "./labels.js";
 import { drawObject } from "./objects.js";
 import { drawMechanism } from "./mechanisms.js";
@@ -142,20 +142,49 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.globalAlpha = alpha0;
       break;
     }
-    case "grid": {
-      // Faint grid lines on a plane (a 3D picture's ground), in pixels already placed:
-      // background only — labels may cross them, so they report nothing.
-      ctx.strokeStyle = faint;
-      ctx.globalAlpha = 0.45;
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
+    case "ground": {
+      // A plane seen in perspective (a 3D picture's ground): lightly shaded, with a faint
+      // grid, and no outline — it fades to the background toward its edges, like a
+      // soft round patch lying on the plane. corners: the patch's four corners in order
+      // (as drawn); lines: its grid lines. It's drawn on its own layer, then faded by a
+      // round gradient laid on the plane (the same shape squashed into the view).
+      // Background only: labels may cross it.
+      const c = s.corners.map(S);
+      const off = document.createElement("canvas");
+      off.width = ctx.canvas.width;
+      off.height = ctx.canvas.height;
+      const o = off.getContext("2d");
+      o.setTransform(ctx.getTransform());
+      o.fillStyle = cssColor("--c-ground", "rgba(59, 130, 246, 0.16)");
+      o.beginPath();
+      c.forEach((p, i) => (i ? o.lineTo(p[0], p[1]) : o.moveTo(p[0], p[1])));
+      o.closePath();
+      o.fill();
+      o.strokeStyle = faint;
+      o.lineWidth = 0.9;
+      o.beginPath();
       for (const [a, b] of s.lines) {
         const [p, q] = [S(a), S(b)];
-        ctx.moveTo(p[0], p[1]);
-        ctx.lineTo(q[0], q[1]);
+        o.moveTo(p[0], p[1]);
+        o.lineTo(q[0], q[1]);
       }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      o.stroke();
+      // The fade: in the plane's own frame the patch is the square −1…1; a round
+      // gradient there is solid in the middle and clear at the edges.
+      const C = [(c[0][0] + c[2][0]) / 2, (c[0][1] + c[2][1]) / 2];
+      const E1 = [(c[1][0] - c[0][0]) / 2, (c[1][1] - c[0][1]) / 2], E2 = [(c[3][0] - c[0][0]) / 2, (c[3][1] - c[0][1]) / 2];
+      o.globalCompositeOperation = "destination-in";
+      o.transform(E1[0], E1[1], E2[0], E2[1], C[0], C[1]);
+      const g = o.createRadialGradient(0, 0, 0, 0, 0, 1);
+      g.addColorStop(0, "rgba(0, 0, 0, 1)");
+      g.addColorStop(0.6, "rgba(0, 0, 0, 1)");
+      g.addColorStop(1, "rgba(0, 0, 0, 0)");
+      o.fillStyle = g;
+      o.fillRect(-1.5, -1.5, 3, 3);
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(off, 0, 0);
+      ctx.restore();
       break;
     }
     case "curve": {
