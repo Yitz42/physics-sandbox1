@@ -35,6 +35,19 @@ export function barBoxes(p, q, w) {
   return out;
 }
 
+// Spots inside a circle (a moment arrow) where a label of this width fits
+// clear of the arc: [x, y, "center"] (none if it doesn't fit anywhere).
+function insideSpots({ x, y, r }, width, size) {
+  const out = [];
+  const w = width / 2 + 3, hUp = size * 0.8, hDown = size * 0.72, R = r - 8; // (clear of the arc, with the usual gap)
+  for (const [fx, fy] of [[0, 0], [0, -0.5], [0, 0.5], [-0.45, 0], [0.45, 0]]) {
+    const cx = x + fx * r, cy = y + fy * r;
+    const corners = [[cx - w, cy - hUp], [cx + w, cy - hUp], [cx - w, cy + hDown], [cx + w, cy + hDown]];
+    if (corners.every(([px, py]) => Math.hypot(px - x, py - y) <= R)) out.push([cx, cy, "center"]);
+  }
+  return out;
+}
+
 // Straight-down spots, for labels that prefer to go below (18 px steps).
 const DOWN = [0, 18, 36, 54, 72, 90, 108, 126].map((dy) => [0, dy]);
 
@@ -78,7 +91,10 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
     const maxDown = 72;
     // l.spots: its own close-by places to try first, in order ([x, y, align] in
     // pixels) — e.g. all round a point, so a point's letter stays next to it.
-    const own = (l.spots || []).map(([x, y, a], i) => ({ dx: x - l.pos[0], dy: y - l.pos[1], align: a || "center", base: 3 * i }));
+    // A moment's label (l.circle) first tries INSIDE its arrow, where it fits: in the
+    // middle, then above, below or beside it (a short name like "M" usually fits).
+    const inside = l.circle ? insideSpots(l.circle, width, l.size) : [];
+    const own = [...inside, ...(l.spots || [])].map(([x, y, a], i) => ({ dx: x - l.pos[0], dy: y - l.pos[1], align: a || "center", base: 3 * i }));
     const spots = down ? [...DOWN.filter(([, dy]) => dy <= maxDown), ...TRIES] : TRIES;
     const tries = [...own, ...spots.flatMap(([dx, dy]) => aligns.map((a) => ({ dx, dy, align: a })))];
     for (const { dx, dy, align, base } of tries) {
@@ -90,13 +106,18 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
       // (The label's box with its clear margin: close counts as touching.)
       const near = padded(box);
-      for (const t of taken) cost += overlapArea(t.soft ? box : near, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
+      for (const t of taken) {
+        if (l.circle && t.circleOf === l.circle.id) continue; // (its own arrow's inside)
+        cost += overlapArea(t.soft ? box : near, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
+      }
       // A faint dashed guide (a line of action) barely counts: a label may sit
       // on it (the line breaks around the label). A label that `breaks` lines
       // (a point's letter) may sit on a dimension line too.
+      // A point's or support's letter (breaks) may hide a dimension line behind it
+      // almost for free: letters sit right by their point, dimensions give way.
       for (const [p, q, kind] of segments) {
         const faint = kind === true || (l.breaks && kind === "dim");
-        cost += segmentHits(faint ? box : near, p, q) * (faint ? 1 : 40);
+        cost += segmentHits(faint ? box : near, p, q) * (l.breaks && kind === "dim" ? 0.05 : faint ? 1 : 40);
       }
       // Stepping down may hop over dimension lines, but never past an arrow or
       // the body: check the strip the label would slide through.

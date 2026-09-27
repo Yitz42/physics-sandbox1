@@ -11,8 +11,8 @@
 // The home page has a small link here, which this page can hide; the page
 // itself always works by typing #/gallery after the address.
 //
-// The boundaries switch stays on while you open stages from here, so their
-// pictures can be checked while they're played too (a button turns it off).
+// With boundaries on, a stage opened from a card shows them too, while it's played
+// (a button turns them off); anywhere else they're off (see boundsOnRoute).
 
 import { el, button } from "./controls.js";
 import { galleryUnits, unitPictures, mountPicture } from "./gallery-items.js";
@@ -42,12 +42,19 @@ export function galleryLink() {
   return el("p", { className: "gal-home-link" }, [el("a", { href: "#/gallery", textContent: "Picture gallery (for checking pictures)" })]);
 }
 
-// On a stage page while boundaries are on: a button to turn them off.
-export function boundsBadge() {
+// The boundaries switch outside the gallery: it stays on ONLY for a stage opened
+// straight from a gallery card ("Open stage →"), with a button there to turn it off.
+// Leaving the gallery any other way, or moving on from that stage, turns it off.
+let openedFromGallery = false;
+export function boundsOnRoute(isGallery) {
   document.querySelector(".gal-badge-float")?.remove();
-  if (!showBounds()) return;
+  if (isGallery) return;
+  const keep = openedFromGallery && showBounds();
+  openedFromGallery = false;
+  if (!keep) return setShowBounds(false);
   document.body.appendChild(button("Boundaries on — turn off", () => {
     setShowBounds(false);
+    document.querySelector(".gal-badge-float")?.remove();
     window.dispatchEvent(new HashChangeEvent("hashchange")); // redraw the page without them
   }, "btn btn-small gal-badge-float"));
 }
@@ -157,7 +164,7 @@ function makeCard(p, settings, onChecked) {
   const tools = el("div", { className: "gal-tools" }, [
     badge,
     p.stage.vary && p.stage.vary.length ? button("New numbers", () => renumber(), "btn btn-quiet btn-small") : null,
-    el("a", { className: "btn btn-quiet btn-small", href: `#/${courseId}/${unitId}/${file}`, textContent: "Open stage →" }),
+    el("a", { className: "btn btn-quiet btn-small", href: `#/${courseId}/${unitId}/${file}`, textContent: "Open stage →", onclick: () => (openedFromGallery = true) }),
   ]);
   const element = el("section", { className: "gal-card" }, [el("div", { className: "gal-title", textContent: p.title }), figure, tools, details]);
   let ws = null;

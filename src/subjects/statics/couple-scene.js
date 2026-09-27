@@ -72,7 +72,7 @@ export function coupleScene(setup, result, opts = {}) {
       shapes.push({ type: "box", id: f.id, at: add(f.at, [0, b / 2 + 0.02 * size]), w: b, h: b, label: `${+f.mass.toFixed(2)} kg` });
     }
     arrowSegs.push({ id: f.id, tail, head, u: directionOf(f) });
-    if (!setup.hideAngles && !f.push) shapes.push(...angleMarks(f, f.at, len));
+    if (!setup.hideAngles && !f.push) shapes.push(...angleMarks(f, f.at, len, 0, { onBody: true }));
     if (f.pointLabel) shapes.push({ type: "point", at: f.at, label: f.pointLabel, style: "dot" });
   });
 

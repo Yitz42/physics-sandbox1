@@ -69,7 +69,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
     shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
     // A slanted load shows its direction: a slope triangle (3-4-5 …) or an angle,
     // at the arrow's outer end, where there's room (setup.hideAngles turns it off).
-    if (!setup.hideAngles) shapes.push(...angleMarks(f, tail, len));
+    if (!setup.hideAngles) shapes.push(...angleMarks(f, tail, len, 0, { onBody: true }));
   }
   const H = heightPerLoad(setup, size);
   for (const l of setup.loads || []) shapes.push(loadShape(l, H));

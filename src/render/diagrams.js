@@ -101,7 +101,7 @@ export function drawScene(cv, shapes, opts = {}) {
       ctx.rect(half[0], 0, half[1] - half[0], cv.view.height);
       ctx.clip();
     }
-    const out = drawShape(cv, s, { ...env, lit });
+    const out = drawShape(cv, s, { ...env, lit, obstacles }); // (what's drawn so far, e.g. for a moment arrow to turn away from)
     if (half) ctx.restore();
     obstacles.push(...out.boxes);
     segments.push(...out.segments);
@@ -234,10 +234,9 @@ function breaksLine(box, segments, obstacles) {
 }
 
 // An arrow that ENDS on a beam's centre line stops at the beam's surface
-// instead, so a push reads as pushing ON the beam, not into it. (An arrow
-// that starts on a beam still starts exactly at its point.) Such an arrow is
-// marked `onBody`, so its label goes at its outer end. Shapes that set
-// headGap themselves are left alone.
+// instead, so a push reads as pushing ON the beam, not into it; one that STARTS
+// there (a pull) starts at the surface. A push is marked `onBody`, so its label
+// goes at its outer end. Shapes that set headGap themselves are left alone.
 function touchBeams(shapes) {
   const beams = shapes.filter((s) => s.type === "beam");
   // Plates (boxes drawn under everything) are bodies too: an arrow whose head
@@ -257,7 +256,11 @@ function touchBeams(shapes) {
       return 0;
     };
     const headGap = gapAt(s.to);
-    return headGap ? { ...s, headGap, onBody: true } : s;
+    if (headGap) return { ...s, headGap, onBody: true };
+    // An arrow that STARTS on a beam's centre line (a pull) starts at its surface
+    // instead: no arrow runs inside a body.
+    const tailGap = s.tailGap == null ? gapAt(s.from) : 0;
+    return tailGap ? { ...s, tailGap } : s;
   });
 }
 

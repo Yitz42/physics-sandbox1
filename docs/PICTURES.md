@@ -66,3 +66,16 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   reach across the divider is clipped at it.
 - Angle numbers stay with their arc: if the spot is taken, the arc grows outward
   and the dashed reference line extends to meet the number (render/angles.js).
+- **Arrows, marks and letters around bodies** (agreed with the owner, 2026-09-27):
+  no arrow runs inside a body — a push ends at a beam's surface, a pull starts at
+  it; a slanted load's slope triangle or angle stays out of the body (a push's by
+  its outer end, a pull's halfway out); a force's label sits by its arrow, at its
+  outer end when it can. Slanted loads use many slope triangles and angles, not
+  only 3-4-5 (library DOWN_RIGHT). Point and support letters go straight below
+  their pin or symbol, closest of all labels — a dimension line may be hidden
+  behind a letter; a dimension's value slides along its line (centre first) to
+  make room. A moment's name ("M") goes inside its curved arrow when it fits, and
+  the arrow turns so its head lands on free space.
+- **Boundaries outside the gallery**: the "Show boundaries" switch stays on only for a
+  stage opened straight from a gallery card (with a button there to turn it off);
+  any other way out of the gallery turns it off.

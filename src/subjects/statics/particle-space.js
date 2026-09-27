@@ -38,22 +38,28 @@ export function anchorPoint(setup, force) {
 // Angle marking between the reference axis and the force (or a slope triangle).
 // `ring` (0, 1, 2 …) gives each force's arc its own radius, so two angles
 // measured from the same axis don't draw on top of each other.
-export function angleMarks(force, at, len, ring = 0) {
+// onBody (a load on a beam or other body): the mark keeps out of the body — a push's
+// slope triangle sits by the arrow's outer end (its tail, `at`), and a pull's mark
+// (whose tail is ON the body) moves out along the arrow, away from it.
+export function angleMarks(force, at, len, ring = 0, { onBody = false } = {}) {
   const dir = force.direction;
   if (!dir || typeof dir === "string" || force.kind === "weight" || force.hideAngle) return [];
   if (dir.points) return []; // its direction comes from the coordinates (space diagram)
   const d = directionOf(force);
+  const pull = onBody && !force.push;
   if (dir.slope) {
     const [dx, dy] = dir.slope;
     const k = Math.min(0.5, len * 0.4) / Math.hypot(dx, dy);
-    const p0 = add(at, scale(d, len * 0.35));
+    // (on a body: the triangle spans 8 % … 48 % of a push from its tail, or 52 % … 92 % of a pull)
+    const p0 = add(at, scale(d, len * (!onBody ? 0.35 : pull ? 0.52 : 0.08)));
     return [{ type: "triangle", at: p0, dx: dx * k, dy: dy * k, labels: [Math.abs(dx), Math.abs(dy), Math.hypot(dx, dy)] }];
   }
   const a0 = AXIS_DEG[dir.from];
   const r = Math.min(0.55, len * 0.45) * (1 + 0.45 * ring);
+  const c = pull ? add(at, scale(d, len * 0.5)) : at; // a pull's angle is marked halfway out along it
   return [
-    { type: "line", from: at, to: add(at, scale(AXIS_VEC[dir.from], r * 1.1)), style: "reference" }, // ends just past the arc
-    { type: "arc", center: at, r, start: a0, end: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
+    { type: "line", from: c, to: add(c, scale(AXIS_VEC[dir.from], r * 1.1)), style: "reference" }, // ends just past the arc
+    { type: "arc", center: c, r, start: a0, end: angleDeg(d), label: `${+dir.angle.toFixed(1)}°` },
   ];
 }
 

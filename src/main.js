@@ -16,7 +16,7 @@ import { comprehensionPanel, renderComprehension } from "./ui/comprehension-view
 import { courseComprehension } from "./core/comprehension.js";
 import { getEvents } from "./core/evidence.js";
 import { dataPanel } from "./ui/data-panel.js";
-import { renderGallery, galleryLink, boundsBadge } from "./ui/gallery.js";
+import { renderGallery, galleryLink, boundsOnRoute } from "./ui/gallery.js";
 
 const app = document.getElementById("app");
 
@@ -36,12 +36,10 @@ async function route() {
   const [courseId, unitId, stageFile] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   window.scrollTo(0, 0);
   document.querySelector(".center-card-backdrop")?.remove(); // close a "Stage complete" card
-  boundsBadge(); // while the gallery's "Show boundaries" is on: a button to turn it off
+  // The gallery's "Show boundaries" stays on only for a stage opened straight from it.
+  boundsOnRoute(courseId === "gallery");
   try {
-    if (courseId === "gallery") {
-      document.querySelector(".gal-badge-float")?.remove(); // (the gallery has its own switch)
-      return await renderGallery(app);
-    }
+    if (courseId === "gallery") return await renderGallery(app);
     if (!courseId) {
       // The course cards, then the Comprehension window (one card per course).
       const courses = await loadCourseList();

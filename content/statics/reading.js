@@ -13,16 +13,16 @@ export default {
     url: "https://engineeringstatics.org",
   },
   // Each chapter of the course, and the textbook chapter to read with it.
-  // (A chapter may give its own `url`; otherwise the link goes to the book.)
+  // Each links straight to its chapter: https://engineeringstatics.org/Chapter_02.html …
   chapters: {
-    forces: { chapter: "Chapter 2: Forces and Other Vectors" },
-    particles: { chapter: "Chapter 3: Equilibrium of Particles" },
-    moments: { chapter: "Chapter 4: Moments and Static Equivalence" },
-    "rigid-bodies": { chapter: "Chapter 5: Rigid Body Equilibrium" },
-    structures: { chapter: "Chapter 6: Equilibrium of Structures" },
-    centroids: { chapter: "Chapter 7: Centroids and Centers of Gravity" },
-    "internal-forces": { chapter: "Chapter 8: Internal Loadings" },
-    friction: { chapter: "Chapter 9: Friction" },
-    inertia: { chapter: "Chapter 10: Moments of Inertia" },
+    forces: { chapter: "Chapter 2: Forces and Other Vectors", url: "https://engineeringstatics.org/Chapter_02.html" },
+    particles: { chapter: "Chapter 3: Equilibrium of Particles", url: "https://engineeringstatics.org/Chapter_03.html" },
+    moments: { chapter: "Chapter 4: Moments and Static Equivalence", url: "https://engineeringstatics.org/Chapter_04.html" },
+    "rigid-bodies": { chapter: "Chapter 5: Rigid Body Equilibrium", url: "https://engineeringstatics.org/Chapter_05.html" },
+    structures: { chapter: "Chapter 6: Equilibrium of Structures", url: "https://engineeringstatics.org/Chapter_06.html" },
+    centroids: { chapter: "Chapter 7: Centroids and Centers of Gravity", url: "https://engineeringstatics.org/Chapter_07.html" },
+    "internal-forces": { chapter: "Chapter 8: Internal Loadings", url: "https://engineeringstatics.org/Chapter_08.html" },
+    friction: { chapter: "Chapter 9: Friction", url: "https://engineeringstatics.org/Chapter_09.html" },
+    inertia: { chapter: "Chapter 10: Moments of Inertia", url: "https://engineeringstatics.org/Chapter_10.html" },
   },
 };

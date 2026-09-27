@@ -1,6 +1,7 @@
 // Unit 4.3, stage 6 — solve: a loading ramp, from FBD to reactions, choosing the
 // three equations first. The ramp and its hand check are in the lesson library
-// (beams.js, loadingRamp): w = 200 N/m, P = 500 N → B_y = 1000 N, A_y = 200 N, A_x = −300 N,
+// (beams.js, loadingRamp): w = 200 N/m, P = 500 N on a 3-4-5 slope → B_y = 1000 N, A_y = 200 N, A_x = −300 N
+// (new versions use other slopes and angles: the formulas are in beams.js),
 // with ΣM_A (only B_y), ΣM_B (only A_y) and ΣF_x (only A_x).
 
 import { use } from "../../../src/core/library.js";
@@ -51,11 +52,11 @@ export default {
   },
   ask: [{ quantity: "B_y", min: 0 }, { quantity: "A_y" }, { quantity: "A_x" }],
   hints: [
-    "The uniform load acts as $F_w = w \\times 4$ m at the middle of AB. Split $P$ into $\\tfrac{3}{5}P$ right and $\\tfrac{4}{5}P$ down.",
+    "The uniform load acts as $F_w = w \\times 4$ m at the middle of AB. Split $P$ into a part to the right and a part down, from its slope triangle or angle.",
     "$\\Sigma M_A$: $B_y$ (4 m), $F_w$ (2 m) and $P$'s down part (6 m). $\\Sigma M_B$: $A_y$ (4 m, clockwise), $F_w$ (2 m, counterclockwise) and $P$'s down part (2 m, clockwise).",
-    "$\\Sigma F_x$: $A_x + \\tfrac{3}{5}P = 0$. A negative $A_x$ means the pin pulls left.",
+    "$\\Sigma F_x$: $A_x$ plus $P$'s part to the right $= 0$. A negative $A_x$ means the pin pulls left.",
   ],
   explanation:
     "Moments about A found $B_y$, moments about B found $A_y$, and $\\Sigma F_x$ found $A_x$ — one unknown each, no simultaneous equations. " +
-    "$\\Sigma F_y$ is left over as a free check: $A_y + B_y - F_w - \\tfrac{4}{5}P = 0$.",
+    "$\\Sigma F_y$ is left over as a free check: $A_y + B_y - F_w$ minus $P$'s down part $= 0$.",
 };

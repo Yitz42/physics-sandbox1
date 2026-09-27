@@ -16,7 +16,7 @@
 // a wrench and a trailer in hardware.js.
 
 import { drawLabel, measureLabel } from "./arrows.js";
-import { barBoxes } from "./labels.js";
+import { barBoxes, overlapArea } from "./labels.js";
 import { drawObject } from "./objects.js";
 import { drawMechanism } from "./mechanisms.js";
 import { drawBlockShape } from "./blocks.js";
@@ -137,11 +137,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
       if (s.dashed) ctx.setLineDash([5, 4]);
       ctx.beginPath();
       ctx.moveTo(a[0], a[1]);
-      if (half) {
-        ctx.lineTo(mid[0] - u[0] * half, mid[1] - u[1] * half);
-        ctx.moveTo(mid[0] + u[0] * half, mid[1] + u[1] * half);
-      }
-      ctx.lineTo(b[0], b[1]);
+      ctx.lineTo(b[0], b[1]); // (the line breaks around its value when the value is placed, diagrams.js)
       ctx.stroke();
       ctx.setLineDash([]);
       for (const p of [a, b]) {
@@ -152,7 +148,13 @@ export function drawExtraShape(cv, s, env, roleColor) {
       }
       out.segments.push([a, b, "dim"]); // a dimension line: labels may hop over it, not sit on it
       if (half) {
-        out.boxes.push({ ...drawLabel(ctx, s.label, mid[0], mid[1], { color, size: 13, weight }), dim: true }); // part of a dimension
+        // The value sits IN its line: in the middle if it's free, else slid toward
+        // either end (never past the ticks). It's placed after point letters and
+        // force labels (yields), so a letter right under its pin keeps its spot and
+        // the value moves along instead; the line breaks around it.
+        const room = len / 2 - half - 4;
+        const spots = [0, -0.4, 0.4, -0.7, 0.7, -1, 1].map((f) => [mid[0] + u[0] * room * f, mid[1] + u[1] * room * f, "center"]);
+        out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 13, weight, color, yields: true, breaks: true, maxMove: Math.max(20, room) });
       } else if (s.label) {
         // Label beside the middle, on the side the normal points to.
         const side = s.labelSide || 1;
@@ -182,11 +184,39 @@ export function drawExtraShape(cv, s, env, roleColor) {
       // maxR (metres): keep the arrow inside something, e.g. the plate it's drawn on.
       const r = s.maxR ? Math.min(s.rPx || 34, s.maxR * cv.view.scale) : s.rPx || 34;
       const color = roleColor(s.role || "resultant");
-      const start = (-60 * Math.PI) / 180, sweep = (290 * Math.PI) / 180;
+      const sweep = (290 * Math.PI) / 180;
       const ccw = s.sense >= 0;
       // Screen angles run clockwise, so a CCW (world) arrow sweeps negative screen angle.
-      const a0 = ccw ? -start : start;
-      const a1 = ccw ? a0 - sweep : a0 + sweep;
+      // The arrow turns (its open gap rotates) so its head lands where it hits the least
+      // of what's already drawn (env.obstacles: beams, supports …) — upright if it can.
+      const arcFor = (start) => {
+        const b0 = ccw ? -start : start;
+        return [b0, ccw ? b0 - sweep : b0 + sweep];
+      };
+      const clash = (start) => {
+        const [b0, b1] = arcFor(start);
+        const hx = x + r * Math.cos(b1), hy = y + r * Math.sin(b1);
+        const head = { x0: hx - 9, y0: hy - 9, x1: hx + 9, y1: hy + 9 };
+        let c = 0;
+        for (const t of env.obstacles || []) {
+          if (t.soft) continue;
+          c += 3 * overlapArea(head, t);
+          for (let i = 0; i <= 12; i++) {
+            const a = b0 + ((b1 - b0) * i) / 12, px = x + r * Math.cos(a), py = y + r * Math.sin(a);
+            if (px > t.x0 && px < t.x1 && py > t.y0 && py < t.y1) c += 20;
+          }
+        }
+        return c;
+      };
+      let start = (-60 * Math.PI) / 180, best = clash(start);
+      for (const deg of [45, -45, 90, -90, 135, -135, 180]) {
+        const st = ((-60 + deg) * Math.PI) / 180, c = clash(st) + Math.abs(deg) * 2; // (turning costs a little)
+        if (c < best) {
+          best = c;
+          start = st;
+        }
+      }
+      const [a0, a1] = arcFor(start);
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.lineWidth = 2.4;
@@ -211,7 +241,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.fill();
       // labelMove: how far the label may move to dodge things (0 keeps it right above the arrow).
       // (moment: true lets a crowded label move to the corner list, leaving just its name.)
-      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: s.labelMove ?? 60, fromArrow: s.role !== "shadow", moment: true });
+      // circle: a short label (its name, "M") goes INSIDE the arrow if it fits there (labels.js).
+      if (s.label) out.labels.push({ text: s.label, pos: [x, y - r - 14], align: "center", size: 14, weight: 600, color, maxMove: Math.max(s.labelMove ?? 60, 1.6 * r + 14), fromArrow: s.role !== "shadow", moment: true, circle: { x, y, r, id: s.id || `m${x}` } });
       // Its true outline: the arc itself (a row of small boxes along it) and its
       // head; the space inside the circle is soft (labels avoid it if they can).
       const steps = 16;
@@ -220,7 +251,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
         out.boxes.push(...barBoxes([x + r * Math.cos(b0), y + r * Math.sin(b0)], [x + r * Math.cos(b1), y + r * Math.sin(b1)], 6));
       }
       out.boxes.push({ x0: ex - 9, y0: ey - 9, x1: ex + 9, y1: ey + 9 });
-      out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r, soft: true });
+      out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r, soft: true, circleOf: s.id || `m${x}` });
       break;
     }
     default: {

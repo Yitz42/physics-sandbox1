@@ -1,8 +1,9 @@
 // Unit 4.3, stage 4 — debug: one mistake in a student's ΣM_A, ΣM_B, ΣF_x.
 // The beam with a slanted push (lesson library, beams.js): pin A (0), roller B (5 m),
-// P on a 3-4-5 slope (down and to the right) at C (3 m).
-// P's line of action misses A by d = 3 × 4/5 = 2.4 m and B by 2 × 4/5 = 1.6 m (not 3 m and 2 m).
-// Correct:  ΣM_A = 5B_y − 2.4P = 0,  ΣM_B = −5A_y + 1.6P = 0,  ΣF_x = A_x + (3/5)P = 0
+// P down and to the right (c_x P right, c_y P down) at C.
+// P's line of action misses A by d = AC × c_y and B by CB × c_y (not AC and CB) — e.g.
+// 3-4-5 at 3 m: 2.4 m and 1.6 m.
+// Correct:  ΣM_A = 5B_y − (AC c_y)P = 0,  ΣM_B = −5A_y + (CB c_y)P = 0,  ΣF_x = A_x + c_x P = 0
 
 import { use } from "../../../src/core/library.js";
 import { slantedBeam, withSet } from "../library/beams.js";
@@ -27,13 +28,13 @@ export default {
     intro: "The student's equations (counterclockwise positive):",
     mutations: [
       { equation: "sumM_A", kind: "swap", term: "P",
-        explain: "The moment arm of $P$ is the **perpendicular** distance from A to $P$'s line of action, not the distance along the beam. Only $P$'s down part turns the beam: $d_P = AC \\times \\tfrac{4}{5}$." },
+        explain: "The moment arm of $P$ is the **perpendicular** distance from A to $P$'s line of action, not the distance along the beam. Only $P$'s down part turns the beam, so $d_P$ is AC times $P$'s down fraction." },
       { equation: "sumM_B", kind: "sign", term: "A_y",
         explain: "$A_y$ pushes up at A, to the LEFT of B: about B it turns the beam **clockwise**, so its moment is negative." },
       { equation: "sumFx", kind: "missing", term: "P",
-        explain: "$P$ is slanted: its sideways part, $\\tfrac{3}{5}P$ to the right, belongs in $\\Sigma F_x$." },
+        explain: "$P$ is slanted: its sideways part, to the right, belongs in $\\Sigma F_x$." },
       { equation: "sumM_B", kind: "swap", term: "P",
-        explain: "About B too, $P$'s arm is the perpendicular distance to its line of action: $d_P = CB \\times \\tfrac{4}{5}$, not $CB$." },
+        explain: "About B too, $P$'s arm is the perpendicular distance to its line of action — CB times $P$'s down fraction, not CB." },
     ],
   },
   hints: [

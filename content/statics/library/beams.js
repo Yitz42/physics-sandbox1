@@ -96,6 +96,13 @@ export const cantilever = scenario({
 });
 
 // ---- Bodies for choosing the three equations (Unit 4.3) ---------------------------------
+// Slanted pushes, down and to the right, in every textbook form: slope triangles
+// (3-4-5, 4-3-5, 5-12-13, 12-5-13, 1-1) and angles from either axis. A new version
+// may use any of them. With c_x, c_y its right and down fractions (3-4-5: 3/5, 4/5):
+export const DOWN_RIGHT = [
+  { slope: [3, -4] }, { slope: [4, -3] }, { slope: [5, -12] }, { slope: [12, -5] }, { slope: [1, -1] },
+  { angle: 60, from: "+x", toward: "-y" }, { angle: 30, from: "+x", toward: "-y" }, { angle: 20, from: "-y", toward: "+x" },
+];
 // Each has the set that gives ONE unknown per equation (withSet adds it to the setup).
 export const withSet = (sc, sums, extra = {}) => edit(sc, { set: { sums, showSetUnknowns: true, ...extra } });
 
@@ -137,14 +144,15 @@ export const jibCrane = scenario({
   },
 });
 
-// A beam on a pin A (0) and a roller B (5 m), pushed at C (3 m) by P on a 3-4-5 slope, down and to the right.
-//   ΣM_A: 5B_y − 3(4/5)P = 0 → B_y = 0.48P   (P = 500: 240 N)        only B_y
-//   ΣM_B: −5A_y + 2(4/5)P = 0 → A_y = 0.32P  (160 N)                 only A_y
-//   ΣF_x: A_x + (3/5)P = 0    → A_x = −0.6P  (−300 N: A pulls LEFT)  only A_x
+// A beam on a pin A (0) and a roller B (5 m), pushed at C (x = 3 m) by a slanted P, down and to the right
+// (c_x P right, c_y P down; the default 3-4-5 slope: c_x = 3/5, c_y = 4/5).
+//   ΣM_A: 5B_y − x c_y P = 0      → B_y = x c_y P/5        (3-4-5, P = 500: 240 N)        only B_y
+//   ΣM_B: −5A_y + (5 − x) c_y P = 0 → A_y = (5 − x) c_y P/5 (160 N)                        only A_y
+//   ΣF_x: A_x + c_x P = 0          → A_x = −c_x P           (−300 N: A pulls LEFT)         only A_x
 // (ΣF_y instead of ΣF_x fails: A and B are level with each other.)
 export const slantedBeam = scenario({
   name: "slanted push",
-  story: "A beam rests on a pin at A and a roller at B. A push $P$ on a 3-4-5 slope, down and to the right, acts at C.",
+  story: "A beam rests on a pin at A and a roller at B. A slanted push $P$, down and to the right, acts at C.",
   setup: {
     body: { points: [[0, 0], [5, 0]] },
     supports: [
@@ -158,13 +166,14 @@ export const slantedBeam = scenario({
   vary: [
     { path: "forces.#P.magnitude", min: 200, max: 900, step: 25 },
     { path: "forces.#P.at.0", values: [1, 1.5, 2, 2.5, 3, 3.5, 4] },
+    { path: "forces.#P.direction", values: DOWN_RIGHT },
   ],
   questions: {
     reactions: {
       instruction: "Use $\\Sigma M_A$, $\\Sigma M_B$ and $\\Sigma F_x$ — one unknown each — to predict $B_y$, $A_y$ and $A_x$ (positive up and right).",
       ask: [{ quantity: "B_y", min: 0 }, { quantity: "A_y" }, { quantity: "A_x" }],
       hints: [
-        "Split $P$ first: $\\tfrac{3}{5}P$ to the right, $\\tfrac{4}{5}P$ down. Only the down part has a moment about A or B (the sideways part runs along the beam).",
+        "Split $P$ first, using its slope triangle or angle: a part to the right and a part down. Only the down part has a moment about A or B (the sideways part runs along the beam).",
         "$\\Sigma M_A$: $B_y$ times 5 m against the down part times C's distance from A. $\\Sigma M_B$: the same idea from the other end gives $A_y$.",
         "$\\Sigma F_x$: only $A_x$ and $P$'s sideways part. $A_x$ comes out negative — the pin pulls left.",
       ],
@@ -201,15 +210,15 @@ export const rampBeam = scenario({
 });
 
 // A loading ramp: a beam on a pin A (0) and a roller B (4 m), a uniform load w on AB,
-// and a slanted push P on a 3-4-5 slope (down and to the right) at its overhanging end C (6 m).
-//   F_w = 4w at 2 m (w = 200: 800 N).  P = 500: 300 N right, 400 N down.
-//   ΣM_A: 4B_y − 2F_w − 6(4/5)P = 0  → B_y = (1600 + 2400)/4 = 1000 N   only B_y
-//   ΣM_B: −4A_y + 2F_w − 2(4/5)P = 0 → A_y = (1600 − 800)/4 = 200 N     only A_y
-//   ΣF_x: A_x + (3/5)P = 0           → A_x = −300 N (the pin pulls left)  only A_x
+// and a slanted push P (down and to the right: c_x P right, c_y P down) at its overhanging end C (6 m).
+//   F_w = 4w at 2 m (w = 200: 800 N).  The default 3-4-5 slope, P = 500: 300 N right, 400 N down.
+//   ΣM_A: 4B_y − 2F_w − 6 c_y P = 0  → B_y = (2F_w + 6c_yP)/4  (1600 + 2400)/4 = 1000 N   only B_y
+//   ΣM_B: −4A_y + 2F_w − 2 c_y P = 0 → A_y = (2F_w − 2c_yP)/4  (1600 − 800)/4 = 200 N     only A_y
+//   ΣF_x: A_x + c_x P = 0            → A_x = −c_x P            −300 N (the pin pulls left) only A_x
 //   check ΣF_y: 200 + 1000 − 800 − 400 = 0 ✓
 export const loadingRamp = scenario({
   name: "loading ramp",
-  story: "A loading ramp rests on a pin at A and a roller at B. It carries a uniform load $w$ between them, and a cart pushes on its overhanging end C with a force $P$ on a 3-4-5 slope.",
+  story: "A loading ramp rests on a pin at A and a roller at B. It carries a uniform load $w$ between them, and a cart pushes on its overhanging end C with a slanted force $P$.",
   setup: {
     body: { points: [[0, 0], [6, 0]] },
     supports: [
@@ -225,6 +234,7 @@ export const loadingRamp = scenario({
   vary: [
     { path: "forces.#P.magnitude", min: 200, max: 800, step: 25 },
     { path: "loads.#w.w", min: 100, max: 400, step: 25 },
+    { path: "forces.#P.direction", values: DOWN_RIGHT },
   ],
   questions: {},
 });
