@@ -23,6 +23,7 @@
 //   distload, wheel                          see loads.js
 //   supportSymbol                            pin, roller, fixed … see supports.js
 //   member                                   a truss bar, red/blue for tension/compression, see members.js
+//   region                                   a flat shape filled in (a composite area's parts), see regions.js
 //   wrench, trailer                          see hardware.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   listValues {}                            put every force's value in the corner list
@@ -45,7 +46,7 @@ import { findClashes, drawBounds, showBounds } from "./bounds.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "region", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 // Returns a report of what was drawn — every object's outline, every solid
@@ -115,7 +116,7 @@ export function drawScene(cv, shapes, opts = {}) {
       const spots = aroundPoint(x, y);
       if (s.labelAway) {
         const [ux, uy] = s.labelAway, m = Math.hypot(ux, uy) || 1;
-        const sx = x + (ux / m) * 16, sy = y - (uy / m) * 16 + 5;
+        const sx = x + (ux / m) * 20, sy = y - (uy / m) * 20 + 5;
         spots.unshift([sx, sy, ux / m > 0.35 ? "left" : ux / m < -0.35 ? "right" : "center"]);
       }
       wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots });
@@ -217,9 +218,10 @@ export function drawScene(cv, shapes, opts = {}) {
 
 // Close spots all round a point (pixels), nearest-looking first: below,
 // below-right, below-left, right, left, above-right, above-left, above.
+// (Each just outside the point's marker — 7 px — and the clear gap round it, CLEAR.)
 function aroundPoint(x, y) {
-  return [[x, y + 20, "center"], [x + 9, y + 16, "left"], [x - 9, y + 16, "right"], [x + 11, y + 1, "left"],
-    [x - 11, y + 1, "right"], [x + 9, y - 13, "left"], [x - 9, y - 13, "right"], [x, y - 18, "center"]];
+  return [[x, y + 24, "center"], [x + 11, y + 20, "left"], [x - 11, y + 20, "right"], [x + 15, y + 1, "left"],
+    [x - 15, y + 1, "right"], [x + 11, y - 16, "left"], [x - 11, y - 16, "right"], [x, y - 22, "center"]];
 }
 
 // Does a label's box sit on a faint line (and on nothing else that clearing it would erase)?

@@ -172,9 +172,13 @@ Claude builds from it.
 
 ### Chapter 6: Centroids (textbook ch. 7)
 
-**Unit 6.1: Centroids and center of gravity**
+**Unit 6.1: Centroids and center of gravity** ✅
 - Concept: composite shapes; where the weight acts.
-- Test ideas: build a shape that balances on a pin at a given point.
+- Built: stretch an L-plate and watch C move (even off the plate); predict centroids of an
+  L-plate, a tee, a ramp block (rectangle + triangle), an arch (rectangle + half circle)
+  and a bracket's centre of gravity (by weight, not area); size a sign so it balances on a
+  pin; debug a centroid table; concept check; solve a shop sign (rectangle + triangle +
+  half circle), choosing the split first.
 
 **Unit 6.2: Composite shapes with holes** ⭐
 - Concept: a hole counts as negative area.

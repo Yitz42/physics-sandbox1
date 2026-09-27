@@ -59,7 +59,7 @@ const chapters = [
   {
     id: "centroids", title: "Centroids",
     units: [
-      soon("Centroids and center of gravity", "Where a shape's weight acts, found from simple pieces."),
+      "centroids",
       soon("Composite shapes with holes", "A hole counts as negative area."),
     ],
   },

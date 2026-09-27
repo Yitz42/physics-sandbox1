@@ -26,7 +26,7 @@ src/
     scenery.js (traffic light, balloon, street pole)
     blocks.js (block diagrams, signal-flow graphs)
     labels.js (label placement, CLEAR)  bounds.js (the object-boundaries check)
-    bar-label.js (values written along a bar)
+    bar-label.js (values written along a bar)  regions.js (flat shapes filled in: a composite area's parts)
   ui/
     controls.js  menus.js  feedback.js  stage-view.js  comprehension-view.js (the Comprehension window)
     chrome.js (the top tab menu, the unit progress bar)  data-panel.js (export / import on the home page)
@@ -49,7 +49,8 @@ src/
       frame.js             frames and machines, multi-body (frame-scene.js: put together / taken apart)
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
-      geometry.js          centroids, area moments of inertia
+      centroid.js          centroids of composite areas, centres of gravity (centroid-scene.js), Unit 6.1
+      geometry.js          later: area moments of inertia
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js
                            lists the solvers planned for later chapters
@@ -63,7 +64,7 @@ content/
     shared/                setups used by several units (angle-options.js, crate.js,
                            hanging.js: traffic light, balloon, lamp pulled aside)
     library/               the lesson library: situations with their questions, used by
-                           any stage (hanging.js, beams.js, trusses.js, frames.js; see docs/STAGES.md)
+                           any stage (hanging.js, beams.js, trusses.js, frames.js, shapes.js; see docs/STAGES.md)
     force-components/      one folder per unit (one concept), named after it
       unit.js              concept, learning goals, ordered list of stages
       1-explore.js  2-predict.js  3-build.js  4-debug.js  5-concept-check.js  6-solve.js

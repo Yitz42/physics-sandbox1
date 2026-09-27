@@ -24,6 +24,7 @@ import { drawScenery } from "./scenery.js";
 import { drawLoadShape } from "./loads.js";
 import { drawSupportSymbol } from "./supports.js";
 import { drawMember } from "./members.js";
+import { drawRegion } from "./regions.js";
 import { drawHardware } from "./hardware.js";
 
 export function drawExtraShape(cv, s, env, roleColor) {
@@ -257,7 +258,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
     default: {
       // Pictures of real objects live in their own files (see the top of this file).
       const obj = drawObject(cv, s, env) || drawMechanism(cv, s, env) || drawScenery(cv, s, env) || drawBlockShape(cv, s, env, roleColor)
-        || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env) || drawMember(cv, s, env, roleColor);
+        || drawLoadShape(cv, s, env, roleColor) || drawSupportSymbol(cv, s, env) || drawHardware(cv, s, env) || drawMember(cv, s, env, roleColor)
+        || drawRegion(cv, s, env);
       if (obj) return obj;
     }
   }

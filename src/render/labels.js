@@ -108,7 +108,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       const near = padded(box);
       for (const t of taken) {
         if (l.circle && t.circleOf === l.circle.id) continue; // (its own arrow's inside)
-        cost += overlapArea(t.soft ? box : near, t) * (t.soft ? 1 : t.heavy ? 60 : 4);
+        cost += overlapArea(t.soft ? box : near, t) * (t.under ? 0.01 : t.soft ? 1 : t.heavy ? 60 : 4);
       }
       // A faint dashed guide (a line of action) barely counts: a label may sit
       // on it (the line breaks around the label). A label that `breaks` lines

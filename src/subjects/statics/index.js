@@ -32,6 +32,8 @@ import { trussScene, trussFbd, trussMistakes, trussEquations } from "./truss-sce
 import { solveTrussZero, trussZeroSummary, zeroSteps, zeroMistakes } from "./truss-zero.js";
 import { solveFrame, frameQuantities, frameMistakes } from "./frame.js";
 import { frameScene, frameFbd, frameSummary } from "./frame-scene.js";
+import { solveCentroid, centroidQuantities, centroidMistakes } from "./centroid.js";
+import { centroidScene, centroidSummary } from "./centroid-scene.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -44,7 +46,7 @@ registerErrorKinds({
   cablePull: { area: "physics", label: "Cables and springs only pull" },
   pulleyTension: { area: "physics", label: "A cable over a pulley pulls on both sides, with the same tension" },
   loadArea: { area: "physics", label: "A distributed load's size is its area (½ for a triangle, ∫w dx for a curve)" },
-  centroid: { area: "physics", label: "A distributed load acts at its centroid" },
+  centroid: { area: "physics", label: "Where a centroid is (a load's resultant, a triangle's ⅓, a half circle's 4r/3π)" },
   supports: { area: "physics", label: "Which reactions each kind of support gives" },
 });
 
@@ -148,4 +150,14 @@ registerSolver("statics.frame", {
   quantities: frameQuantities,
   mistakes: frameMistakes,
   fbd: frameFbd,
+});
+
+// Unit 6.1: centroids of composite areas, and centres of gravity of composite bodies.
+registerSolver("statics.centroid", {
+  solve: solveCentroid,
+  equations: (setup, result) => (result || solveCentroid(setup)).equations,
+  summary: centroidSummary,
+  scene: centroidScene,
+  quantities: centroidQuantities,
+  mistakes: centroidMistakes,
 });
