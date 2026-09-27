@@ -188,7 +188,7 @@ test("shadow: tensions that are too small leave ΣF pointing down (the crate wou
 
 test("picture: space diagram and FBD are centred in their halves of the canvas, with the divider in the middle", async () => {
   const { particleScene } = await import("../../src/subjects/statics/particle-scene.js");
-  const { crateSetup } = await import("../../content/statics/02-particle-equilibrium/crate.js");
+  const { crateSetup } = await import("../../content/statics/shared/crate.js");
   for (const size of [{ width: 750, height: 440 }, { width: 1140, height: 440 }, { width: 520, height: 340 }]) {
     const shapes = particleScene(crateSetup({ angleAB: 30, angleAC: 45, mass: 60 }), null, { canvasSize: size });
     // Fit the view the way the game does: to the divider's frame, inside canvas.js's 36 px border.

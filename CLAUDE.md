@@ -68,11 +68,13 @@ src/
     dynamics/              later
 content/
   statics/
-    course.js              ordered list of units
-    01-force-vectors/
+    course.js              chapters (following the textbook), each an ordered list of units
+    reading.js             the free textbook, and its chapter for each course chapter
+    shared/                setups used by several units (angle-options.js, crate.js)
+    force-components/      one folder per unit (one concept), named after it
       unit.js              concept, learning goals, ordered list of stages
-      1-explore.js  2-predict.js  3-build.js  4-debug.js  5-solve.js
-    02-.../
+      1-explore.js  2-predict.js  3-build.js  4-debug.js  5-concept-check.js  6-solve.js
+    cartesian-vectors/ …
 tests/
   tests.html               open with Live Server: runs every test, shows pass/fail
   statics/*.test.js        textbook problems with known answers
@@ -133,9 +135,11 @@ solver. The part reached is saved; the stage is complete after the last part.
   (`{ angle: 30, from: "-x", toward: "+y" }`), a slope triangle (`{ slope: [-4, 3] }`),
   a word (`"down"`), or two points (`{ points: [[1, 2], [5, 5]], names: ["A", "B"] }`,
   a cable from A to B). Students pick sin/cos and signs by looking at the picture.
-- **New concepts go into the existing six stages as extra parts**, not as new
-  stages or units (e.g. Unit 1 Predict: part 1 components, part 2 unit vector,
-  part 3 a force along a cable).
+- **Chapters and units**: the course is grouped into chapters that follow the
+  textbook's chapters; each unit is ONE concept (e.g. Springs, Pulleys, Varignon's
+  theorem) with all six stages. Units are numbered by chapter: 2.2 = chapter 2, unit 2.
+  A new concept gets its own unit in the matching chapter. (Parts inside a stage are
+  still available, e.g. unit vectors and cables as two parts of one Predict stage.)
 - **Wrong answers**: unlimited tries with specific feedback. After 2 wrong tries a
   "Show answer" button appears. Showing the answer records the stage as
   **needs practice** — an internal record only, never shown to the student — and

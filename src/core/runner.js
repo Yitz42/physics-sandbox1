@@ -32,7 +32,7 @@ import * as solve from "../challenges/solve.js";
 const CHALLENGES = { explore, predict, build, debug, "concept-check": conceptCheck, solve };
 
 // view: the stage page from ui/stage-view.js (it owns the DOM)
-// key:  progress key, e.g. "statics/01-force-vectors/2-predict"
+// key:  progress key, e.g. "statics/force-components/2-predict"
 // next: URL of the next stage (or the course page after the last stage)
 // nextLabel: its button text, e.g. "Next stage →"
 export function runStage({ stage: whole, view, key, next, nextLabel = "Next stage →" }) {

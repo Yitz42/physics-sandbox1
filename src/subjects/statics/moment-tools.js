@@ -4,7 +4,7 @@
 
 import { add, scale, sub, mag, unit } from "../../core/vector.js";
 import { clone } from "../../core/paths.js";
-import { fixedTex, format } from "../../core/units.js";
+import { fixedTex, format, sigFig } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { fromVector, swapTrig } from "./directions.js";
 import { solveMoment, armOf, armAngle, momentQuantities, componentSymbol } from "./moment.js";
@@ -159,6 +159,17 @@ export function momentSummary(setup, result, { mode = "symbolic", reveal = true 
   // The second line is Varignon's theorem: name it where it's used.
   if (mode === "symbolic" && setup.forces.some((f) => f.direction && typeof f.direction === "object")) {
     lines.push("\\text{Varignon's theorem: } M_O(F) = M_O(F_x) + M_O(F_y) = -yF_x + xF_y");
+  }
+  // setup.varignon: each component's moment on its own, then their sum.
+  if (setup.varignon && reveal && mode === "numeric") {
+    const v = result.values;
+    for (const f of setup.forces.filter((x) => x.at)) {
+      const [x, y] = sub(f.at, setup.about.at);
+      const Fv = scale(directionOf(f), magnitudeOf(f));
+      const n = (a) => sigFig(a, 4);
+      lines.push(`M_O(${componentSymbol(f.symbol, "y")}) = xF_y = (${n(x)})(${n(Fv[1])}) = ${fixedTex(v[`My_${f.id}`], "N·m")}`);
+      lines.push(`M_O(${componentSymbol(f.symbol, "x")}) = -yF_x = -(${n(y)})(${n(Fv[0])}) = ${fixedTex(v[`Mx_${f.id}`], "N·m")}`);
+    }
   }
   if (reveal) {
     const names = momentQuantities(setup);

@@ -83,6 +83,15 @@ p { margin: 0 0 8px; }
 .page-footer { margin-top: 30px; }
 .goals { margin: 0; padding-left: 20px; }
 /* "Read more in the textbook" box on a unit page */
+/* Course page: units grouped under chapter headings */
+.chapter { display: flex; flex-direction: column; gap: 12px; }
+.chapter + .chapter { margin-top: 18px; }
+.chapter-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-top: 6px; }
+.chapter-title { font-size: 1.3rem; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+.chapter-num { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-accent); }
+.read-more.read-more-compact { padding: 6px 12px; margin: 0; font-size: 0.9rem; align-items: center; }
+.read-more-compact .read-more-icon { font-size: 1.1rem; }
+
 .read-more { display: flex; gap: 12px; align-items: flex-start; margin-top: 22px; padding: 12px 14px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--radius); }
 .read-more-icon { font-size: 22px; line-height: 1; }
 .read-more-title { font-weight: 600; margin-bottom: 2px; }

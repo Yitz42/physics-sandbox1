@@ -3,6 +3,7 @@
 import { el, button } from "./controls.js";
 import { renderMixed } from "../render/panel.js";
 import { getStatus, resetAll } from "../core/progress.js";
+import { unitPlace, readingFor } from "../core/content.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
 
 // "practice" (answer was shown) is an internal record: students just see "not done yet".
@@ -33,19 +34,49 @@ export function renderHome(root, courses) {
   );
 }
 
-// units: [{ id, title, concept, stages: [files] }]
+// "Read more in the textbook": a link to the textbook chapter (opens in a new tab).
+function readMore(reading, { compact = false } = {}) {
+  if (!reading) return null;
+  return el("div", { className: "read-more" + (compact ? " read-more-compact" : "") }, [
+    el("span", { className: "read-more-icon", textContent: "📖" }),
+    el("div", {}, [
+      el("div", { className: "read-more-title", textContent: "Read more in the textbook" }),
+      el("a", { href: reading.url, target: "_blank", rel: "noopener", textContent: reading.chapter }),
+      compact ? null : el("div", { className: "read-more-book", textContent: `${reading.book.title}, by ${reading.book.authors} (free online)` }),
+    ]),
+  ]);
+}
+
+// One unit's card on the course page.
+function unitCard(course, u) {
+  const keys = u.stages.map((s) => `${course.id}/${u.id}/${s}`);
+  const done = keys.filter((k) => getStatus(k) === "complete").length;
+  return el("a", { className: "unit-card", href: `#/${course.id}/${u.id}` }, [
+    el("div", { className: "unit-num", textContent: `Unit ${unitPlace(course, u.id).number}` }),
+    el("div", { className: "unit-text" }, [el("h2", { textContent: u.title }), mixed(u.concept)]),
+    el("div", { className: "unit-progress", textContent: `${done} / ${keys.length} complete` }),
+  ]);
+}
+
+// units: [{ id, title, concept, stages: [files] }]. With chapters, the units
+// are listed under their chapter's heading (with its textbook link).
 export function renderCourse(root, course, units) {
   root.innerHTML = "";
+  const byId = Object.fromEntries(units.map((u) => [u.id, u]));
   const list = el("div", { className: "unit-list" });
-  units.forEach((u, i) => {
-    const keys = u.stages.map((s) => `${course.id}/${u.id}/${s}`);
-    const done = keys.filter((k) => getStatus(k) === "complete").length;
-    list.appendChild(el("a", { className: "unit-card", href: `#/${course.id}/${u.id}` }, [
-      el("div", { className: "unit-num", textContent: `Unit ${i + 1}` }),
-      el("div", { className: "unit-text" }, [el("h2", { textContent: u.title }), mixed(u.concept)]),
-      el("div", { className: "unit-progress", textContent: `${done} / ${keys.length} complete` }),
-    ]));
-  });
+  if (course.chapters) {
+    course.chapters.forEach((ch, c) => {
+      list.appendChild(el("section", { className: "chapter" }, [
+        el("div", { className: "chapter-head" }, [
+          el("h2", { className: "chapter-title" }, [el("span", { className: "chapter-num", textContent: `Chapter ${c + 1}` }), ch.title]),
+          readMore(readingFor(course, ch), { compact: true }),
+        ]),
+        ...ch.units.map((id) => unitCard(course, byId[id])),
+      ]));
+    });
+  } else {
+    units.forEach((u) => list.appendChild(unitCard(course, u)));
+  }
   root.append(
     el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" })]),
     el("header", { className: "page-header" }, [el("h1", { textContent: course.title }), mixed(course.description, "lead")]),
@@ -62,7 +93,8 @@ export function renderCourse(root, course, units) {
 }
 
 // stages: loaded stage objects, in order
-export function renderUnit(root, course, unit, unitNumber, stages) {
+export function renderUnit(root, course, unit, stages) {
+  const place = unitPlace(course, unit.id);
   root.innerHTML = "";
   const goals = el("ul", { className: "goals" }, (unit.goals || []).map((g) => {
     const li = el("li");
@@ -83,23 +115,14 @@ export function renderUnit(root, course, unit, unitNumber, stages) {
   });
   const concept = el("p", { className: "lead" });
   renderMixed(concept, unit.concept);
-  // "Read more": the matching textbook chapter, if the course names a book
-  // (content/<course>/reading.js). It opens in a new tab, so the game stays put.
-  const reading = course.reading && course.reading.units && course.reading.units[unit.id];
-  const book = course.reading && course.reading.book;
-  const readMore = reading && book ? el("div", { className: "read-more" }, [
-    el("span", { className: "read-more-icon", textContent: "📖" }),
-    el("div", {}, [
-      el("div", { className: "read-more-title", textContent: "Read more in the textbook" }),
-      el("a", { href: reading.url || book.url, target: "_blank", rel: "noopener", textContent: reading.chapter }),
-      el("div", { className: "read-more-book", textContent: `${book.title}, by ${book.authors} (free online)` }),
-    ]),
-  ]) : null;
   root.append(
-    el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title })]),
-    el("header", { className: "page-header" }, [el("div", { className: "unit-num", textContent: `Unit ${unitNumber}` }), el("h1", { textContent: unit.title }), concept]),
+    el("nav", { className: "crumbs" }, [
+      el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title }),
+      place.chapter ? ` › Chapter ${place.chapterNumber}: ${place.chapter.title}` : "",
+    ]),
+    el("header", { className: "page-header" }, [el("div", { className: "unit-num", textContent: `Unit ${place.number}` }), el("h1", { textContent: unit.title }), concept]),
     el("h3", { textContent: "You will be able to:" }), goals,
     el("h3", { textContent: "Stages" }), list,
-    readMore,
+    readMore(readingFor(course, place.chapter)),
   );
 }

@@ -1,11 +1,13 @@
 # Curriculum
 
-Each unit teaches one concept and tests it several ways (see challenge types in
-CLAUDE.md). Every unit has 6 stages: explore → predict → build → debug →
-concept-check → solve. A stage can have several **parts**: new ideas in a unit are
-added as extra parts of its existing stages (not as extra stages).
+The course is grouped into **chapters** that follow the textbook's chapters
+(content/statics/reading.js). Each **unit** teaches ONE concept and tests it six
+ways (see challenge types in CLAUDE.md): explore → predict → build → debug →
+concept-check → solve. Units are numbered by chapter: 2.2 is chapter 2, unit 2.
+A new concept gets its own unit in the matching chapter.
 
 Items marked ⭐ were agreed with the owner as additions to the textbook plan.
+✅ = built.
 
 Edit this file freely: reorder units, add ideas, change what is tested.
 Claude builds from it.
@@ -14,127 +16,156 @@ Claude builds from it.
 
 ## Subject 1: Statics
 
-### Phase 1: Foundations
-Also builds: core, level runner, all challenge types, test page.
+### Chapter 1: Forces and vectors (textbook ch. 2)
 
-**Unit 1: Forces as vectors**
+**Unit 1.1: Force components and resultants** ✅
 - Concept: a force has magnitude and direction; it splits into x and y components.
 - Test ideas: drag an arrow and watch Fx, Fy change; predict components of a 30° force;
   add two forces to hit a target resultant; debug a sin/cos swap.
-- ⭐ Cartesian vector form F = {Fx i + Fy j} N and the unit vector u = F/F (built).
-- ⭐ A force along a line from coordinates: r_AB = r_B − r_A, u_AB = r_AB/r_AB (built:
-  a part in every stage; e.g. anchor a cable so it pulls with a given force).
 
-**Unit 2: Equilibrium of a particle**
+**Unit 1.2: Cartesian vectors** ⭐ ✅
+- Concept: F = {Fx i + Fy j} N = F u; a force along a line from coordinates:
+  r_AB = r_B − r_A, u_AB = r_AB / r_AB.
+- Test ideas: move anchor B and watch r_AB, u_AB; predict a unit vector, then a cable
+  force from coordinates; anchor a cable so it pulls with a given force; debug swapped
+  fractions; resultant of two cables in Cartesian form.
+
+### Chapter 2: Equilibrium of a particle (textbook ch. 3)
+
+**Unit 2.1: Cables** ✅
 - Concept: ΣFx = 0, ΣFy = 0 for forces through one point.
 - Test ideas: a weight hanging from two cables; predict cable tensions;
   pick cable angles so neither exceeds a limit; debug an FBD missing a force.
-- ⭐ Springs, F = k s: find the stretch, or choose k so a spring reaches its hook (built).
-- ⭐ Pulleys: a cable over a frictionless pulley pulls twice with the same tension T
-  (built: a pulley riding on a cable, held by a rope).
 
-### Phase 2: Moments and equivalent systems
+**Unit 2.2: Springs** ⭐ ✅
+- Concept: F = k s; equilibrium sets the force, the stiffness sets the stretch.
+- Test ideas: predict the stretch; choose k so a spring reaches its hook; debug a spring
+  drawn pushing; a lamp hung from a spring and a cable (stretched length).
 
-**Unit 3: Moment of a force**
+**Unit 2.3: Pulleys** ⭐ ✅
+- Concept: a cable over a frictionless pulley pulls twice with the same tension T.
+- Test ideas: a pulley riding on a cable, held by a rope; set the angles so the rope can
+  be cut; debug an FBD with one side of the cable missing.
+
+### Chapter 3: Moments and static equivalence (textbook ch. 4)
+
+**Unit 3.1: Moment of a force** ✅
 - Concept: M = F × d (perpendicular distance); sign convention.
 - Test ideas: seesaw balance; predict the moment of an angled force two ways
   (components vs. perpendicular distance); find the wrong moment arm.
-- ⭐ Varignon's theorem named and tested: predict the moments of F_x and F_y
-  separately, then their sum (built).
 
-**Unit 4: Couples**
+**Unit 3.2: Varignon's theorem** ⭐ ✅
+- Concept: the moment of a force = the sum of the moments of its components, xF_y − yF_x.
+- Test ideas: watch each component's moment; aim a pull for a given moment; debug the
+  xF_y − yF_x line; moment by components, then d = |M| / F.
+
+**Unit 3.3: Couples** ✅
 - Concept: two equal, opposite, offset forces make a pure moment that is the same about any point.
 - Test ideas: move the reference point and see the moment stay the same;
   replace a couple with an equivalent one.
 
-**Unit 5: Equivalent force systems**
+**Unit 3.4: Moving a force** ⭐ ✅
+- Concept: a force moved to point O needs a couple equal to its moment about O (M = Fd).
+- Test ideas: slide O along a beam; a force moved to a bolt; choose where to bolt a plate
+  so the couple stays small; debug a forgotten couple.
+
+**Unit 3.5: Equivalent force systems** ✅
 - Concept: replace several forces with one resultant force plus a moment.
 - Test ideas: find where a single force must act to replace a set of loads.
-- ⭐ Moving one force to a point: the same force plus a couple M = Fd
-  (built: slide O along a beam; a force on a bracket moved to its bolt).
 
-**Unit 6: Distributed loads**
+**Unit 3.6: Distributed loads**
 - Concept: a distributed load is replaced by its area, acting at its centroid.
 - Test ideas: uniform and triangular loads on a beam; predict the equivalent force and location.
 
-### Phase 3: Rigid body equilibrium (2D)
+### Chapter 4: Rigid body equilibrium (textbook ch. 5)
 
-**Unit 7: Supports and free-body diagrams**
+**Unit 4.1: Supports and free-body diagrams**
 - Concept: each support type provides specific reactions (roller, pin, fixed, cable, smooth surface).
 - Test ideas: pick the correct reactions for each support; debug FBDs.
 
-**Unit 8: Equilibrium of a rigid body**
+**Unit 4.2: Equilibrium of a rigid body**
 - Concept: ΣFx = 0, ΣFy = 0, ΣM = 0; choosing a smart moment point.
 - Test ideas: simply supported beam, cantilever, L-shaped bracket; predict reactions;
   compare the effort of taking moments about different points.
-- ⭐ Alternative equation sets: two moment equations plus one force equation
-  (and when that works).
 
-**Unit 9: Stability and determinacy**
+**Unit 4.3: Alternative equation sets** ⭐
+- Concept: two moment equations plus one force equation (and when that works).
+
+**Unit 4.4: Stability and determinacy**
 - Concept: too few supports → mechanism; too many → indeterminate; improper supports.
 - Test ideas: add supports until stable; spot the "stable-looking" but improperly supported structure.
 
-**Unit 10: Two-force and three-force members**
+**Unit 4.5: Two-force and three-force members**
 - Concept: two-force members carry force along their line; three forces must be concurrent or parallel.
 - Test ideas: find a direction without calculating.
 
-### Phase 4: Structures
+### Chapter 5: Structures (textbook ch. 6)
 
-**Unit 11: Trusses, method of joints**
+**Unit 5.1: Trusses, method of joints**
 - Concept: pin-jointed members in pure tension or compression; solve joint by joint.
 - Test ideas: build a truss to carry a load across a gap; predict member forces;
-  color members red (tension) / blue (compression); identify zero-force members.
-- ⭐ Zero-force members get their own part: spot them by inspection before solving.
+  color members red (tension) / blue (compression).
 
-**Unit 12: Trusses, method of sections**
+**Unit 5.2: Zero-force members** ⭐
+- Concept: spot members that carry no force by inspection, before solving.
+
+**Unit 5.3: Trusses, method of sections**
 - Concept: cut through the truss and solve for up to three members directly.
 - Test ideas: choose the best cut; predict one member force quickly.
 
-**Unit 13: Frames and machines**
+**Unit 5.4: Frames and machines**
 - Concept: multi-body structures with multi-force members; take them apart into separate FBDs.
 - Test ideas: pliers, a crane arm, an A-frame; equal and opposite forces at the connecting pins.
 
-### Phase 5: Internal forces
+### Chapter 6: Centroids (textbook ch. 7)
 
-**Unit 14: Internal forces at a point**
+**Unit 6.1: Centroids and center of gravity**
+- Concept: composite shapes; where the weight acts.
+- Test ideas: build a shape that balances on a pin at a given point.
+
+**Unit 6.2: Composite shapes with holes** ⭐
+- Concept: a hole counts as negative area.
+
+### Chapter 7: Internal forces (textbook ch. 8)
+
+**Unit 7.1: Internal forces at a point**
 - Concept: cut a beam; the cut face carries normal force N, shear V, moment M.
 - Test ideas: slide a cut along the beam and watch N, V, M.
 
-**Unit 15: Shear and moment diagrams**
+**Unit 7.2: Shear and moment diagrams**
 - Concept: V and M along a beam; relationships dV/dx = −w, dM/dx = V.
 - Test ideas: sketch the diagram, then compare; find the max moment location.
-- ⭐ Write V(x) and M(x) as equations for each segment.
 - ⭐ Jumps in the diagrams: V jumps at point loads, M jumps at applied couples.
 - Bridge to later: this feeds "stress at a point" in mechanics of materials.
 
-### Phase 6: Friction
+**Unit 7.3: V(x) and M(x) equations** ⭐
+- Concept: write V(x) and M(x) as equations for each segment.
 
-**Unit 16: Dry friction**
-- Concept: F ≤ μN; impending motion; slipping vs. tipping.
+### Chapter 8: Friction (textbook ch. 9)
+
+**Unit 8.1: Dry friction**
+- Concept: F ≤ μN; impending motion.
 - Test ideas: box on a ramp; ladder against a wall; predict the angle it slips.
-- ⭐ Tipping versus slipping as its own part: which happens first, and why.
 
-**Unit 17: Wedges and belt friction**
+**Unit 8.2: Tipping versus slipping** ⭐
+- Concept: which happens first, and why.
+
+**Unit 8.3: Wedges and belt friction**
 - Concept: wedges; belt friction T2 = T1·e^(μβ).
 - Test ideas: how many wraps of rope hold a boat.
 
-### Phase 7: Geometric properties
+### Chapter 9: Moments of inertia (textbook ch. 10)
 
-**Unit 18: Centroids and center of gravity**
-- Concept: composite shapes; where the weight acts.
-- Test ideas: build a shape that balances on a pin at a given point.
-- ⭐ Composite shapes with holes: a hole counts as negative area.
-
-**Unit 19: Area moments of inertia**
+**Unit 9.1: Area moments of inertia**
 - Concept: I = ∫y² dA; parallel axis theorem.
 - Test ideas: compare I-beam vs. rectangle of the same area.
 - Bridge to later: needed for bending stress.
 
-### Phase 8: 3D statics (uses three.js)
+### Chapter 10: 3D statics (uses three.js)
 
-**Unit 20: 3D force vectors and particle equilibrium**
-**Unit 21: Moments in 3D (cross product) and moment about an axis**
-**Unit 22: 3D rigid body equilibrium**
+**Unit 10.1: 3D force vectors and particle equilibrium**
+**Unit 10.2: Moments in 3D (cross product) and moment about an axis**
+**Unit 10.3: 3D rigid body equilibrium**
 
 ---
 

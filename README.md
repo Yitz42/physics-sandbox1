@@ -9,13 +9,24 @@ The first course is **Statics**. Mechanics of materials and dynamics come later.
 
 ## What's in it so far
 
+The course is grouped into chapters that follow a free textbook. Each unit teaches
+one concept.
+
 | Unit | Topic | What students learn |
 |---|---|---|
-| 1 | Forces as vectors | Components $F_x$, $F_y$; Cartesian form and unit vectors; forces along a cable from coordinates; adding forces into a resultant |
-| 2 | Equilibrium of a particle | $\Sigma F_x = 0$, $\Sigma F_y = 0$; cable tensions; springs ($F = ks$); pulleys |
-| 3 | Moment of a force | $M = Fd$, the moment arm, clockwise vs counterclockwise; Varignon's theorem |
-| 4 | Couples | Equal, opposite, offset forces; $M = Fd$ about any point; equivalent couples |
-| 5 | Equivalent force systems | Moving a force to a point (force + couple); replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
+| **Chapter 1** | **Forces and vectors** | |
+| 1.1 | Force components and resultants | Components $F_x$, $F_y$; adding forces into a resultant |
+| 1.2 | Cartesian vectors | $\mathbf{F} = F_x\mathbf{i} + F_y\mathbf{j}$, unit vectors, forces along a cable from coordinates |
+| **Chapter 2** | **Equilibrium of a particle** | |
+| 2.1 | Cables | $\Sigma F_x = 0$, $\Sigma F_y = 0$; cable tensions |
+| 2.2 | Springs | $F = ks$: the stretch, and choosing a stiffness |
+| 2.3 | Pulleys | The same tension on both sides of a frictionless pulley |
+| **Chapter 3** | **Moments and static equivalence** | |
+| 3.1 | Moment of a force | $M = Fd$, the moment arm, clockwise vs counterclockwise |
+| 3.2 | Varignon's theorem | $M_O = xF_y - yF_x$: the moments of a force's components |
+| 3.3 | Couples | Equal, opposite, offset forces; $M = Fd$ about any point; equivalent couples |
+| 3.4 | Moving a force | A force moved to a point needs a couple $M = Fd$ |
+| 3.5 | Equivalent force systems | Replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
 
 Every unit has six stages, each testing the idea a different way:
 
@@ -26,18 +37,12 @@ Every unit has six stages, each testing the idea a different way:
 5. **Concept check** — multiple choice, with an explanation for every wrong answer.
 6. **Solve** — a full textbook problem, step by step.
 
-A stage can have several parts ("Part 2 of 3"), each testing another idea the same
-way — for example Unit 1's Predict stage covers components, then the unit vector,
-then a force along a cable. Progress is saved part by part.
+A stage can also have several parts ("Part 2 of 3") that test related ideas the
+same way; progress is saved part by part.
 
-Each unit page also links to the matching chapter of a free textbook
+Each chapter links to the matching chapter of a free textbook
 (*Engineering Statics: Open and Interactive*). The book is set in
 `content/statics/reading.js`, so it can be swapped for another.
-
-Wrong answers get specific feedback (a wrong sign, a missing force, the wrong
-moment arm …) and a faint "shadow" on the picture showing what the student's
-numbers would look like. Every attempt uses random numbers, so neighbours get
-different questions.
 
 ## How to run it
 
@@ -66,7 +71,7 @@ src/challenges/       the six stage types (explore, predict, build, debug, conce
 src/render/           drawing only: arrows, labels, beams, lamps, motors …
 src/ui/               menus, buttons, feedback messages
 src/subjects/statics/ the physics: one solver per topic (particle, moment, couple, equivalent)
-content/statics/      the lessons: one folder per unit, one file per stage
+content/statics/      the lessons: course.js (chapters), one folder per unit, one file per stage
 tests/                the test page and test files
 docs/CURRICULUM.md    the plan for every unit
 ```

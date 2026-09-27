@@ -1,12 +1,12 @@
 // main.js — the entry point. Reads the address bar and shows the right page:
 //   #/                                   list of courses
 //   #/statics                            the units of a course
-//   #/statics/01-force-vectors           one unit's stages
-//   #/statics/01-force-vectors/2-predict one stage
+//   #/statics/force-components           one unit's stages
+//   #/statics/force-components/2-predict one stage
 // Using the part after "#" means the browser's Back button works and every
 // stage has its own link, with no server needed.
 
-import { loadCourseList, loadCourse, loadUnit, loadUnitStages, loadStage } from "./core/content.js";
+import { loadCourseList, loadCourse, loadUnit, loadUnitStages, loadStage, unitPlace } from "./core/content.js";
 import { runStage } from "./core/runner.js";
 import { renderHome, renderCourse, renderUnit } from "./ui/menus.js";
 import { createStageView } from "./ui/stage-view.js";
@@ -26,7 +26,7 @@ async function route() {
     const unitIndex = course.units.indexOf(unitId);
     const unit = units[unitIndex];
     if (!unit) throw new Error(`No unit called "${unitId}" in ${course.title}.`);
-    if (!stageFile) return renderUnit(app, course, unit, unitIndex + 1, await loadUnitStages(courseId, unit));
+    if (!stageFile) return renderUnit(app, course, unit, await loadUnitStages(courseId, unit));
 
     const i = unit.stages.indexOf(stageFile);
     if (i < 0) throw new Error(`No stage called "${stageFile}" in ${unit.title}.`);
@@ -43,7 +43,7 @@ async function route() {
     }
     const view = createStageView(app, stage, {
       course: { href: `#/${courseId}`, title: course.title },
-      unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitIndex + 1}: ${unit.title}` },
+      unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitPlace(course, unitId).number}: ${unit.title}` },
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
     runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });

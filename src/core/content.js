@@ -30,6 +30,29 @@ export async function loadStage(courseId, unitId, stageFile) {
   return stage;
 }
 
+// ---- Chapters -------------------------------------------------------------------
+//
+// A course may group its units into chapters (course.chapters: [{ id, title,
+// units: [...] }]). Units are then numbered by chapter: "1.1", "1.2", "2.1" …
+// A course without chapters numbers its units 1, 2, 3 …
+
+// { chapter, chapterNumber, number } for a unit, e.g. number "2.3".
+export function unitPlace(course, unitId) {
+  const chapters = course.chapters || [];
+  for (let c = 0; c < chapters.length; c++) {
+    const i = chapters[c].units.indexOf(unitId);
+    if (i >= 0) return { chapter: chapters[c], chapterNumber: c + 1, number: `${c + 1}.${i + 1}` };
+  }
+  return { chapter: null, chapterNumber: null, number: String(course.units.indexOf(unitId) + 1) };
+}
+
+// The textbook chapter to read with a unit or chapter: { book, chapter, url } or null.
+export function readingFor(course, chapter) {
+  const r = course.reading;
+  const entry = r && chapter && r.chapters && r.chapters[chapter.id];
+  return entry ? { book: r.book, chapter: entry.chapter, url: entry.url || r.book.url } : null;
+}
+
 // Load every stage of a unit (for the unit page's list).
 export async function loadUnitStages(courseId, unit) {
   return Promise.all(unit.stages.map((file) => loadStage(courseId, unit.id, file)));

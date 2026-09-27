@@ -25,10 +25,17 @@ async function allStages() {
   return out;
 }
 const stages = await allStages();
-// find("01-force-vectors/2-predict") → its first part; find(id, 2) → part 2.
+// find("force-components/2-predict") → its first part; find(id, 2) → part 2.
 const find = (id, part = 1) => stages.find((s) => s.stage.id === id && s.stage.part.index === part - 1).stage;
 
 test(`found ${stages.length} stage parts (6 stages per unit)`, () => ok(stages.length >= 12));
+
+test("every unit has all six challenge types, in order", async () => {
+  const order = ["explore", "predict", "build", "debug", "concept-check", "solve"];
+  const byUnit = {};
+  for (const { unit, whole, stage } of stages) if (stage.part.index === 0) (byUnit[unit.id] ||= []).push(whole.challenge);
+  for (const [u, types] of Object.entries(byUnit)) equal(types, order, `unit ${u}:`);
+});
 
 for (const { unit, file, whole, stage: part } of stages) {
   // Name each part in the test list: "…/2-predict part 2".
@@ -84,14 +91,14 @@ for (const { unit, file, whole, stage: part } of stages) {
 
 // ---- Stage answers checked by hand ------------------------------------------
 
-test("Unit 2 predict: 60 kg at 30°/45° → T_AB = 430.9 N, T_AC = 527.7 N", () => {
-  const r = getSolver("statics.particle").solve(find("02-particle-equilibrium/2-predict").setup);
+test("Cables predict: 60 kg at 30°/45° → T_AB = 430.9 N, T_AC = 527.7 N", () => {
+  const r = getSolver("statics.particle").solve(find("cables/2-predict").setup);
   close(r.values.T_AB, 430.88);
   close(r.values.T_AC, 527.73);
 });
 
-test("Unit 1 build: the start fails the goal; F2 = 390 N at 53° above −x meets it", () => {
-  const st = find("01-force-vectors/3-build");
+test("Force components build: the start fails the goal; F2 = 390 N at 53° above −x meets it", () => {
+  const st = find("force-components/3-build");
   const solver = getSolver(st.solver);
   ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting position should not already meet the goal");
   const s = clone(st.setup);
@@ -100,8 +107,8 @@ test("Unit 1 build: the start fails the goal; F2 = 390 N at 53° above −x meet
   ok(st.goal.check(solver.solve(s), s).ok, "hand-worked answer should meet the goal");
 });
 
-test("Unit 2 build: start fails; 44°/44° meets it; 40°/45° overloads AC; 50°/50° hits the skylight", () => {
-  const st = find("02-particle-equilibrium/3-build");
+test("Cables build: start fails; 44°/44° meets it; 40°/45° overloads AC; 50°/50° hits the skylight", () => {
+  const st = find("cables/3-build");
   const solver = getSolver(st.solver);
   const tryAngles = (ab, ac) => {
     const s = clone(st.setup);
@@ -116,8 +123,8 @@ test("Unit 2 build: start fails; 44°/44° meets it; 40°/45° overloads AC; 50�
   ok(!tryAngles(50, 50).ok, "50/50 puts anchors in the skylight");
 });
 
-test("Unit 3 seesaw: every new version puts child B on the 3 m half-plank", () => {
-  const st = find("03-moments/2-predict");
+test("Moments seesaw: every new version puts child B on the 3 m half-plank", () => {
+  const st = find("moments/2-predict");
   const solver = getSolver(st.solver);
   for (let i = 0; i < 40; i++) {
     const x = solver.solve(makeVariant(st.setup, st.vary)).values["W_B.pos"];
@@ -125,8 +132,8 @@ test("Unit 3 seesaw: every new version puts child B on the 3 m half-plank", () =
   }
 });
 
-test("Unit 3 build: the start tips; 10 kg at 0, 20 kg at 1.5 m, 30 kg at 1 m balances", () => {
-  const st = find("03-moments/3-build");
+test("Moments build: the start tips; 10 kg at 0, 20 kg at 1.5 m, 30 kg at 1 m balances", () => {
+  const st = find("moments/3-build");
   const solver = getSolver(st.solver);
   ok(!st.goal.check(solver.solve(st.setup), st.setup).ok);
   const s = clone(st.setup);
@@ -136,13 +143,13 @@ test("Unit 3 build: the start tips; 10 kg at 0, 20 kg at 1.5 m, 30 kg at 1 m bal
   ok(st.goal.check(solver.solve(s), s).ok, "hand-worked answer should balance");
 });
 
-test("Unit 3 solve: default numbers give M_O = 114.95 N·m", () => {
-  const st = find("03-moments/6-solve");
+test("Moments solve: default numbers give M_O = 114.95 N·m", () => {
+  const st = find("moments/6-solve");
   close(getSolver(st.solver).solve(st.setup).values.M, 114.952);
 });
 
-test("Unit 4 explore: M_P = 50 N·m wherever P is dragged", () => {
-  const st = find("04-couples/1-explore");
+test("Couples explore: M_P = 50 N·m wherever P is dragged", () => {
+  const st = find("couples/1-explore");
   const solver = getSolver(st.solver);
   for (const P of [[0.25, 0.3], [-0.45, -0.35], [1.2, 0.45], [0, 0.1], [0.5, -0.2]]) {
     const s = clone(st.setup);
@@ -151,8 +158,8 @@ test("Unit 4 explore: M_P = 50 N·m wherever P is dragged", () => {
   }
 });
 
-test("Unit 4 predict: F' = 200 N; every new version turns the same way as the original", () => {
-  const st = find("04-couples/2-predict");
+test("Couples predict: F' = 200 N; every new version turns the same way as the original", () => {
+  const st = find("couples/2-predict");
   const solver = getSolver(st.solver);
   close(solver.solve(st.setup).values.C2, 200);
   for (let i = 0; i < 25; i++) {
@@ -162,8 +169,8 @@ test("Unit 4 predict: F' = 200 N; every new version turns the same way as the or
   }
 });
 
-test("Unit 4 build: start fails; 150 N down/up and 200 N right/left both work; same-way or wrong-sense forces fail", () => {
-  const st = find("04-couples/3-build");
+test("Couples build: start fails; 150 N down/up and 200 N right/left both work; same-way or wrong-sense forces fail", () => {
+  const st = find("couples/3-build");
   const solver = getSolver(st.solver);
   const tryForces = (F, d1, d2) => {
     const s = clone(st.setup);
@@ -180,8 +187,8 @@ test("Unit 4 build: start fails; 150 N down/up and 200 N right/left both work; s
   ok(/clockwise/.test(tryForces(150, "up", "down").message), "reversed pair turns the wrong way");
 });
 
-test("Unit 4 debug: every version's first line (M_P) agrees with M = Fd = +60 N·m", () => {
-  const st = find("04-couples/4-debug");
+test("Couples debug: every version's first line (M_P) agrees with M = Fd = +60 N·m", () => {
+  const st = find("couples/4-debug");
   const solver = getSolver(st.solver);
   for (let i = 0; i < 20; i++) {
     const s = makeVariant(st.setup, st.vary);
@@ -191,8 +198,8 @@ test("Unit 4 debug: every version's first line (M_P) agrees with M = Fd = +60 N�
   }
 });
 
-test("Unit 4 solve: M_R = −68.04 N·m; every version stays clearly clockwise", () => {
-  const st = find("04-couples/6-solve");
+test("Couples solve: M_R = −68.04 N·m; every version stays clearly clockwise", () => {
+  const st = find("couples/6-solve");
   const solver = getSolver(st.solver);
   close(solver.solve(st.setup).values.M, -68.0385);
   for (let i = 0; i < 40; i++) {
@@ -210,8 +217,8 @@ test("every stage with random numbers has at least 50 different versions (so nei
   }
 });
 
-test("Unit 5 predict: F_R = 1200 N at x̄ = 2.67 m; every version's resultant lands on the beam", () => {
-  const st = find("05-equivalent-systems/2-predict");
+test("Equivalent systems predict: F_R = 1200 N at x̄ = 2.67 m; every version's resultant lands on the beam", () => {
+  const st = find("equivalent-systems/2-predict");
   const solver = getSolver(st.solver);
   const r = solver.solve(st.setup);
   close(r.values.R, 1200);
@@ -222,8 +229,8 @@ test("Unit 5 predict: F_R = 1200 N at x̄ = 2.67 m; every version's resultant la
   }
 });
 
-test("Unit 5 build: start tilts; 10 kg at 2.5, 20 kg at 1.0, 30 kg at 1.5 hangs level; crates too close fail", () => {
-  const st = find("05-equivalent-systems/3-build");
+test("Equivalent systems build: start tilts; 10 kg at 2.5, 20 kg at 1.0, 30 kg at 1.5 hangs level; crates too close fail", () => {
+  const st = find("equivalent-systems/3-build");
   const solver = getSolver(st.solver);
   const place = (a, b, c) => {
     const s = clone(st.setup);
@@ -237,40 +244,42 @@ test("Unit 5 build: start tilts; 10 kg at 2.5, 20 kg at 1.0, 30 kg at 1.5 hangs 
   ok(/too close/.test(place(1.5, 1.5, 1.5).message), "all at the hook is level but crates overlap");
 });
 
-test("Unit 5 debug: (M_R)_O = −630.4 N·m; F2's arm is 3 sin 60° = 2.598 m", () => {
-  const st = find("05-equivalent-systems/4-debug");
+test("Equivalent systems debug: (M_R)_O = −630.4 N·m; F2's arm is 3 sin 60° = 2.598 m", () => {
+  const st = find("equivalent-systems/4-debug");
   const r = getSolver(st.solver).solve(st.setup);
   close(r.values.M, -630.385);
   close(r.values.d_F2, 2.59808);
   close(r.values["R.y"], -376.795);
 });
 
-test("Unit 5 solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 N·m", () => {
-  const st = find("05-equivalent-systems/6-solve");
+test("Equivalent systems solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 N·m", () => {
+  const st = find("equivalent-systems/6-solve");
   const r = getSolver(st.solver).solve(st.setup);
   close(r.values["R.x"], 240);
   close(r.values["R.y"], -430);
   close(r.values.M, -448);
 });
 
-test("every unit has a textbook chapter to read, with a web link", async () => {
+test("every unit is in a chapter, and every chapter has a textbook chapter to read, with a web link", async () => {
   for (const c of await loadCourseList()) {
     if (c.comingSoon) continue;
     const course = await loadCourse(c.id);
+    if (!course.chapters) continue;
+    equal(course.units, course.chapters.flatMap((ch) => ch.units), "course.units must list the chapters' units in order:");
     if (!course.reading) continue;
     ok(/^https:\/\//.test(course.reading.book.url), "the book needs an https link");
-    for (const u of course.units) {
-      const r = course.reading.units[u];
-      ok(r && r.chapter, `unit ${u} has no chapter in reading.js`);
-      if (r.url) ok(/^https:\/\//.test(r.url), `unit ${u}: chapter link must be https`);
+    for (const ch of course.chapters) {
+      const r = course.reading.chapters[ch.id];
+      ok(r && r.chapter, `chapter ${ch.id} has no textbook chapter in reading.js`);
+      if (r.url) ok(/^https:\/\//.test(r.url), `chapter ${ch.id}: link must be https`);
     }
   }
 });
 
-// ---- New parts: Unit 1 Cartesian vectors --------------------------------------
+// ---- Cartesian vectors --------------------------------------
 
-test("Unit 1 predict part 3: every version's cable has a length and components (A never on B)", () => {
-  const st = find("01-force-vectors/2-predict", 3);
+test("Cartesian vectors predict part 2: every version's cable has a length and components (A never on B)", () => {
+  const st = find("cartesian-vectors/2-predict", 2);
   const solver = getSolver(st.solver);
   for (let i = 0; i < 40; i++) {
     const s = makeVariant(st.setup, st.vary);
@@ -279,8 +288,8 @@ test("Unit 1 predict part 3: every version's cable has a length and components (
   }
 });
 
-test("Unit 1 build part 2: start fails; B at (0, 4) or (1.5, 2) pulls with {−120 i + 160 j} N; (6, −4) direction fails", () => {
-  const st = find("01-force-vectors/3-build", 2);
+test("Cartesian vectors build: start fails; B at (0, 4) or (1.5, 2) pulls with {−120 i + 160 j} N; (6, −4) direction fails", () => {
+  const st = find("cartesian-vectors/3-build");
   const solver = getSolver(st.solver);
   const at = (B) => {
     const s = clone(st.setup);
@@ -293,8 +302,8 @@ test("Unit 1 build part 2: start fails; B at (0, 4) or (1.5, 2) pulls with {−1
   ok(!at([6, 4]), "(6, 4) pulls right");
 });
 
-test("Unit 1 solve part 2: F_R = {20 i + 390 j} N, 390.5 N at 87.1°", () => {
-  const st = find("01-force-vectors/6-solve", 2);
+test("Cartesian vectors solve: F_R = {20 i + 390 j} N, 390.5 N at 87.1°", () => {
+  const st = find("cartesian-vectors/6-solve");
   const r = getSolver(st.solver).solve(st.setup);
   close(r.values["R.x"], 20);
   close(r.values["R.y"], 390);
@@ -302,10 +311,10 @@ test("Unit 1 solve part 2: F_R = {20 i + 390 j} N, 390.5 N at 87.1°", () => {
   close(r.values["R.angle"], 87.0643, 1e-3);
 });
 
-// ---- New parts: Unit 2 springs and pulleys --------------------------------------
+// ---- Springs and pulleys --------------------------------------
 
-test("Unit 2 build part 2: k = 980 N/m reaches C (l = 0.800 m); 500 and 1100 N/m don't", () => {
-  const st = find("02-particle-equilibrium/3-build", 2);
+test("Springs build: k = 980 N/m reaches C (l = 0.800 m); 500 and 1100 N/m don't", () => {
+  const st = find("springs/3-build");
   const solver = getSolver(st.solver);
   const withK = (k) => {
     const s = clone(st.setup);
@@ -318,8 +327,8 @@ test("Unit 2 build part 2: k = 980 N/m reaches C (l = 0.800 m); 500 and 1100 N/m
   ok(/too stiff/.test(withK(1100).message), "1100 N/m stretches too little");
 });
 
-test("Unit 2 pulley parts: rope AD always pulls (AB steeper than AC) in every version", () => {
-  for (const [id, n] of [["02-particle-equilibrium/2-predict", 3], ["02-particle-equilibrium/4-debug", 2], ["02-particle-equilibrium/6-solve", 2]]) {
+test("Pulleys: rope AD always pulls (AB steeper than AC) in every version", () => {
+  for (const [id, n] of [["pulleys/2-predict", 1], ["pulleys/4-debug", 1], ["pulleys/6-solve", 1]]) {
     const st = find(id, n);
     const solver = getSolver(st.solver);
     for (let i = 0; i < 30; i++) {
@@ -331,17 +340,17 @@ test("Unit 2 pulley parts: rope AD always pulls (AB steeper than AC) in every ve
   }
 });
 
-test("Unit 2 predict part 2: 20 kg at 40°, k = 800 N/m → T_AB = 305.2 N, s = 0.292 m", () => {
-  const st = find("02-particle-equilibrium/2-predict", 2);
+test("Springs predict: 20 kg at 40°, k = 800 N/m → T_AB = 305.2 N, s = 0.292 m", () => {
+  const st = find("springs/2-predict");
   const r = getSolver(st.solver).solve(st.setup);
   close(r.values.T_AB, 305.23, 1e-2);
   close(r.values["F_AC.s"], 0.29227, 1e-4); // 233.82 / 800
 });
 
-// ---- New parts: Unit 3 Varignon and Unit 5 moving a force -------------------------
+// ---- Varignon and moving a force -------------------------
 
-test("Unit 3 predict part 2: moments of F_y and F_x add up to M_O in every version", () => {
-  const st = find("03-moments/2-predict", 2);
+test("Varignon predict: moments of F_y and F_x add up to M_O in every version", () => {
+  const st = find("varignon/2-predict");
   const solver = getSolver(st.solver);
   close(solver.solve(st.setup).values.M, 52.9423, 1e-3);
   for (let i = 0; i < 30; i++) {
@@ -352,8 +361,8 @@ test("Unit 3 predict part 2: moments of F_y and F_x add up to M_O in every versi
   }
 });
 
-test("Unit 5 explore part 2: O under A needs no couple; O 2 m left of A needs 600 N·m clockwise", () => {
-  const st = find("05-equivalent-systems/1-explore", 2);
+test("Moving a force explore: O under A needs no couple; O 2 m left of A needs 600 N·m clockwise", () => {
+  const st = find("moving-forces/1-explore");
   const solver = getSolver(st.solver);
   const at = (x) => {
     const s = clone(st.setup);
@@ -365,9 +374,95 @@ test("Unit 5 explore part 2: O under A needs no couple; O 2 m left of A needs 60
   close(at(4), 300);
 });
 
-test("Unit 5 predict part 2: 250 N at 40° below +x at (0.8, 0.6) → F_R = 250 N, (M_R)_O = −243.5 N·m", () => {
-  const st = find("05-equivalent-systems/2-predict", 2);
+test("Moving a force predict: 250 N at 40° below +x at (0.8, 0.6) → F_R = 250 N, (M_R)_O = −243.5 N·m", () => {
+  const st = find("moving-forces/2-predict");
   const v = getSolver(st.solver).solve(st.setup).values;
   close(v.R, 250);
   close(v.M, -243.4642, 1e-6);
+});
+
+// ---- New stages (chapters 2 and 3) ---------------------------------------------------
+
+test("Springs solve: 15 kg lamp, k = 500 N/m → T_AC = 118.92 N, F_AB = 105.11 N, spring 0.610 m long", () => {
+  const v = getSolver("statics.particle").solve(find("springs/6-solve").setup).values;
+  close(v.T_AC, 118.917, 1e-4);
+  close(v.F_AB, 105.107, 1e-4);
+  close(v["F_AB.l"], 0.610214, 1e-4);
+});
+
+test("Pulleys build: start fails; 30°/30° works; 20°/20° overloads the cable (501.9 N); 30°/35° needs rope AD", () => {
+  const st = find("pulleys/3-build");
+  const solver = getSolver(st.solver);
+  const angles = (ab, ac) => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#T_AB.direction.angle", ab);
+    setPath(s, "forces.#T_AC.direction.angle", ac);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should not already work");
+  ok(angles(30, 30).ok, "30/30: T = 343.35 N, rope slack");
+  ok(/rating/.test(angles(20, 20).message), "20/20: T = 501.9 N");
+  ok(/PUSH/.test(angles(30, 35).message), "AC steeper: rope would push");
+  ok(/still pulls/.test(angles(35, 30).message), "AB steeper: rope still pulls");
+});
+
+test("Varignon build: start fails; 70° above +x and 26° above −x give 60 ± 1 N·m; straight up doesn't", () => {
+  const st = find("varignon/3-build");
+  const solver = getSolver(st.solver);
+  const pull = (dir) => {
+    const s = clone(st.setup);
+    s.forces[0].direction = dir;
+    return st.goal.check(solver.solve(s), s).ok;
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok);
+  ok(pull({ angle: 70, from: "+x", toward: "+y" }), "70° above +x: 60.2 N·m");
+  ok(pull({ angle: 26, from: "-x", toward: "+y" }), "26° above −x: 59.8 N·m");
+  ok(!pull("up"), "straight up: 0.5(150) = 75 N·m");
+});
+
+test("Varignon debug: both lines agree, M_O = −144.6 N·m, in every version", () => {
+  const st = find("varignon/4-debug");
+  const solver = getSolver(st.solver);
+  close(solver.solve(st.setup).values.M, -144.641, 1e-4);
+  for (let i = 0; i < 20; i++) {
+    const [Md, Mxy] = solver.equations(makeVariant(st.setup, st.vary));
+    close(Md.result.value, Mxy.result.value);
+  }
+});
+
+test("Varignon solve: 260 N on 5-12-13 at (0.45, 0.3) → M(F_y) = 108, M(F_x) = 30, M_O = 138 N·m, d = 0.531 m", () => {
+  const st = find("varignon/6-solve");
+  const v = getSolver(st.solver).solve(st.setup).values;
+  close(v.My_F, 108);
+  close(v.Mx_F, 30);
+  close(v.M, 138);
+  close(v.d_F, 138 / 260);
+  for (let i = 0; i < 30; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    equal(s.forces[0].at[0], s.body.points[2][0], "A sits on the bracket's corner:");
+  }
+});
+
+test("Moving a force build: bolt at 1 m fails (−846 N·m); 3.8–4.0 m works; 3.75 m is just too far", () => {
+  const st = find("moving-forces/3-build");
+  const solver = getSolver(st.solver);
+  const bolt = (x) => {
+    const s = clone(st.setup);
+    s.about.at[0] = x;
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!bolt(1).ok);
+  close(solver.solve(st.setup).values.M, 250 * 1 - 1096.41, 1e-4);
+  for (const x of [3.8, 3.9, 4]) ok(bolt(x).ok, `bolt at ${x} m`);
+  ok(!bolt(3.75).ok, "3.75 m: −158.9 N·m");
+});
+
+test("Moving a force debug and solve: (M_R)_O = −288 N·m (d = 0.96 m); and {210 i + 280 j} N with 161 N·m", () => {
+  const d = getSolver("statics.equivalent").solve(find("moving-forces/4-debug").setup).values;
+  close(d.M, -288);
+  close(d.d_F, 0.96);
+  const v = getSolver("statics.equivalent").solve(find("moving-forces/6-solve").setup).values;
+  close(v["R.x"], 210);
+  close(v["R.y"], 280);
+  close(v.M, 161);
 });

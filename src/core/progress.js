@@ -32,7 +32,7 @@ function save(data) {
   }
 }
 
-// key is "<course>/<stage id>", e.g. "statics/01-force-vectors/2-predict".
+// key is "<course>/<stage id>", e.g. "statics/force-components/2-predict".
 export function getStatus(key) {
   const entry = load()[key];
   return entry ? entry.status : STATUS.NONE;
