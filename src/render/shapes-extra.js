@@ -158,8 +158,12 @@ export function drawExtraShape(cv, s, env, roleColor) {
         const c = s.labelAway ? S(s.labelAway) : pts[0]; // label on the side away from this point
         const d = [m[0] - c[0], m[1] - c[1]], L = Math.hypot(d[0], d[1]) || 1;
         const u = [d[0] / L, d[1] / L];
-        const spots = [10, 16, 24].map((k) => [m[0] + u[0] * k, m[1] + u[1] * k + 4, u[0] > 0.3 ? "left" : u[0] < -0.3 ? "right" : "center"]);
-        out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], spots, size: 13, weight: 600, color: s.role ? roleColor(s.role) : ink, maxMove: 26 });
+        // Out from the curve first, then further out, then along it either way.
+        const t = [-u[1], u[0]];
+        const spot = (dx, dy) => [m[0] + dx, m[1] + dy + 4, dx > 4 ? "left" : dx < -4 ? "right" : "center"];
+        const spots = [...[10, 16, 24, 34].map((k) => spot(u[0] * k, u[1] * k)),
+          ...[18, 30].flatMap((k) => [spot(u[0] * 12 + t[0] * k, u[1] * 12 + t[1] * k), spot(u[0] * 12 - t[0] * k, u[1] * 12 - t[1] * k)])];
+        out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], spots, size: 13, weight: 600, color: s.role ? roleColor(s.role) : ink, maxMove: 40 });
       }
       break;
     }

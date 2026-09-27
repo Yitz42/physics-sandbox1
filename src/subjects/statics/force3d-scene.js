@@ -70,19 +70,20 @@ export function force3dScene(setup, result, opts = {}) {
     fixed.push(p);
   }
 
-  // The forces: arrows in space, all to one scale (the biggest 0.55 of the axes).
+  // The forces: arrows in space, all to one scale — the biggest 0.8 of an axis, or
+  // setup.fullScale newtons to a whole axis (fixed, so a slider shows the size change).
   const vecs = (setup.forces || []).map((f) => ({ f, d: directionOf3(f, setup) })).filter((x) => !x.d.error);
   const sizeOf = (x) => x.d.size ?? x.f.magnitude;
-  const k = (0.55 * size) / Math.max(1e-9, ...vecs.map(sizeOf), ...(setup.resultant && v.R ? [v.R] : []));
+  const k = setup.fullScale ? size / setup.fullScale : (0.8 * size) / Math.max(1e-9, ...vecs.map(sizeOf), ...(setup.resultant && v.R ? [v.R] : []));
   for (const { f, d } of vecs) {
     const start = f.at ? pointOf(setup, f.at) : f.dir && f.dir.from ? pointOf(setup, f.dir.from) : [0, 0, 0];
     const F = sizeOf({ f, d });
     const tip = add3(start, scale3(d.u, F * k));
     const asked = setup.hideMagnitude && !reveal;
     shapes.push({ type: "arrow", id: f.id, from: at(start), to: at(tip), role: "known", label: `${f.symbol} = ${asked ? "?" : format(F, "N")}` });
-    fixed.push(add3(start, scale3(d.u, 0.55 * size)));
+    fixed.push(add3(start, scale3(d.u, 0.8 * size)));
     if (shown(setup.showComponents)) shapes.push(...componentBox(f, start, scale3(d.u, F * k), d.u, F, at, reveal || setup.showComponents === "always"));
-    if (setup.showAngles) shapes.push(...angleMarks(setup, f, start, d.u, 0.28 * size, at, reveal));
+    if (setup.showAngles) shapes.push(...angleMarks(setup, f, start, d.u, 0.3 * size, at, reveal));
   }
   // The resultant, once found.
   if (setup.resultant && reveal && v.R > 0) {

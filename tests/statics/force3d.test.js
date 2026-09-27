@@ -87,3 +87,23 @@ test("the textbook view: x comes toward the viewer down-left, y goes right, z st
   close(z[0], 0, 1e-9);
   ok(z[1] > 0.9, "z up");
 });
+
+test("Guy-wire build: the start fails, and every version (T 1200–1800 N, h 5–7 m) has an anchor on the 0.5 m grid that works", async () => {
+  const st = (await import("../../content/statics/forces-3d/3-build.js")).default;
+  const at = (T, h, x, y) => {
+    const s = JSON.parse(JSON.stringify(st.setup));
+    s.forces[0].magnitude = T;
+    s.points.A[2] = h;
+    s.points.B = [x, y, 0];
+    return st.goal.check(solveForce3d(s), s).ok;
+  };
+  ok(!st.goal.check(solveForce3d(st.setup), st.setup).ok, "the start already works");
+  ok(at(1500, 6, 0, -3) && at(1500, 6, 0, -3.5), "hand-worked anchors (0, −3) and (0, −3.5)");
+  for (let T = 1200; T <= 1800; T += 50) {
+    for (const h of [5, 5.5, 6, 6.5, 7]) {
+      let found = false;
+      for (let y = -6; y <= 6 && !found; y += 0.5) found = at(T, h, 0, y);
+      ok(found, `no working anchor for T = ${T}, h = ${h}`);
+    }
+  }
+});

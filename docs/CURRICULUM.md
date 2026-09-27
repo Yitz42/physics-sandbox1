@@ -40,8 +40,17 @@ Claude builds from it.
   force from coordinates; anchor a cable so it pulls with a given force; debug swapped
   fractions; resultant of two cables in Cartesian form.
 
-**Unit 2.3: Forces in 3D**
-- Concept: F = Fx i + Fy j + Fz k; a force along a line in space (r_AB in 3D).
+**Unit 2.3: Forces in 3D** ✅
+- Concept: F = Fx i + Fy j + Fz k; size √(Fx² + Fy² + Fz²); coordinate direction angles α, β, γ
+  (cos²α + cos²β + cos²γ = 1); azimuth θ and elevation φ; a force along a line (r_AB in 3D).
+- Built: set a force's three components (and turn the view) and watch F, α, β, γ; predict
+  components from α and β (γ from the identity), from an azimuth and elevation, along a flagpole
+  cable, and the size and angles from components; place a guy wire's anchor so it pulls straight
+  toward −y with 600–800 N sideways; debug a student's cable working (backwards subtraction, a
+  sign, no square root, F r_AB instead of F u_AB); concept check; solve two cables on a pole:
+  choose r and T lines, then the resultant's size and direction angles.
+- Pictures: drawn in 3D by projection onto the same canvas (render/projection.js), so labels
+  and the picture test work as usual — no 3D library needed for lines and arrows.
 
 ### Chapter 3: Equilibrium of particles
 

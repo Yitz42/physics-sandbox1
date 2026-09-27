@@ -72,7 +72,9 @@ export function force3dEquations(setup, result) {
 
 // ---- The lines under the equations ------------------------------------------------------
 
-export function force3dSummary(setup, result, { reveal = true } = {}) {
+// hideAnswers (a solve stage before its answer step is done): the resultant's size and
+// angles — what that step asks for — stay hidden; its components show.
+export function force3dSummary(setup, result, { reveal = true, hideAnswers = false } = {}) {
   const res = result || solveForce3d(setup);
   const v = res.values;
   const lines = [];
@@ -101,6 +103,7 @@ export function force3dSummary(setup, result, { reveal = true } = {}) {
   }
   if (setup.resultant) {
     const R = AX.map((k) => v[`R.${k}`]);
+    if (hideAnswers) return [...lines, `\\mathbf{F}_R = ${vecTex(R, "N")}`];
     lines.push(`\\mathbf{F}_R = ${vecTex(R, "N")}, \\quad F_R = \\sqrt{${R.map((c) => `(${n4(c)})^2`).join(" + ")}} = ${fixedTex(v.R, "N")}`);
     lines.push(`\\alpha = \\cos^{-1}\\dfrac{F_{Rx}}{F_R} = ${fixedTex(v["R.alpha"], "deg")}, \\quad \\beta = ${fixedTex(v["R.beta"], "deg")}, \\quad \\gamma = ${fixedTex(v["R.gamma"], "deg")}`);
   }
@@ -184,13 +187,14 @@ export function force3dSteps(setup, mutation) {
   const uW = rW.map((c) => c / lenW);
   const FW = slip === "noUnit" ? rW.map((c) => F * c) : uW.map((c) => F * c);
   const lineR = (rv) => `\\mathbf{r}_{${AB}} = \\mathbf{r}_${B} - \\mathbf{r}_${A} = ${vecTex(rv, "m", (x) => n4(x))}`;
-  const lineLen = (L, root = true) => `r_{${AB}} = ${root ? "\\sqrt{" : ""}${r.map((c) => `(${n4(c)})^2`).join(" + ")}${root ? "}" : ""} = ${fixedTex(L, "m", 3)}`;
+  // (The length line squares the student's own components.)
+  const lineLen = (L, root = true, rv = r) => `r_{${AB}} = ${root ? "\\sqrt{" : ""}${rv.map((c) => `(${n4(c)})^2`).join(" + ")}${root ? "}" : ""} = ${fixedTex(L, "m", 3)}`;
   const lineU = (u) => `\\mathbf{u}_{${AB}} = \\dfrac{\\mathbf{r}_{${AB}}}{r_{${AB}}} = ${vecTex(u, "", n3)}`;
   const lineF = (Fv, viaR = false) => `\\mathbf{${f.symbol}} = ${f.symbol}\\,\\mathbf{${viaR ? "r" : "u"}}_{${AB}} = (${F})${viaR ? "\\mathbf{r}" : "\\mathbf{u}"}_{${AB}} = ${vecTex(Fv, "N")}`;
   const correct = [lineR(r), lineLen(len), lineU(r.map((c) => c / len)), lineF(r.map((c) => (F * c) / len))];
   const lines = [
     { id: "r", tex: slip === "backwards" ? `\\mathbf{r}_{${AB}} = \\mathbf{r}_${A} - \\mathbf{r}_${B} = ${vecTex(rW, "m", (x) => n4(x))}` : lineR(rW) },
-    { id: "len", tex: slip === "noRoot" ? lineLen(lenW, false) : lineLen(lenW) },
+    { id: "len", tex: slip === "noRoot" ? lineLen(lenW, false, rW) : lineLen(lenW, true, rW) },
     { id: "u", tex: lineU(uW) },
     { id: "F", tex: slip === "noUnit" ? lineF(FW, true) : lineF(FW) },
   ];

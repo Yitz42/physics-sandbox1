@@ -26,7 +26,7 @@ src/
     scenery.js (traffic light, balloon, street pole)
     blocks.js (block diagrams, signal-flow graphs)
     labels.js (label placement, CLEAR)  bounds.js (the object-boundaries check)
-    bar-label.js (values written along a bar)  regions.js (flat shapes filled in: a composite area's parts)
+    bar-label.js (values written along a bar)  projection.js (3D points onto the picture)  regions.js (flat shapes filled in: a composite area's parts)
   ui/
     controls.js  menus.js  feedback.js  stage-view.js  comprehension-view.js (the Comprehension window)
     chrome.js (the top tab menu, the unit progress bar)  data-panel.js (export / import on the home page)
@@ -36,6 +36,8 @@ src/
       index.js             registers the statics solvers with the core
       particle.js          concurrent forces, ΣF = 0; unit and position vectors; springs (F = ks);
                            pulleys (forces sharing one tension)
+      force3d.js           forces in 3D: direction angles, azimuth/elevation, along a line, resultants
+                           (force3d-scene.js: 3D pictures; force3d-tools.js), Unit 2.3
       moment.js            moments about a point: M = Fd = xFy − yFx (Varignon), balance ΣM = 0
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position

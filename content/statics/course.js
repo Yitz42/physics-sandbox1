@@ -29,7 +29,7 @@ const chapters = [
     id: "forces", title: "Forces and other vectors",
     units: [
       "force-components", "cartesian-vectors",
-      soon("Forces in 3D", "Forces with x, y and z components: $\\mathbf{F} = F_x\\,\\mathbf{i} + F_y\\,\\mathbf{j} + F_z\\,\\mathbf{k}$, and a force along a line in space."),
+      "forces-3d",
     ],
   },
   {
