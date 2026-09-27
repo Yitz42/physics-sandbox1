@@ -26,15 +26,16 @@ export default {
     body: { points: [[0, 0], [2.5, 0]] },
     supports: [
       { id: "A", type: "pin", at: [0, 0], normal: [1, 0] },
-      { id: "B", type: "link", at: [2.2, 0], anchor: [0, -0.4], anchorLabel: "D", symbol: "F_{BD}" },
+      // Starts steep enough to see clearly, but too long (2.51 m > 2 m): it must be moved.
+      { id: "B", type: "link", at: [2.2, 0], anchor: [0, -1.2], anchorLabel: "D", symbol: "F_{BD}" },
     ],
     forces: [{ id: "P", symbol: "P", magnitude: 800, direction: "down", at: [2.5, 0], push: true }],
   },
-  view: { xmin: -1.6, xmax: 3.6, ymin: -2.9, ymax: 2.0 },
+  view: { xmin: -1.3, xmax: 3.3, ymin: -2.6, ymax: 1.5 },
   vary: [{ path: "forces.#P.magnitude", min: 500, max: 1000, step: 10 }],
   editable: [
     { path: "supports.#B.at.0", label: "Prop meets the shelf at x", min: 0.3, max: 2.5, step: 0.1, unit: "m" },
-    { path: "supports.#B.anchor.1", label: "D's height on the wall", min: -2, max: -0.2, step: 0.1, unit: "m" },
+    { path: "supports.#B.anchor.1", label: "D's height on the wall", min: -1.6, max: -0.2, step: 0.1, unit: "m" },
   ],
   goal: {
     text: `The prop pushes with at most **${PROP_MAX} N**, the pin at A carries at most **${PIN_MAX} N**, and the prop is at most **${LENGTH_MAX} m** long.`,

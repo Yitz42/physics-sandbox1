@@ -170,8 +170,9 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
         el.hints.innerHTML = "";
         el.hintList.innerHTML = "";
       },
-      showHints() {
-        buildHints(el.hints, stage.hints, el.hintList, (n) => recordEvent({ ...here, e: "hint", hi: n }));
+      // list: hints for just this step (a solve stage's solve.hints[step]); default the stage's.
+      showHints(list = stage.hints) {
+        buildHints(el.hints, list, el.hintList, (n) => recordEvent({ ...here, e: "hint", hi: n }));
       },
       explain() {
         showExplanation(el.explanation, stage.explanation);

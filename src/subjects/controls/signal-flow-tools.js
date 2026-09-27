@@ -108,11 +108,11 @@ export function masonLines(setup, mistake = null, { expand = true } = {}) {
   return lines;
 }
 
-export function signalSummary(setup, result, { mode = "symbolic", reveal = true } = {}) {
+export function signalSummary(setup, result, { mode = "symbolic", reveal = true, hideAnswers = false } = {}) {
   if (!reveal) return [];
   const lines = masonLines(setup).map((l) => l.tex);
   const v = result.values;
-  if (mode === "numeric" && v.T != null) lines.push(`\\Delta = ${Number(v.Delta.toFixed(4))},\\quad T = ${Number(v.T.toFixed(4))}`);
+  if (mode === "numeric" && v.T != null && !hideAnswers) lines.push(`\\Delta = ${Number(v.Delta.toFixed(4))},\\quad T = ${Number(v.T.toFixed(4))}`);
   return lines;
 }
 

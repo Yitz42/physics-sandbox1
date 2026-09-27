@@ -58,7 +58,8 @@ export function createWorkspace(ctx, opts = {}) {
     eqBox.hidden = opts.equations === "never" || !showEqs || !solver.equations;
     if (eqBox.hidden) return;
     const eqs = solver.equations(ws.setup, ws.result);
-    const extra = solver.summary ? solver.summary(ws.setup, ws.result, { mode: ws.mode, reveal: ws.reveal }) : [];
+    // hideAnswers: the working may show, but not the numbers still being asked for (solve.js).
+    const extra = solver.summary ? solver.summary(ws.setup, ws.result, { mode: ws.mode, reveal: ws.reveal, hideAnswers: !!ws.hideAnswers }) : [];
     renderEquations(eqList, eqs, {
       mode: ws.mode, extra, showResult: ws.reveal,
       onTermClick: (id) => ws.setHighlight(ws.highlight === id ? null : id),

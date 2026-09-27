@@ -24,7 +24,6 @@ export default {
     ],
     forces: [{ id: "P", symbol: "P", magnitude: 600, direction: "down", at: [2, 0], push: true }],
     massLabel: { at: [3.6, 0.45], text: "beam" },
-    texts: [{ at: [5.75, -0.75], text: "30° incline" }], // under the tilted roller at B
     showDegree: true,
   },
   view: { xmin: -1.4, xmax: 6.4, ymin: -2.2, ymax: 2.2 },

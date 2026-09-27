@@ -13,7 +13,8 @@
 // Stage fields used:
 //   solve: { steps, candidates, choicesName, intros? }   candidates = forces offered in the FBD
 //          palette; choicesName = what the "choices" step is called (e.g. "Reduce the diagram");
-//          intros: { fbd: "…" } replaces a step's standard introduction
+//          intros: { fbd: "…" } replaces a step's standard introduction;
+//          hints: { fbd: [...], equations: [...] } optional hints for each step (else the stage's)
 //   ask:   what to solve for (as in predict)
 
 import { createWorkspace } from "./common/workspace.js";
@@ -40,6 +41,8 @@ export function mount(ctx) {
   const steps = stage.solve.steps || ["fbd", "equations", "answer"];
   const names = { ...STEP_NAMES, ...(stage.solve.choicesName ? { choices: stage.solve.choicesName } : {}) };
   const ws = createWorkspace(ctx, { equations: "hidden", reveal: false, sceneOpts: stage.sceneOpts });
+  // Until the answer step is done, the equations never show the numbers it asks for.
+  ws.hideAnswers = steps.includes("answer");
 
   // Step tracker ("1 Draw the FBD › 2 Write the equations › 3 Solve").
   const tracker = el("ol", { className: "steps" }, steps.map((s) => el("li", { textContent: names[s] })));
@@ -76,6 +79,7 @@ export function mount(ctx) {
   // After a step is right, let the student read the feedback, then move on
   // when THEY are ready (no automatic jump).
   function waitForNext() {
+    ctx.hideHints(); // this step is solved: its hints aren't needed any more
     actions.innerHTML = "";
     const b = button("Next step →", () => {
       actions.innerHTML = "";
@@ -95,6 +99,9 @@ export function mount(ctx) {
     if (index >= steps.length) return; // all done: leave the last step's work on screen
     body.innerHTML = "";
     const step = steps[index];
+    // Fresh hints for each step (its own, if the stage gives solve.hints[step]).
+    if (index > 0) ctx.showHints((stage.solve.hints || {})[step] || stage.hints);
+    else if (stage.solve.hints && stage.solve.hints[step]) ctx.showHints(stage.solve.hints[step]);
     // A stage can word a step's introduction itself (solve.intros), e.g. "isolate the beam".
     showMessage(intro, "info", `Step ${index + 1}: ${names[step]}`, (stage.solve.intros || {})[step] || STEP_INTRO[step]);
     ctx.el.feedback.innerHTML = "";
@@ -162,6 +169,7 @@ export function mount(ctx) {
         },
       };
       const done = (shown) => {
+        ws.hideAnswers = false;
         delete ws.sceneOpts.guesses;
         checkBtn.remove();
         ws.showEquations(true);

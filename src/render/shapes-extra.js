@@ -1,6 +1,7 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
-//   beam       { points, width?, flat? }       a bar, bracket or plank (polyline, metres); flat:
-//              [start, end] true = a square end (built into a wall, see support-clear.js)
+//   beam       { points, width?, flat?, text? } a bar, bracket or plank (polyline, metres); flat:
+//              [start, end] true = a square end (built into a wall, see support-clear.js);
+//              text: { at, text } a caption written inside the bar (e.g. "40 kg beam")
 //   pivot      { at }                          triangle support under a pin (seesaw)
 //   dim        { from, to, label, role?, labelSide?, labelOn?, noExt? }  a dimension / moment-arm
 //              line with end ticks; its label sits in a break in the middle of the line
@@ -74,6 +75,11 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.stroke();
       });
       for (let i = 1; i < pts.length; i++) out.segments.push([pts[i - 1], pts[i]]);
+      if (s.text) {
+        const [tx, ty] = S(s.text.at);
+        const box = drawLabel(ctx, s.text.text, tx, ty + 4, { color: ink, size: Math.min(13, w - 6), weight: 600 });
+        if (box) out.boxes.push({ ...box, heavy: true });
+      }
       break;
     }
     case "pivot": {

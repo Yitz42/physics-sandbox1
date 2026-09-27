@@ -19,6 +19,7 @@ import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt, momentPoint
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
 import { concurrency } from "./rigid-body-count.js";
+import { angleMarks } from "./particle-scene.js";
 
 // Picture metres per newton: the biggest force drawn 0.3 of the body's size.
 export function lengthPerNewton(setup, result, size) {
@@ -38,10 +39,17 @@ export function rigidBodyScene(setup, result, opts = {}) {
 
   for (const g of setup.grounds || []) shapes.push({ type: "support", from: g.from, to: g.to, normal: g.normal });
   for (const x of setup.extras || []) shapes.push(x);
-  if (setup.body && setup.body.points) shapes.push({ type: "beam", points: setup.body.points });
+  // The body: a wide bar, so its caption fits inside it. setup.massLabel: a
+  // caption such as "40 kg beam" that follows the (random) mass, written IN the
+  // beam at massLabel.at's x (the stage picks a spot clear of the loads).
+  if (setup.body && setup.body.points) {
+    const pts = setup.body.points;
+    const ml = setup.massLabel && setup.body.mass ? setup.massLabel : null;
+    const inside = ml && pts.length === 2 && Math.abs(pts[0][1] - pts[1][1]) < 1e-9;
+    shapes.push({ type: "beam", points: pts, width: 20, ...(inside ? { text: { at: [ml.at[0], pts[0][1]], text: `${setup.body.mass} kg ${ml.text || ""}`.trim() } } : {}) });
+    if (ml && !inside) shapes.push({ type: "text", at: ml.at, text: `${setup.body.mass} kg ${ml.text || ""}`.trim() });
+  }
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });
-  // setup.massLabel: a caption such as "40 kg beam" that follows the (random) mass.
-  if (setup.massLabel && setup.body && setup.body.mass) shapes.push({ type: "text", at: setup.massLabel.at, text: `${setup.body.mass} kg ${setup.massLabel.text || ""}`.trim() });
   for (const d of setup.dims || []) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(mag(sub(d.to, d.from)), "m"), labelSide: d.side || 1 });
   if (!setup.dims) shapes.push(...autoDims(setup, size));
 
@@ -58,6 +66,9 @@ export function rigidBodyScene(setup, result, opts = {}) {
     const u = directionOf(f);
     const tail = f.push ? add(f.at, scale(u, -len)) : f.at;
     shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
+    // A slanted load shows its direction: a slope triangle (3-4-5 …) or an angle,
+    // at the arrow's outer end, where there's room (setup.hideAngles turns it off).
+    if (!setup.hideAngles) shapes.push(...angleMarks(f, tail, len));
   }
   const H = heightPerLoad(setup, size);
   for (const l of setup.loads || []) shapes.push(loadShape(l, H));
@@ -122,7 +133,20 @@ function autoDims(setup, size) {
   for (const l of setup.loads || []) xs.push(l.from, l.to);
   const stops = [...new Set(xs.map((x) => +x.toFixed(6)))].sort((a, b) => a - b);
   const out = [];
-  const row1 = y - 0.12 * size, row2 = y - 0.2 * size;
+  // Rows below the beam — and below any link or cable anchored under it, so a
+  // prop doesn't run through the dimension lines.
+  const under = (setup.supports || []).filter((q) => (q.type === "link" || q.type === "cable") && q.anchor && q.anchor[1] < y).map((q) => q.anchor[1]);
+  const floor = Math.min(y, ...under);
+  const row1 = floor - 0.12 * size, row2 = row1 - Math.max(0.08 * size, 0.4); // rows far enough apart for their labels
+  // A link or cable anchored on a wall at the beam's end: its height on the wall.
+  for (const q of setup.supports || []) {
+    if (!(q.type === "link" || q.type === "cable") || !q.anchor || Math.abs(q.anchor[1] - y) < 1e-9) continue;
+    const end = [pts[0][0], pts[1][0]].find((x) => Math.abs(x - q.anchor[0]) < 1e-9);
+    if (end == null) continue;
+    const side = end === Math.min(pts[0][0], pts[1][0]) ? -1 : 1;
+    const x = end + side * 0.1 * size;
+    out.push({ type: "dim", from: [x, Math.min(y, q.anchor[1])], to: [x, Math.max(y, q.anchor[1])], label: format(Math.abs(q.anchor[1] - y), "m") });
+  }
   for (let i = 1; i < stops.length; i++) out.push({ type: "dim", from: [stops[i - 1], row1], to: [stops[i], row1], label: format(stops[i] - stops[i - 1], "m") });
   if (stops.length > 2) out.push({ type: "dim", from: [stops[0], row2], to: [stops[stops.length - 1], row2], label: format(stops[stops.length - 1] - stops[0], "m") });
   return out;

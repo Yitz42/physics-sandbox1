@@ -261,6 +261,14 @@ different situation (all are seen before any repeats), then new numbers from its
   with `workbench: true`) and subjects/controls/block-edit.js / block-combine.js.
   It's both a free page (course.tools, shown at the top of the course page) and
   part 2 of the Block diagrams build stage.
+- Solve stages never show the numbers still being asked for: the equations
+  panel hides them (hideAnswers) until the answer step is done. After each
+  solved step its hints go away; the next step gets fresh ones (solve.hints[step]).
+- Pictures (agreed with the owner): a slanted load on a beam shows its slope
+  triangle or angle; a support on a slope draws the slope's angle at its base;
+  rigid-body beams are drawn wide, with the mass caption ("40 kg beam") inside;
+  dimension rows sit below any prop anchored under the beam, and a link
+  anchored on a wall gets its height dimensioned.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

@@ -98,7 +98,7 @@ export function stepTex(red, step, { full = false } = {}) {
 }
 
 // setup.reduce: how many steps are done (pictures that collapse step by step).
-export function blockSummary(setup, result, { mode = "symbolic", reveal = true } = {}) {
+export function blockSummary(setup, result, { mode = "symbolic", reveal = true, hideAnswers = false } = {}) {
   const red = result.red;
   if (!red) return []; // nothing built yet (the workbench)
   const n = setup.reduce == null ? red.steps.length : setup.reduce;
@@ -107,7 +107,7 @@ export function blockSummary(setup, result, { mode = "symbolic", reveal = true }
   red.steps.slice(0, n).forEach((s, i) => lines.push(stepTex(red, s, { full: i === red.steps.length - 1 })));
   if (n < red.steps.length) lines.push(`\\text{Next: ${ruleName(red.steps[n].kind)}}`);
   const T = red.T.numeric;
-  if (mode === "numeric" && T && n === red.steps.length) {
+  if (mode === "numeric" && T && n === red.steps.length && !hideAnswers) {
     lines.push(`T(s) = \\dfrac{${polyTex(T.num)}}{${polyTex(T.den)}}`);
     const v = result.values;
     if (v.dc != null && T.den.length > 1) lines.push(`T(0) = ${Number(v.dc.toFixed(4))}`);

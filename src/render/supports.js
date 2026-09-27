@@ -40,9 +40,39 @@ export function drawSupportSymbol(cv, s, env) {
     ctx.fill();
     ctx.stroke();
   };
-  const cover = (pts) => {
+  // The area a symbol covers, from two opposite corners in its own frame
+  // (all four corners count, so a tilted symbol's box really covers it).
+  const cover = ([p1, p2]) => {
+    const along = (q) => (q[0] - p[0]) * t[0] + (q[1] - p[1]) * t[1];
+    const back = (q) => (q[0] - p[0]) * b[0] + (q[1] - p[1]) * b[1];
+    const pts = [[along(p1), back(p1)], [along(p2), back(p1)], [along(p1), back(p2)], [along(p2), back(p2)]].map(([u, v]) => at(u, v));
     const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
     out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
+  };
+  // On a slope (not level ground, not a wall): mark the slope's angle at the
+  // low end of the ground line — a short level line and the angle between them.
+  const tilt = (Math.atan2(Math.abs(s.normal[0]), s.normal[1]) * 180) / Math.PI;
+  const incline = (c, half) => {
+    if (!(tilt > 1 && tilt < 89)) return;
+    const e1 = [c[0] - t[0] * half, c[1] - t[1] * half], e2 = [c[0] + t[0] * half, c[1] + t[1] * half];
+    const [Q, R] = e1[1] > e2[1] ? [e1, e2] : [e2, e1]; // Q: the low end (screen y is down)
+    const v = [R[0] - Q[0], R[1] - Q[1]], vl = Math.hypot(v[0], v[1]) || 1;
+    const h = [Math.sign(v[0]) || 1, 0]; // level, toward the same side
+    ctx.save();
+    ctx.strokeStyle = env.faint;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(Q[0], Q[1]);
+    ctx.lineTo(Q[0] + h[0] * 34, Q[1]);
+    ctx.stroke();
+    const a0 = Math.atan2(h[1], h[0]), a1 = Math.atan2(v[1] / vl, v[0] / vl);
+    ctx.beginPath();
+    ctx.arc(Q[0], Q[1], 22, a0, a1, a1 < a0);
+    ctx.stroke();
+    ctx.restore();
+    const mid = (a0 + a1) / 2;
+    const pos = [Q[0] + Math.cos(mid) * 36, Q[1] + Math.sin(mid) * 36 + 4];
+    out.labels.push({ text: `${Math.round(tilt)}°`, pos, align: "center", size: 13, weight: 600, color: env.ink, plain: true, maxMove: 14 });
   };
   switch (s.kind) {
     case "pin": {
@@ -50,6 +80,7 @@ export function drawSupportSymbol(cv, s, env) {
       hatch(ctx, at(0, 24), t, b, 22);
       ring(p);
       cover([at(-22, 0), at(22, 32)]);
+      incline(at(0, 24), 22);
       break;
     }
     case "roller": {
@@ -59,11 +90,13 @@ export function drawSupportSymbol(cv, s, env) {
       hatch(ctx, at(0, 26), t, b, 20);
       ring(p);
       cover([at(-20, 0), at(20, 34)]);
+      incline(at(0, 26), 20);
       break;
     }
     case "smooth": {
       hatch(ctx, at(0, 7), t, b, 26);
       cover([at(-26, 5), at(26, 15)]);
+      incline(at(0, 7), 26);
       break;
     }
     case "fixed": {
