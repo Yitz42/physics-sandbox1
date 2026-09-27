@@ -44,11 +44,14 @@ export function trussScene(setup, result, opts = {}) {
 
   for (const s of trussSupports(setup)) shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], label: "", alpha: shown || hide.length ? 0.28 : 1 });
   const focus = setup.joint ? membersAt(setup, setup.joint).map(({ m }) => memberId(m)) : [];
+  const middle = centreOf(setup);
   for (const m of setup.members || []) {
     const id = memberId(m), v = res.values[id];
-    // Just the value and T/C beside each bar (the bar itself says which member it is).
+    const from = setup.joints[m[0]], to = setup.joints[m[1]];
+    // Just the value and T/C, written along each bar (the bar itself says which member it is).
     const label = solved && !focus.includes(id) ? `${format(Math.abs(v), "N")}${tc(v)}` : null;
-    shapes.push({ type: "member", id, from: setup.joints[m[0]], to: setup.joints[m[1]], state: solved ? res.states[id] : null, label, alpha: setup.joint ? 0.55 : 1 });
+    // side: the force is written along the bar, on the side away from the truss's middle.
+    shapes.push({ type: "member", id, from, to, side: sub(scale(add(from, to), 0.5), middle), state: solved ? res.states[id] : null, label, alpha: setup.joint ? 0.55 : 1 });
   }
   // Joint letters sit on the outside of the truss, away from its middle.
   const mid = centreOf(setup);

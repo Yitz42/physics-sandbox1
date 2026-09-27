@@ -277,6 +277,10 @@ different situation (all are seen before any repeats), then new numbers from its
   outline or solid line. Only faint guides and dimension lines may be broken by
   a label. Pins are one drawing (render/supports.js PIN), so every pin — a
   support or a link's anchor — is the same size.
+- **Values on bars**: a value that belongs to a bar (a truss member's force) is
+  written along the bar, just beside it, upright, on the side away from the
+  truss's middle (render/bar-label.js); a bar too short for it falls back to
+  an ordinary label kept next to the bar.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

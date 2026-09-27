@@ -1,12 +1,14 @@
 // members.js — truss members (Unit 5.1):
-//   member { id, from, to, state?, label?, alpha? }
+//   member { id, from, to, state?, label?, side?, alpha? }
 //     a straight bar between two joints. state colours it once it's solved:
 //     "tension" red, "compression" blue, "zero" grey (a zero-force member);
-//     no state: the plain bar colour. Its label (e.g. "F_AB = 500 N (T)")
-//     sits beside the middle of the bar, on whichever side is free.
+//     no state: the plain bar colour. Its label (e.g. "500 N (T)") is written
+//     along the bar, just beside it and upright, on the `side` asked for
+//     (a direction in metres; see bar-label.js).
 // Returns { boxes, segments, labels } like the other shapes, or null for other types.
 
 import { barBoxes } from "./labels.js";
+import { drawAlongBar } from "./bar-label.js";
 
 export function drawMember(cv, s, env, roleColor) {
   if (s.type !== "member") return null;
@@ -31,13 +33,21 @@ export function drawMember(cv, s, env, roleColor) {
   out.segments.push([a, b]);
   out.boxes.push(...barBoxes(a, b, 9)); // the bar's whole thickness, for the labels
   if (s.label) {
-    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-    const n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]; // across the bar
-    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    const at = (k, d) => [mid[0] + n[0] * d * k, mid[1] + n[1] * d * k]; // k = ±1: which side of the bar
-    // Only close to its own bar (maxMove), so a label is never mistaken for a neighbour's.
-    const spots = [at(1, 15), at(-1, 15), at(1, 24), at(-1, 24)];
-    out.labels.push({ text: s.label, pos: spots[0], spots, align: "center", size: 13, weight: 600, color: s.state ? fill : env.ink, maxMove: 34 });
+    const color = s.state ? fill : env.ink;
+    // The force is written along its own bar, beside it (bar-label.js), on the
+    // side the scene asks for (s.side, a direction in metres: out of the truss).
+    const side = s.side ? (() => { const m = [(s.from[0] + s.to[0]) / 2, (s.from[1] + s.to[1]) / 2], p = cv.toScreen(m), q = cv.toScreen([m[0] + s.side[0], m[1] + s.side[1]]); return [q[0] - p[0], q[1] - p[1]]; })() : null;
+    const boxes = drawAlongBar(ctx, s.label, a, b, { thick: 9, side, color, size: 13, weight: 600 });
+    if (boxes) out.boxes.push(...boxes);
+    else {
+      // Too short a bar for the text: an ordinary label, kept close to its own bar.
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      const n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len]; // across the bar
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      const at = (k, d) => [mid[0] + n[0] * d * k, mid[1] + n[1] * d * k]; // k = ±1: which side of the bar
+      const spots = [at(1, 15), at(-1, 15), at(1, 24), at(-1, 24)];
+      out.labels.push({ text: s.label, pos: spots[0], spots, align: "center", size: 13, weight: 600, color, maxMove: 34 });
+    }
   }
   return out;
 }
