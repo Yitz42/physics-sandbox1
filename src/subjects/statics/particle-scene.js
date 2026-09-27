@@ -46,7 +46,7 @@ function arrowLabel(force, m, show) {
 function fbdArrows(setup, result, at, opts) {
   const shapes = [];
   const vals = result ? result.values : {};
-  const knownMags = setup.forces.map(magnitudeOf).filter((m) => m != null);
+  const knownMags = [...setup.forces.map(magnitudeOf), setup.target && setup.target.symbol ? setup.target.magnitude : null].filter((m) => m != null);
   const maxKnown = Math.max(1, ...knownMags, ...(opts.reveal ? Object.values(vals).map(Math.abs) : []));
   const k = lengthPerNewton(setup, maxKnown);
   for (const f of setup.forces) {
@@ -87,10 +87,14 @@ function fbdArrows(setup, result, at, opts) {
   // After a wrong answer: faint arrows showing what the student's numbers would look like.
   if (opts.guesses) shapes.push(...shadowShapes(setup, result, at, opts.guesses, k, opts.minX));
   if (setup.target) {
+    // The resultant to reach (green). A goal to aim for is labelled "target";
+    // one given in a working-backwards problem is named, e.g. "F = 500 N",
+    // with its angle marked like any other given force.
     const t = setup.target;
     const d = directionOf({ direction: t.direction });
-    const len = setup.forceScale ? t.magnitude / setup.forceScale : 1.6;
-    shapes.push({ type: "arrow", id: "target", from: at, to: add(at, scale(d, len)), role: "target", label: `target ${format(t.magnitude, "N")}` });
+    const len = setup.forceScale ? t.magnitude / setup.forceScale : t.symbol ? Math.max(0.5, t.magnitude * k) : 1.6;
+    shapes.push({ type: "arrow", id: "target", from: at, to: add(at, scale(d, len)), role: "target", label: t.symbol ? `${t.symbol} = ${format(t.magnitude, "N")}` : `target ${format(t.magnitude, "N")}` });
+    if (t.symbol && opts.angles !== false) shapes.push(...angleMarks({ direction: t.direction }, at, len, setup.forces.length));
   }
   return shapes;
 }

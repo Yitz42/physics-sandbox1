@@ -162,6 +162,33 @@ test("Force components build: the start fails the goal; F2 = 390 N at 53° above
   ok(st.goal.check(solver.solve(s), s).ok, "hand-worked answer should meet the goal");
 });
 
+test("Chapter 2 challenge build: the start fails; C (2, −3) at 700 N and C (4, −6) at 470 N straighten the mast; every version has a design", () => {
+  const st = find("vector-challenge/3-build");
+  const solver = getSolver(st.solver);
+  const design = (base, C, T) => {
+    const s = clone(base);
+    setPath(s, "points.C", [C[0], C[1], 0]);
+    setPath(s, "forces.1.magnitude", T);
+    const r = solver.solve(s);
+    return { r, out: st.goal.check(r, s) };
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting design should fail");
+  const a = design(st.setup, [2, -3], 700);
+  ok(a.out.ok, a.out.message);
+  close(a.r.values["R.z"], -1200, 1e-6);
+  const b = design(st.setup, [4, -6], 470); // r_AC = √88 = 9.381 m; sideways part 0.7 N
+  ok(b.out.ok, b.out.message);
+  close(b.r.values["R.z"], -600 - (470 * 6) / Math.sqrt(88), 1e-6);
+  ok(/OPPOSITE/.test(design(st.setup, [3, -3], 700).out.message), "off the line: told to line C up");
+  ok(/too big/.test(design(st.setup, [2, -3], 900).out.message), "on the line, too hard: told to pull less");
+  // Every version: C straight across from B, with the same tension, works.
+  for (let i = 0; i < 25; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    const B = s.points.B;
+    ok(design(s, [-B[0], -B[1]], s.forces[0].magnitude).out.ok, `B ${B}, T ${s.forces[0].magnitude}`);
+  }
+});
+
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);

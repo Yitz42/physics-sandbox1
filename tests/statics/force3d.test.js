@@ -2,7 +2,8 @@
 // elevation, and along a line between two points; size, direction angles, resultants.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveForce3d } from "../../src/subjects/statics/force3d.js";
-import { force3dEquations, force3dSteps, force3dChoices, force3dMistakes } from "../../src/subjects/statics/force3d-tools.js";
+import { force3dEquations, force3dSteps, force3dMistakes } from "../../src/subjects/statics/force3d-tools.js";
+import { force3dChoices } from "../../src/subjects/statics/force3d-choices.js";
 import { projector } from "../../src/render/projection.js";
 
 setFile("statics / forces in 3D");
@@ -106,4 +107,32 @@ test("Guy-wire build: the start fails, and every version (T 1200–1800 N, h 5�
       ok(found, `no working anchor for T = ${T}, h = ${h}`);
     }
   }
+});
+
+test("three ways in space (Unit 2.4): α 60°, β 135° 400 N + θ 150°, φ 30° 500 N + 700 N to B → F_R = {25.0 i − 366.3 j − 150.0 k} N, 396.6 N", () => {
+  const s = {
+    points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0] },
+    forces: [
+      { id: "F_1", symbol: "F_1", magnitude: 400, at: "A", dir: { angles: [60, 135, null], gamma: "acute" } },
+      { id: "F_2", symbol: "F_2", magnitude: 500, at: "A", dir: { azimuth: 150, elevation: 30 } },
+      { id: "T_AB", symbol: "T_{AB}", magnitude: 700, dir: { from: "A", to: "B" } },
+    ],
+    resultant: true,
+  };
+  // F_1 = {200 i − 282.8 j + 200 k}; F_2: F' = 500 cos 30° = 433.0 → {−375.0 i + 216.5 j + 250 k};
+  // T_AB = {200 i − 300 j − 600 k}.
+  const v = solveForce3d(s).values;
+  close(v["R.x"], 25, 1e-9);
+  close(v["R.y"], -200 * Math.SQRT2 + 250 * Math.sqrt(3) / 2 - 300, 1e-9);
+  close(v["R.z"], -150, 1e-9);
+  close(v.R, 396.645, 1e-5);
+  close(v["R.alpha"], 86.386, 1e-4);
+  close(v["R.beta"], 157.456, 1e-4);
+  close(v["R.gamma"], 112.220, 1e-4);
+  // Solve lines: one group per angled force, two for the wire, one for F_R; one right line in each.
+  const g = force3dChoices(s);
+  equal(g.length, 5);
+  ok(g.every((x) => x.options.filter((o) => o.correct).length === 1), "one right line per group");
+  ok(g.every((x) => x.options.every((o) => o.correct || o.kind)), "every wrong line names its mistake");
+  ok(/azimuth/.test(g[1].title), "F_2's group says how it's given");
 });

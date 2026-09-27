@@ -3,6 +3,10 @@
 // Two kinds of problem, chosen by setup.analysis:
 //   "resultant"    Unit 1: add the forces up.  F_Rx = ΣFx, F_Ry = ΣFy,
 //                  F_R = √(F_Rx² + F_Ry²), θ = tan⁻¹(|F_Ry| / |F_Rx|)
+//                  Working backwards (Unit 2.4): when setup.target gives the
+//                  resultant ({ magnitude, direction }), up to two forces with
+//                  magnitude: null are unknowns, found so that ΣF = the target
+//                  (e.g. a force's components along two slanted axes u and v).
 //   "equilibrium"  Unit 2: the point is at rest, so ΣFx = 0 and ΣFy = 0.
 //                  Any force with magnitude: null is an unknown to solve for.
 //
@@ -17,7 +21,7 @@
 //   direction: see directions.js — an angle, a slope, a word, or two points
 //              { points: [A, B], names: ["A", "B"] } (a force along the line A→B)
 
-import { scale, sum, mag, DEG } from "../../core/vector.js";
+import { scale, sum, sub, mag, DEG } from "../../core/vector.js";
 import { solveEquations } from "../../core/equations.js";
 import { format } from "../../core/units.js";
 import { directionVector, componentFactors, pointsDelta } from "./directions.js";
@@ -67,6 +71,15 @@ export function buildEquations(setup) {
   return [make("x"), make("y")];
 }
 
+// The resultant a "working backwards" problem must reach, as [x, y] — or null.
+// (A target with no unknowns is only a goal to aim for, e.g. a build stage's.)
+export function targetVector(setup) {
+  const t = setup.target;
+  if (setup.analysis !== "resultant" || !t || t.magnitude == null) return null;
+  if (!setup.forces.some((f) => magnitudeOf(f) == null)) return null;
+  return scale(directionVector(t.direction), t.magnitude);
+}
+
 // Solve the particle problem. Returns:
 //   { status, message, values, net, equations }
 //   status: "resultant" | "determinate" | "indeterminate" | "unstable"
@@ -83,17 +96,23 @@ export function solveParticle(setup) {
   // Unknown sizes, counting forces that share one (pulley tensions) once.
   const unknowns = [...new Set(setup.forces.filter((f) => magnitudeOf(f) == null).map(unknownOf))];
   let status, message;
+  // Working backwards: the resultant is known and some forces aren't.
+  const target = targetVector(setup);
 
-  if (setup.analysis === "resultant" || setup.analysis === "components") {
+  if (setup.analysis === "components" || (setup.analysis === "resultant" && !target)) {
     status = "resultant"; // nothing to solve for: just add up components
   } else if (unknowns.length > 2) {
     status = "indeterminate";
-    message = `There are ${unknowns.length} unknown forces but only 2 equations (ΣFx = 0, ΣFy = 0). ` +
-      "Equilibrium alone can't decide how the load is shared, so this is statically indeterminate.";
+    message = target
+      ? `There are ${unknowns.length} unknown forces but only 2 equations (one for F_Rx, one for F_Ry), so many sets of forces give this resultant.`
+      : `There are ${unknowns.length} unknown forces but only 2 equations (ΣFx = 0, ΣFy = 0). ` +
+        "Equilibrium alone can't decide how the load is shared, so this is statically indeterminate.";
   } else {
     // Terms of forces that share an unknown are solved as that one unknown.
     const ids = Object.fromEntries(setup.forces.map((f) => [f.id, unknownOf(f)]));
-    const forSolving = equations.map((eq) => ({ ...eq, terms: eq.terms.map((t) => ({ ...t, id: ids[t.id] ?? t.id })) }));
+    // Working backwards, F_Rx = ΣFx becomes ΣFx − F_Rx = 0 with F_Rx known.
+    const known = (eq) => (target ? [{ id: "target", sign: -1, value: target[eq.valueKey === "R.x" ? 0 : 1], factor: null }] : []);
+    const forSolving = equations.map((eq) => ({ ...eq, terms: [...eq.terms.map((t) => ({ ...t, id: ids[t.id] ?? t.id })), ...known(eq)] }));
     const sol = solveEquations(forSolving, unknowns);
     Object.assign(values, sol.values);
     for (const f of setup.forces) if (f.shared && sol.values[f.shared] != null) values[f.id] = sol.values[f.shared];
@@ -102,9 +121,11 @@ export function solveParticle(setup) {
       message = "The unknown forces can't be told apart (they act along the same line), so equilibrium can't decide how they share the load.";
     } else if (sol.status === "inconsistent") {
       status = "unstable";
-      message = unknowns.length === 2
-        ? "The two unknown forces act along the same line, so nothing can balance the sideways part of the load. The point moves."
-        : "These forces can't balance: ΣF ≠ 0, so the point accelerates.";
+      message = target
+        ? "The unknown forces act along the same line, so no sizes can make this resultant."
+        : unknowns.length === 2
+          ? "The two unknown forces act along the same line, so nothing can balance the sideways part of the load. The point moves."
+          : "These forces can't balance: ΣF ≠ 0, so the point accelerates.";
     } else {
       status = "determinate";
       // Cables can only pull. A negative tension would mean the cable pushes.
@@ -146,14 +167,18 @@ export function solveParticle(setup) {
     values[`${f.id}.ry`] = r[1];
     values[`${f.id}.r`] = mag(r);
   }
-  const net = status === "indeterminate" ? [0, 0] : sum(vectors);
+  const total = status === "indeterminate" ? [0, 0] : sum(vectors);
+  // (Working backwards, what's unbalanced is whatever the forces miss the target by.)
+  const net = target && status !== "indeterminate" ? sub(total, target) : total;
 
-  if (status === "resultant") {
-    values["R.x"] = net[0];
-    values["R.y"] = net[1];
-    values["R"] = mag(net);
-    values["R.angle"] = Math.atan2(Math.abs(net[1]), Math.abs(net[0])) / DEG;
+  if (status === "resultant" || (target && status === "determinate")) {
+    values["R.x"] = total[0];
+    values["R.y"] = total[1];
+    values["R"] = mag(total);
+    values["R.angle"] = Math.atan2(Math.abs(total[1]), Math.abs(total[0])) / DEG;
     for (const eq of equations) eq.result.value = values[eq.valueKey];
+  } else if (target) {
+    for (const eq of equations) eq.result.value = target[eq.valueKey === "R.x" ? 0 : 1];
   } else if (status === "unstable" && mag(net) < 1e-6) {
     // Slack cable: drop the pushing cable and see which way the rest pulls.
     const pulling = setup.forces.filter((f) => !(f.kind === "cable" && values[f.id] < 0));

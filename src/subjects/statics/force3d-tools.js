@@ -1,6 +1,7 @@
 // force3d-tools.js — for forces in 3D (Unit 2.3): the component equations, the lines
-// under them (r_AB, u_AB, size, direction angles), the answers common slips give, a
-// student's working with one wrong line (debug) and the lines to choose from (solve).
+// under them (r_AB, u_AB, size, direction angles), the answers common slips give and a
+// student's working with one wrong line (debug). The lines to choose from (solve) are
+// in force3d-choices.js.
 
 import { fixedTex, sigFig } from "../../core/units.js";
 import { solveForce3d, directionOf3, pointOf, componentSymbol, cosd, acosd, DEG } from "./force3d.js";
@@ -218,55 +219,6 @@ export function force3dSteps(setup, mutation) {
     { key: "noUnit", label: "Multiply F by the unit vector", feedback: "It does use the unit vector. Check the lines before it." },
   ].filter((o) => o.key !== slip).slice(0, 2).map(({ label, feedback }) => ({ label, feedback }));
   return { lines, wrong: WHY.wrong, follows, fixes: [{ label: WHY.fix, correct: true }, ...others], explain: WHY.explain, kind: WHY.kind, corrected: correct };
-}
-
-// ---- Lines to choose from (solve, "choices") ------------------------------------------------
-// For every force along a line: r, then F; then the resultant.
-
-export function force3dChoices(setup, result) {
-  const v = (result || solveForce3d(setup)).values;
-  const groups = [];
-  const lined = (setup.forces || []).filter((f) => f.dir && f.dir.from);
-  for (const f of lined) {
-    const [A, B] = [f.dir.from, f.dir.to];
-    const AB = `${A}${B}`;
-    const r = [v[`${f.id}.rx`], v[`${f.id}.ry`], v[`${f.id}.rz`]];
-    const len = v[`${f.id}.r`];
-    const k = r.findIndex((c) => Math.abs(c) > 1e-9);
-    groups.push({
-      title: `The position vector from ${A} to ${B}`,
-      options: [
-        { tex: `\\mathbf{r}_{${AB}} = ${vecTex(r, "m", (x) => n4(x))}`, correct: true },
-        { tex: `\\mathbf{r}_{${AB}} = ${vecTex(r.map((c) => -c), "m", (x) => n4(x))}`, kind: "direction", feedback: `That's from ${B} to ${A}: subtract the START from the END, $\\mathbf{r}_${B} - \\mathbf{r}_${A}$.` },
-        { tex: `\\mathbf{r}_{${AB}} = ${vecTex(r.map((c, i) => (i === k ? -c : c)), "m", (x) => n4(x))}`, kind: "sign", feedback: `Check the ${AX[k]} part: $${AX[k]}_${B} - ${AX[k]}_${A}$.` },
-      ],
-    });
-    const F = v[f.id];
-    const Fv = AX.map((c) => v[`${f.id}.${c}`]);
-    groups.push({
-      title: `The force $${f.symbol}$ = ${n4(F)} N along ${AB} ($r_{${AB}}$ = ${n4(len)} m)`,
-      options: [
-        { tex: `\\mathbf{${f.symbol}} = ${vecTex(Fv, "N")}`, correct: true },
-        { tex: `\\mathbf{${f.symbol}} = ${vecTex(r.map((c) => F * c), "N")}`, kind: "missing", feedback: "That multiplies F by $\\mathbf{r}_{AB}$ itself. Divide by its length first: $\\mathbf{u}_{AB} = \\mathbf{r}_{AB}/r_{AB}$." },
-        { tex: `\\mathbf{${f.symbol}} = ${vecTex(r.map((c) => (F * c) / (len * len)), "N")}`, kind: "algebra", feedback: "That divides by $r^2$ — the length is $\\sqrt{x^2 + y^2 + z^2}$, not the sum of squares." },
-      ],
-    });
-  }
-  if (setup.resultant) {
-    const R = AX.map((c) => v[`R.${c}`]);
-    const [f1, f2] = setup.forces;
-    const only = AX.map((c) => v[`${f1.id}.${c}`]);
-    const diff = AX.map((c) => v[`${f1.id}.${c}`] - v[`${f2.id}.${c}`]);
-    groups.push({
-      title: "The resultant, $\\mathbf{F}_R = \\Sigma\\mathbf{F}$",
-      options: [
-        { tex: `\\mathbf{F}_R = ${vecTex(R, "N")}`, correct: true },
-        { tex: `\\mathbf{F}_R = ${vecTex(diff, "N")}`, kind: "sign", feedback: "That subtracts one force. The resultant ADDS them, component by component." },
-        { tex: `\\mathbf{F}_R = ${vecTex(only, "N")}`, kind: "missing", feedback: "That's just one of the forces. Add every force's components." },
-      ],
-    });
-  }
-  return groups;
 }
 
 export { pointOf };

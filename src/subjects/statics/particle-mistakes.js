@@ -6,7 +6,7 @@
 // number matches one of those, we can tell them exactly what went wrong.
 
 import { clone } from "../../core/paths.js";
-import { solveParticle, magnitudeOf, G } from "./particle.js";
+import { solveParticle, magnitudeOf, directionOf, targetVector, G } from "./particle.js";
 import { swapTrig, reverse, pointsDelta } from "./directions.js";
 
 const pretty = (symbol) => symbol.replace(/[{}]/g, "").replace(/_/g, "");
@@ -78,6 +78,13 @@ function variants(setup) {
     out.push({ setup: s, kind: "cablePull", message: f.kind === "spring"
       ? `Check the direction of ${pretty(f.symbol)}. A stretched spring pulls: its arrow points away from the point, along the spring toward its anchor.`
       : `Check the direction of ${pretty(f.symbol)}. A cable always pulls: its arrow points away from the point, along the cable.` });
+  }
+  // Working backwards (setup.target): treating the known resultant as one more
+  // force in ΣF = 0 — equilibrium — instead of the SUM of the forces.
+  if (targetVector(setup)) {
+    const s = clone(setup);
+    s.target = { ...s.target, direction: reverse(s.target.direction) };
+    out.push({ setup: s, kind: "concept", message: "It looks like you put the resultant in with the forces and set ΣF = 0 — that's equilibrium. Here the forces ADD UP TO the resultant: $F_{Rx} = \\Sigma F_x$ and $F_{Ry} = \\Sigma F_y$, with the resultant's components on the other side." });
   }
   // A cable over a pulley pulls on it twice (once on each side). Leaving one side out:
   for (const f of setup.forces.filter((x) => x.shared)) {
@@ -172,6 +179,17 @@ export function particleMistakes(setup, name) {
       add(l0 - s, "The spring is stretched (it pulls), so it gets LONGER: l = l₀ + s.", "springLength");
     }
     if (l0 != null && sp[2] === "s") add(l0 + s, "That's the stretched length. The stretch is only the extra length: s = F / k.", "springLength");
+  }
+  // Working backwards along two slanted axes: the projection of the resultant onto
+  // one axis (F cos of the angle between them) is NOT its component along it,
+  // unless the axes are at right angles.
+  const target = targetVector(setup);
+  const along = target && setup.forces.find((f) => f.id === name && magnitudeOf(f) == null);
+  if (along) {
+    const d = directionOf(along);
+    const others = setup.forces.filter((f) => f !== along && magnitudeOf(f) == null).map(directionOf);
+    const square = others.every((e) => Math.abs(e[0] * d[0] + e[1] * d[1]) < 1e-6);
+    if (!square) list.push({ value: target[0] * d[0] + target[1] * d[1], kind: "vector", message: "That's the PROJECTION of the resultant onto this line (its size times the cosine of the angle between them). Along two lines that aren't at right angles, the components are what ADD UP to the resultant (the parallelogram law): solve both equations together." });
   }
   if (name === "R.angle" && correct != null) {
     list.push({ value: 90 - correct, kind: "trig", message: "That's the angle from the y-axis. θ here is measured from the x-axis." });

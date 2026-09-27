@@ -53,8 +53,9 @@ export function mount(ctx) {
   // An equation can also define a value that later lines use (eq.defines, e.g.
   // F_2 = ½Lw and then F_R = F_1 + F_2): the student's wrong value is carried
   // forward, so their work reads the way they would really have written it.
+  // (A line with unknowns in it — working backwards to a known resultant — keeps its given value.)
   wrongEqs.forEach((eq, i) => {
-    if (eq.result) eq.result = { ...eq.result, value: evaluate(eq) };
+    if (eq.result && eq.terms.every((t) => t.value != null)) eq.result = { ...eq.result, value: evaluate(eq) };
     if (!eq.defines || !eq.result) return;
     for (const later of wrongEqs.slice(i + 1)) for (const t of later.terms) if (t.id === eq.defines) t.value = eq.result.value;
   });

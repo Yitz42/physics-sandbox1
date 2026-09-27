@@ -30,6 +30,7 @@ const chapters = [
     units: [
       "force-components", "cartesian-vectors",
       "forces-3d",
+      "vector-challenge", // the chapter's challenge unit: harder problems mixing all three
     ],
   },
   {

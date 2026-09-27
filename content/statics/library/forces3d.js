@@ -3,6 +3,7 @@
 // Questions:
 //   components   predict F_x, F_y, F_z (and γ, when only α and β are given)
 //   size         predict the size F and the direction angles from components
+//   resultant    the resultant of several forces: its size and direction angles
 // Hand checks (default numbers):
 //   eyebolt force: 500 N, α = 60°, β = 45°, γ acute: cos γ = √(1 − 0.25 − 0.5) = 0.5 → γ = 60°;
 //            F = {250 i + 353.6 j + 250 k} N.
@@ -11,6 +12,10 @@
 //   flagpole cable: A (0, 0, 6), B (2, −3, 0): r_AB = {2 i − 3 j − 6 k} m, 7 m; T = 700 N →
 //            {200 i − 300 j − 600 k} N.
 //   bracket force: {300 i − 200 j + 600 k} N → F = 700 N, α = 64.6°, β = 106.6°, γ = 31.0°.
+//   mast, three ways (Unit 2.4): at A (0, 0, 6), F_1 = 400 N with α = 60°, β = 135°, γ acute
+//            (60°): {200 i − 282.8 j + 200 k} N; F_2 = 500 N, θ = 150°, φ = 30°: F′ = 433.0 N,
+//            {−375.0 i + 216.5 j + 250 k} N; guy wire to B (2, −3, 0), 700 N: {200 i − 300 j − 600 k} N.
+//            F_R = {25.0 i − 366.3 j − 150.0 k} N, F_R = 396.6 N, α = 86.4°, β = 157.5°, γ = 112.2°.
 
 import { scenario } from "../../../src/core/library.js";
 
@@ -100,6 +105,41 @@ export const bracketForce = scenario({
         "The components are at right angles to each other: $F = \\sqrt{F_x^2 + F_y^2 + F_z^2}$.",
         "Each direction angle is measured from its own positive axis: $\\cos\\alpha = F_x/F$, $\\cos\\beta = F_y/F$, $\\cos\\gamma = F_z/F$.",
         "A negative component gives an angle bigger than 90°.",
+      ],
+    },
+  },
+});
+
+// Every way of giving a direction in one picture: direction angles, an azimuth and
+// elevation, and a line to an anchor. (Each force shows only its own angles.)
+export const mastThreeWays = scenario({
+  name: "mast pulled three ways",
+  story: "Three lines pull on the ring at the top A of a mast. $F_1$ is given by two direction angles (it points UP, so γ < 90°), $F_2$ by an azimuth θ and an elevation φ, and the guy wire pulls toward the anchor B with tension $T_{AB}$. (Coordinates in the key, in metres.)",
+  setup: {
+    points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0] },
+    pole: ["O", "A"],
+    cables: [["A", "B"]],
+    forces: [
+      { id: "F_1", symbol: "F_1", magnitude: 400, at: "A", dir: { angles: [60, 135, null], gamma: "acute" }, showAngles: { alpha: "given", beta: "given" } },
+      { id: "F_2", symbol: "F_2", magnitude: 500, at: "A", dir: { azimuth: 150, elevation: 30 }, showAngles: { theta: "given", phi: "given" } },
+      { id: "T_AB", symbol: "T_{AB}", magnitude: 700, dir: { from: "A", to: "B" }, showAngles: false },
+    ],
+    resultant: true,
+    resultantAt: "A",
+  },
+  vary: [
+    { path: "forces.#F_1.magnitude", min: 400, max: 600, step: 50 },
+    { path: "forces.#F_2.magnitude", min: 300, max: 600, step: 50 },
+    { path: "forces.#T_AB.magnitude", min: 500, max: 900, step: 50 },
+  ],
+  questions: {
+    resultant: {
+      instruction: "Write each force as a Cartesian vector, add them, then find the resultant's size $F_R$ and its direction angles.",
+      ask: [{ quantity: "R", min: 0 }, { quantity: "R.alpha" }, { quantity: "R.beta" }, { quantity: "R.gamma" }],
+      hints: [
+        "$F_1$: find γ from $\\cos^2\\alpha + \\cos^2\\beta + \\cos^2\\gamma = 1$, then $F_x = F\\cos\\alpha$ and so on.",
+        "$F_2$: $F_z = F\\sin\\phi$ and $F' = F\\cos\\phi$, then $F_x = F'\\cos\\theta$, $F_y = F'\\sin\\theta$. $T_{AB}$: $T\\,\\mathbf{r}_{AB}/r_{AB}$.",
+        "Add the three vectors component by component; then $F_R = \\sqrt{F_{Rx}^2 + F_{Ry}^2 + F_{Rz}^2}$ and $\\cos\\alpha = F_{Rx}/F_R$ …",
       ],
     },
   },

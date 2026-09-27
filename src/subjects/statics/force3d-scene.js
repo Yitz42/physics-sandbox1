@@ -11,7 +11,9 @@
 //   setup.showComponents: the box of F_x, F_y, F_z (dashed) and their arrows — or
 //     "reveal": once the answer is shown
 //   setup.showAngles: { alpha, beta, gamma, theta, phi } each "given" (its number) or
-//     "ask" ("?" until revealed) — direction angles drawn in space
+//     "ask" ("?" until revealed) — direction angles drawn in space; a force's own
+//     f.showAngles replaces it for that force (false: none), when forces are given
+//     different ways (one by α and β, another by an azimuth and elevation …)
 //   setup.hideMagnitude: the force's size is asked for ("F = ?" until revealed)
 // Each force starts at its point (f.at, a point name; along a line: its first point;
 // else O). The coordinates of the named points are listed in a key.
@@ -86,7 +88,7 @@ export function force3dScene(setup, result, opts = {}) {
     // the box they can reach is already in, setup.reach.)
     fixed.push(start, ...(setup.reach ? [] : [add3(start, scale3(d.u, 0.8 * size))]));
     // Reference lines along the axes the picture measures from (dashed, unlabelled).
-    const want = setup.showAngles || {};
+    const want = anglesFor(setup, f) || {};
     const refs = [];
     if (want.alpha || want.theta || shown(setup.showComponents)) refs.push([1, 0, 0]);
     if (want.beta || shown(setup.showComponents)) refs.push([0, 1, 0]);
@@ -97,7 +99,7 @@ export function force3dScene(setup, result, opts = {}) {
       fixed.push(end);
     }
     if (shown(setup.showComponents)) shapes.push(...componentBox(f, start, scale3(d.u, F * k), d.u, F, at, reveal || setup.showComponents === "always"));
-    if (setup.showAngles) shapes.push(...angleMarks(setup, f, start, d.u, 0.3 * size, at, reveal));
+    if (anglesFor(setup, f)) shapes.push(...angleMarks(anglesFor(setup, f), start, d.u, 0.3 * size, at, reveal));
   }
   // The resultant, once found.
   if (setup.resultant && reveal && v.R > 0) {
@@ -215,8 +217,10 @@ function componentBox(f, start, drawn, u, F, at, withValues) {
 
 // Direction angles drawn in space: α, β, γ from the axes to the force; or, for an
 // azimuth and elevation, θ in the x-y plane (with the force's shadow F′ there) and φ up from it.
-function angleMarks(setup, f, start, u, r, at, reveal) {
-  const want = setup.showAngles;
+// Which angles to draw for force f: its own choice, else the picture's.
+const anglesFor = (setup, f) => (f.showAngles !== undefined ? f.showAngles : setup.showAngles);
+
+function angleMarks(want, start, u, r, at, reveal) {
   const out = [];
   const label = (name, sym, deg) => (want[name] === "ask" && !reveal ? `${sym} = ?` : `${sym} = ${format(deg, "deg")}`);
   const deg = (a, b) => (Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) * 180) / Math.PI;

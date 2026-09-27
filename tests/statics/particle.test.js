@@ -337,3 +337,79 @@ test("spring and pulley: drawn as a zig-zag spring and a pulley wheel", () => {
   const pu = particleScene(pulleySetup(), solveParticle(pulleySetup()), {});
   ok(pu.some((s) => s.type === "pulley"), "pulley wheel");
 });
+
+// --- Unit 2.4: working backwards from a known resultant (setup.target) ---
+// Hand checks as in content/statics/library/backwards.js.
+const hookUV = () => ({
+  analysis: "resultant",
+  point: { at: [0, 0], label: "" },
+  forces: [
+    force("F_u", null, { angle: 20, from: "+x", toward: "-y" }),
+    force("F_v", null, { angle: 30, from: "+y", toward: "-x" }),
+  ],
+  target: { symbol: "F", magnitude: 500, direction: { angle: 40, from: "+x", toward: "+y" } },
+});
+
+test("working backwards: 500 N at 40° along u (20° below +x) and v (120°): F_u = 766.0 N, F_v = 673.6 N (law of sines)", () => {
+  const r = solveParticle(hookUV());
+  equal(r.status, "determinate");
+  close(r.values.F_u, (500 * Math.sin(80 * Math.PI / 180)) / Math.sin(140 * Math.PI / 180), 1e-6);
+  close(r.values.F_u, 766.044, 1e-5);
+  close(r.values.F_v, 673.648, 1e-5);
+  // The forces found really do add up to the target, and the equations show it.
+  close(r.values.R, 500, 1e-9);
+  close(r.values["R.angle"], 40, 1e-9);
+  close(r.equations[0].result.value, 500 * Math.cos(40 * Math.PI / 180), 1e-9);
+  close(r.net[0], 0, 1e-9);
+});
+
+test("working backwards: the projection (250 N) and 'ΣF = 0 with the resultant in it' are explained", () => {
+  const m = particleMistakes(hookUV(), "F_u");
+  ok(m.some((x) => Math.abs(x.value - 250) < 0.01 && /PROJECTION/.test(x.message)), "projection 500 cos 60° = 250 N");
+  ok(m.some((x) => Math.abs(x.value + 766.044) < 0.01 && x.kind === "concept"), "the resultant put in ΣF = 0 flips both signs");
+});
+
+test("working backwards: boat ropes to B (3, 3.5) and C (7, −0.5) from A (1, 2), 600 N along +x → T_AB = 267.9 N, T_AC = 417.9 N", () => {
+  const s = {
+    analysis: "resultant",
+    point: { at: [1, 2], label: "A" },
+    forces: [
+      force("T_AB", null, { points: [[1, 2], [3, 3.5]], names: ["A", "B"] }, { kind: "cable" }),
+      force("T_AC", null, { points: [[1, 2], [7, -0.5]], names: ["A", "C"] }, { kind: "cable" }),
+    ],
+    target: { symbol: "F_R", magnitude: 600, direction: "right" },
+  };
+  const r = solveParticle(s);
+  close(r.values.T_AB, 267.857, 1e-5); // 600 / (0.8 + (12/13)(0.6)(13/5)) = 267.857
+  close(r.values.T_AC, 417.857, 1e-5);
+  // Two unknowns along one line can't make a resultant that isn't along it.
+  s.forces[1].direction = { points: [[1, 2], [5, 5]], names: ["A", "C"] };
+  equal(solveParticle(s).status, "unstable");
+});
+
+test("working backwards: sign hook, F_1 400 N at 20° left of +y, rope to B, chain on a 12-5 slope, 900 N up → T_AB = 500.5 N, F_3 = 582.0 N", () => {
+  const s = {
+    analysis: "resultant",
+    point: { at: [3, 1], label: "A" },
+    forces: [
+      force("F_1", 400, { angle: 20, from: "+y", toward: "-x" }),
+      force("T_AB", null, { points: [[3, 1], [-1, 4]], names: ["A", "B"] }, { kind: "cable" }),
+      force("F_3", null, { slope: [12, 5] }),
+    ],
+    target: { symbol: "F_R", magnitude: 900, direction: "up" },
+  };
+  const r = solveParticle(s);
+  close(r.values.T_AB, 500.485, 1e-5);
+  close(r.values.F_3, 581.963, 1e-5);
+  // A target with nothing unknown is only a goal (Unit 2.1's build): plain resultant.
+  s.forces[1].magnitude = 100;
+  s.forces[2].magnitude = 100;
+  equal(solveParticle(s).status, "resultant");
+});
+
+test("working backwards: the given resultant is drawn named, to scale and with its angle", () => {
+  const sc = particleScene(hookUV(), solveParticle(hookUV()), {});
+  const t = sc.find((x) => x.id === "target");
+  equal(t.label, "F = 500 N");
+  ok(sc.some((x) => x.type === "arc" && x.label === "40°"), "40° marked on F");
+});

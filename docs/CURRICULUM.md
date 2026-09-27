@@ -52,6 +52,19 @@ Claude builds from it.
 - Pictures: drawn in 3D by projection onto the same canvas (render/projection.js), so labels
   and the picture test work as usual — no 3D library needed for lines and arrows.
 
+**Unit 2.4: Chapter 2 challenge** ⭐ ✅
+- A review unit (agreed with the owner, 2026-09-27): harder problems in NEW situations that
+  need Units 2.1–2.3 together.
+- Built: explore — steer a second tugboat so the barge goes along the canal, then with the
+  smallest pull (it is perpendicular to the resultant's line); predict — work backwards from a
+  known resultant: a force's components along two slanted lines u and v (bigger than the force!),
+  or two rope tensions from coordinates; build — anchor a second guy wire (place C, set its
+  tension) so a mast is pulled straight down its length, and work out that push; debug — one slip
+  in the rope equations; concept check (smallest force, slanted components vs projections,
+  impossible direction angles, unit-vector checks …); solve in two parts — a sign lifted by three
+  lines given by an angle, coordinates and a slope (find two unknown sizes), and a mast pulled
+  three ways in space (direction angles, azimuth/elevation, a line).
+
 ### Chapter 3: Equilibrium of particles
 
 **Unit 3.1: Cables** ✅

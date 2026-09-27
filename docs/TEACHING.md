@@ -95,3 +95,8 @@ Read this before writing or changing stages or challenge types. Changing any of 
   point chosen (setup.showMomentUnknowns / showMomentPoint), then an overhanging
   beam and a cantilever, a diving-board fulcrum, a debug of the equations, and an
   L-shaped jib crane.
+- **Chapter challenge units** (agreed with the owner, 2026-09-27; first one Unit 2.4): a
+  unit at the end of a chapter with harder problems that test comprehension in NEW
+  situations, mixing the chapter's units. Still all six stage types. Working backwards
+  (a known resultant, two unknown sizes) is written with `setup.target` + `symbol`
+  (particle solver; the given resultant is drawn green, named and to scale).

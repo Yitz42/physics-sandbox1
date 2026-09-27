@@ -7,5 +7,5 @@
 //   CONTENT_VERSION  the date the courses/units/stages were last reorganised
 //                    or renamed: change it whenever a stage id changes, and add
 //                    the old → new ids to migrations.js at the same time.
-export const APP_VERSION = "0.6.0";
+export const APP_VERSION = "0.6.1";
 export const CONTENT_VERSION = "2026-09-27";

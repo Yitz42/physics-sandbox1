@@ -41,7 +41,8 @@ import { solveFriction, frictionQuantities, isBody, placeAlong } from "./frictio
 import { frictionScene, bodyPicture } from "./friction-scene.js";
 import { solveForce3d, force3dQuantities } from "./force3d.js";
 import { force3dScene } from "./force3d-scene.js";
-import { force3dEquations, force3dSummary, force3dMistakes, force3dSteps, force3dChoices } from "./force3d-tools.js";
+import { force3dEquations, force3dSummary, force3dMistakes, force3dSteps } from "./force3d-tools.js";
+import { force3dChoices } from "./force3d-choices.js";
 import { frictionEquations, frictionSummary, frictionMistakes, frictionSteps } from "./friction-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
