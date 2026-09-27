@@ -60,7 +60,7 @@ const chapters = [
     id: "centroids", title: "Centroids",
     units: [
       "centroids",
-      soon("Composite shapes with holes", "A hole counts as negative area."),
+      "holes",
     ],
   },
   {

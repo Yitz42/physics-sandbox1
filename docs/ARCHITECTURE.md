@@ -49,7 +49,7 @@ src/
       frame.js             frames and machines, multi-body (frame-scene.js: put together / taken apart)
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
-      centroid.js          centroids of composite areas, centres of gravity (centroid-scene.js), Unit 6.1
+      centroid.js          centroids of composite areas (holes: negative area), centres of gravity (centroid-scene.js), Units 6.1–6.2
       geometry.js          later: area moments of inertia
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js

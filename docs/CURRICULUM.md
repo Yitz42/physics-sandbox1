@@ -180,8 +180,13 @@ Claude builds from it.
   pin; debug a centroid table; concept check; solve a shop sign (rectangle + triangle +
   half circle), choosing the split first.
 
-**Unit 6.2: Composite shapes with holes** ⭐
+**Unit 6.2: Composite shapes with holes** ✅
 - Concept: a hole counts as negative area.
+- Built: move and resize a hole in a plate and watch C run away from it; predict a plate
+  with a hole (area and x̄), an L found as a square minus a square, a notched plate and a
+  link plate; drill a hole where it makes a plate balance on a pin; debug a table with a
+  notch and a hole (a hole added, the 4r/3π slip, a hole left out); concept check; solve
+  the link plate (rectangle + half circle − hole), choosing the split first.
 
 ### Chapter 7: Internal forces (textbook ch. 8)
 
