@@ -45,6 +45,7 @@ src/
     units.js               unit formatting (N, kN, m, N·m)
     equations.js           builds symbolic + numeric equation strings for KaTeX
     runner.js              loads a stage, runs its challenge, tracks completion
+    library.js             the lesson library: shared situations (scenario, use, edit)
     progress.js            saves which stages a student finished
     record-file.js         the learning-record file: export / import, built to survive game changes
     evidence.js            a quiet record of every answer checked (localStorage)
@@ -160,6 +161,20 @@ poles, a balloon held down by tethers …):
 `{ id, challenge, title, solver, ask, explanation, situations: [ { name, instructions, setup, vary, hints, … }, … ] }`.
 Each situation replaces the stage fields it sets. Every new version plays a
 different situation (all are seen before any repeats), then new numbers from its `vary`.
+
+**The lesson library** (agreed with the owner: variations written once, shared by
+any unit or chapter, trimmed or changed to fit each question). Situations live in
+`content/<course>/library/*.js` as scenarios (src/core/library.js):
+`scenario({ name, story, setup, vary, view?, questions: { kind: { instruction, ask, hints, solve?, vary? … } } })`.
+A stage takes them with `situations: [crate, balloon].map((s) => use(s, "tensions"))`
+(story + the question's instruction become the instructions; the stage's own
+fields win: `use(s, "tensions", { hints })`). `edit(s, { name, story, remove:
+["loads.#w"], set: { path: v }, fix: [paths], add: { forces: [...] }, vary,
+questions: { kind: {…} | null } })` makes a new variation from an old picture
+(what's removed takes its vary rules with it, so library vary paths name items
+by id). New situations should go in the library, not inline in a stage, so other
+stages can use them. Hand checks go at the top of the library file; unusual
+ones also get a test (tests/core/library.test.js).
 
 ## Teaching decisions (agreed with the owner)
 - **Angles, textbook style**: directions are given as an angle from the nearest axis
