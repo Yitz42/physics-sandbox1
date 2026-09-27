@@ -172,8 +172,11 @@ function pulleyWrap(setup) {
   if (sides.length !== 2) return out;
   const [d1, d2] = sides.map((f) => directionOf(f));
   const mid = add(d1, d2); // the cable pulls the wheel this way (between its two sides)
-  // The side counterclockwise of `mid` leaves the rim 90° further round (CCW);
-  // the other side 90° back. The cable lies in the groove between them, over `mid`.
+  // The wheel sits IN the cable (it rides on it), so the cable wraps round the
+  // side of the wheel away from `mid` — under it, when both ends go up — and
+  // presses the wheel toward `mid`. The side counterclockwise of `mid` leaves
+  // the rim 90° further round (CCW), the other side 90° back, and the cable
+  // lies in the groove from the first, on round the far side, to the second.
   const ccw = mid[0] * d1[1] - mid[1] * d1[0] > 0 ? 0 : 1;
   const a = sides.map((f) => angleDeg(directionOf(f)));
   const leave = [a[0] + (ccw === 0 ? 90 : -90), a[1] + (ccw === 1 ? 90 : -90)];
@@ -181,7 +184,7 @@ function pulleyWrap(setup) {
     const t = (leave[i] * Math.PI) / 180;
     out.offset[f.id] = [PULLEY_R * Math.cos(t), PULLEY_R * Math.sin(t)];
   });
-  out.wrap = [leave[1 - ccw], leave[ccw]];
+  out.wrap = [leave[ccw], leave[1 - ccw]]; // counterclockwise, through the side opposite `mid`
   return out;
 }
 
