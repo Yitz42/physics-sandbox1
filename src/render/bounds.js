@@ -26,9 +26,9 @@ const grow = (b, m) => ({ x0: b.x0 - m, y0: b.y0 - m, x1: b.x1 + m, y1: b.y1 + m
 // report: { labels: [{ text, box, breaks? }], obstacles: [box], segments: [[p, q, kind]], view }
 export function findClashes({ labels = [], obstacles = [], segments = [], view }) {
   const out = [];
-  const near = CLEAR - SLACK;
   labels.forEach((l, i) => {
     if (!l.box) return;
+    const near = (l.clear ?? CLEAR) - SLACK; // (a letter's own, smaller gap)
     const padded = grow(l.box, near);
     const why = [];
     for (let j = 0; j < i; j++) if (labels[j].box && overlapArea(l.box, labels[j].box) > 4) why.push(`on the label "${labels[j].text}"`);

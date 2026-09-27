@@ -71,8 +71,17 @@ export function drawShape(cv, s, env) {
         ctx.strokeStyle = faint;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(a[0], a[1]);
-        ctx.lineTo(b[0], b[1]);
+        // Like its dimension, it breaks where it would run through something already
+        // drawn (a support symbol under the joint it reaches, say).
+        const L = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / (L || 1), uy = (b[1] - a[1]) / (L || 1);
+        const hidden = (x, y) => (env.obstacles || []).some((o) => !o.soft && !o.dim && x > o.x0 - 3 && x < o.x1 + 3 && y > o.y0 - 3 && y < o.y1 + 3);
+        let on = false;
+        for (let t = 0; t <= L; t += 1) {
+          const x = a[0] + ux * t, y = a[1] + uy * t, h = hidden(x, y);
+          if (!h && !on) ctx.moveTo(x, y);
+          if (!h) ctx.lineTo(x, y);
+          on = !h;
+        }
         ctx.stroke();
         out.segments.push([a, b, "dim"]); // like its dimension: labels may hop over it
         break;

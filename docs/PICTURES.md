@@ -85,3 +85,8 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   close to the model; arrows, support symbols and letters break them rather than
   pushing them away (render/dims.js cuts, the dim drawing's gaps). Text written
   inside a bar ("40 kg beam") is centred on it. Answer options have room around them.
+- **Letters hug their points; extension lines reach them** (agreed with the owner):
+  a point's or support's letter keeps only a 2 px gap from its own drawing
+  (LETTER_CLEAR, labels.js; other labels keep 4 px). A dimension's extension lines
+  run out to what it measures — a beam, a plate, a truss bar or a joint straight
+  across from it (up to ~420 px) — and break where they'd cross a drawn object.

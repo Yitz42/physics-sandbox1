@@ -57,19 +57,24 @@ function rayHit(P, u, a, b) {
 }
 
 export function extendDims(shapes, cv) {
-  // The bodies a dimension can measure: beam centre lines and plate edges.
+  // What a dimension can measure: beam centre lines, plate edges, truss members
+  // (bars) and named points (joints) — an extension line runs out to the nearest.
   const edges = [];
+  const points = shapes.filter((s) => s.type === "point" && s.label).map((s) => s.at);
   for (const s of shapes) {
     if (s.type === "beam") for (let i = 1; i < s.points.length; i++) edges.push({ a: s.points[i - 1], b: s.points[i], beam: s });
+    if (s.type === "member" && (s.alpha ?? 1) > 0.5) edges.push({ a: s.from, b: s.to, gapPx: 4.5, far: true });
     if (s.type === "box" && s.passable) {
       const [x, y] = s.at, w = s.w / 2, h = s.h / 2;
       const c = [[x - w, y - h], [x + w, y - h], [x + w, y + h], [x - w, y + h]];
       for (let i = 0; i < 4; i++) edges.push({ a: c[i], b: c[(i + 1) % 4] });
     }
   }
-  if (!edges.length) return shapes;
+  if (!edges.length && !points.length) return shapes;
   const out = [...shapes];
-  const reach = cv.pxToWorld(160); // don't run extension lines across the whole picture
+  // Don't run extension lines across the whole picture — but a truss's joint may be
+  // well across from its dimension, so those reach further.
+  const reach = cv.pxToWorld(160), farReach = cv.pxToWorld(420);
   for (const d of shapes.filter(isPlain)) {
     const e = sub(d.to, d.from);
     const len = mag(e);
@@ -80,12 +85,18 @@ export function extendDims(shapes, cv) {
       for (const dir of [n, scale(n, -1)]) {
         for (const g of edges) {
           const t = rayHit(end, dir, g.a, g.b);
-          if (t != null && t <= reach && (!best || t < best.t)) best = { t, dir, beam: g.beam };
+          if (t != null && t <= (g.far ? farReach : reach) && (!best || t < best.t)) best = { t, dir, beam: g.beam, gapPx: g.gapPx };
+        }
+        // A joint straight across from the dimension's end (within 3 px of the ray).
+        for (const P of points) {
+          const w = sub(P, end), t = w[0] * dir[0] + w[1] * dir[1];
+          const off = Math.abs(w[0] * dir[1] - w[1] * dir[0]);
+          if (t > 1e-9 && t <= farReach && off < cv.pxToWorld(3) && (!best || t < best.t - 1e-9)) best = { t, dir, gapPx: 9 }; // (its ring: 7 px, and a little)
         }
       }
       if (!best || best.t < cv.pxToWorld(8)) continue; // already touching
       // Stop just short of the body's surface (a beam is drawn thick), start just past the line.
-      const halfPx = best.beam ? ((best.beam.width || 12) + 3) / 2 : 0;
+      const halfPx = best.beam ? ((best.beam.width || 12) + 3) / 2 : best.gapPx != null ? best.gapPx - 4 : 0;
       out.push({ type: "line", style: "extension", from: add(end, scale(best.dir, -cv.pxToWorld(5))), to: add(end, scale(best.dir, best.t)), gapPx: halfPx + 4 });
     }
   }

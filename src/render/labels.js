@@ -18,6 +18,9 @@ const TRIES = [
 // object's boundary and every solid line — the "object boundaries" rule.
 // (Faint dashed guides and dimension lines may still be broken by a label.)
 export const CLEAR = 4;
+// A point's or support's letter may sit closer to its point (agreed with the owner):
+// its gap is 2 px. Point and support labels carry clear: LETTER_CLEAR.
+export const LETTER_CLEAR = 2;
 const padded = (b, m = CLEAR) => ({ x0: b.x0 - m, y0: b.y0 - m, x1: b.x1 + m, y1: b.y1 + m });
 
 // A thick bar (a beam, a truss member, a link) as a row of boxes covering its
@@ -105,7 +108,7 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       let cost = base != null ? base : (down && dx === 0 && dy > 0 && dy <= maxDown ? 0.4 * dy : Math.hypot(dx, dy)) + (align === l.align ? 0 : 8);
       // soft: a plate (avoid if possible); heavy: a point (never cover it)
       // (The label's box with its clear margin: close counts as touching.)
-      const near = padded(box);
+      const near = padded(box, l.clear ?? CLEAR); // (letters keep a smaller gap: LETTER_CLEAR)
       for (const t of taken) {
         if (l.circle && t.circleOf === l.circle.id) continue; // (its own arrow's inside)
         cost += overlapArea(t.soft ? box : near, t) * (t.under ? 0.01 : t.soft ? 1 : t.heavy ? 60 : 4);

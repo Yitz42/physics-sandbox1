@@ -36,7 +36,7 @@
 
 import { labelPosition, drawLabel, cssColor, measureLabel, labelBox } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
-import { placeLabels, placeLegend, segmentHits, overlapArea } from "./labels.js";
+import { placeLabels, placeLegend, segmentHits, overlapArea, LETTER_CLEAR } from "./labels.js";
 import { beamDirAt, surfaceGap } from "./fbd.js";
 import { lowerDims, extendDims } from "./dims.js";
 import { drawArc } from "./angles.js";
@@ -116,10 +116,10 @@ export function drawScene(cv, shapes, opts = {}) {
       const spots = aroundPoint(x, y);
       if (s.labelAway) {
         const [ux, uy] = s.labelAway, m = Math.hypot(ux, uy) || 1;
-        const sx = x + (ux / m) * 20, sy = y - (uy / m) * 20 + 5;
+        const sx = x + (ux / m) * 17, sy = y - (uy / m) * 17 + 5;
         spots.unshift([sx, sy, ux / m > 0.35 ? "left" : ux / m < -0.35 ? "right" : "center"]);
       }
-      wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots });
+      wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots, clear: LETTER_CLEAR });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
@@ -209,7 +209,7 @@ export function drawScene(cv, shapes, opts = {}) {
   }
 
   // What the picture holds, checked against the object-boundaries rule.
-  const report = { labels: placed.map((l) => ({ text: l.text, box: l.box, breaks: !!l.breaks })), obstacles, segments, view: cv.view };
+  const report = { labels: placed.map((l) => ({ text: l.text, box: l.box, breaks: !!l.breaks, clear: l.clear })), obstacles, segments, view: cv.view };
   report.clashes = findClashes(report);
   if (showBounds()) drawBounds(ctx, report);
   cv.lastReport = report;
@@ -218,10 +218,10 @@ export function drawScene(cv, shapes, opts = {}) {
 
 // Close spots all round a point (pixels), nearest-looking first: below,
 // below-right, below-left, right, left, above-right, above-left, above.
-// (Each just outside the point's marker — 7 px — and the clear gap round it, CLEAR.)
+// (Each just outside the point's marker — 7 px — and a letter's small gap, LETTER_CLEAR.)
 function aroundPoint(x, y) {
-  return [[x, y + 24, "center"], [x + 11, y + 20, "left"], [x - 11, y + 20, "right"], [x + 15, y + 1, "left"],
-    [x - 15, y + 1, "right"], [x + 11, y - 16, "left"], [x - 11, y - 16, "right"], [x, y - 22, "center"]];
+  return [[x, y + 21, "center"], [x + 9, y + 18, "left"], [x - 9, y + 18, "right"], [x + 12, y + 1, "left"],
+    [x - 12, y + 1, "right"], [x + 9, y - 14, "left"], [x - 9, y - 14, "right"], [x, y - 19, "center"]];
 }
 
 // Does a label's box sit on a faint line (and on nothing else that clearing it would erase)?

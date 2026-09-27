@@ -16,7 +16,7 @@
 // triangle, wheels, hatching, a link's bar — is reported as a box, so labels
 // keep clear of it (render/labels.js keeps a gap around every box).
 
-import { barBoxes, CLEAR } from "./labels.js";
+import { barBoxes, LETTER_CLEAR } from "./labels.js";
 
 // A pin's size, the same for every pin (a support's or a link's anchor), in pixels.
 const PIN = { half: 14, depth: 24, ground: 22, ring: 4.5 };
@@ -206,10 +206,10 @@ export function drawSupportSymbol(cv, s, env) {
     const mid = box ? (box.y0 + box.y1) / 2 + 4 : p[1];
     const spots = box
       // (First choice: straight below the symbol, just outside its clear gap — CLEAR, labels.js.)
-      ? [[(box.x0 + box.x1) / 2, box.y1 + 12 + CLEAR, "center"], [box.x0 - 6 - CLEAR, mid, "right"], [box.x1 + 6 + CLEAR, mid, "left"],
+      ? [[(box.x0 + box.x1) / 2, box.y1 + 12 + LETTER_CLEAR, "center"], [box.x0 - 6 - LETTER_CLEAR, mid, "right"], [box.x1 + 6 + LETTER_CLEAR, mid, "left"],
         [p[0] - 12, p[1] + 16, "right"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] - 12, "right"], [p[0] + 12, p[1] - 12, "left"]]
       : [[p[0], p[1] + 20, "center"], [p[0] + 12, p[1] + 16, "left"], [p[0] - 12, p[1] + 16, "right"]];
-    out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true });
+    out.labels.push({ text: s.label, pos: spots[0].slice(0, 2), spots, align: "center", size: 14, weight: 700, color: env.ink, plain: true, breaks: true, clear: LETTER_CLEAR });
   }
   return out;
 }
