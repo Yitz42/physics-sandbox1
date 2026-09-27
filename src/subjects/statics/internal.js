@@ -282,7 +282,9 @@ export function solveInternal(setup) {
   if (setup.cut != null) {
     // (A load exactly at the cut counts on the RIGHT piece, as in pieceEquations.)
     Object.assign(values, internalAt(setup, actions, setup.cut, -1));
-    equations = pieceEquations(setup, actions);
+    // The kept piece's equations belong to the cut picture (7.1); a section through the
+    // diagrams (7.3) shows its segment's V(x) and M(x) instead (internal-tools.js).
+    if (setup.view === "cut") equations = pieceEquations(setup, actions);
   }
   return { status: "determinate", message: rb.message, values, equations, reactions: rb.reactions, unknowns: ["N", "V", "M"], segments, actions, rigid: rb };
 }

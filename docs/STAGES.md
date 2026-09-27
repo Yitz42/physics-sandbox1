@@ -14,6 +14,8 @@ export default {
                                  // must work out for their own design before each Test
   hints: ["First hint", "Second hint"],
   explanation: "Shown after completion: why the answer is what it is.",
+  tallPicture: true,             // optional: a taller picture, for drawings stacked one above
+                                 // another (a beam with its shear and moment diagrams, Unit 7)
 };
 ```
 

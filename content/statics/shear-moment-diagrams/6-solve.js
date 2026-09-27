@@ -18,7 +18,7 @@ export default {
   setup: {
     body: { points: [[0, 0], [6, 0]] },
     supports: [{ id: "A", type: "pin", at: [0, 0] }, { id: "B", type: "roller", at: [6, 0] }],
-    forces: [{ id: "P", symbol: "P", magnitude: 600, direction: "down", at: [4.5, 0] }],
+    forces: [{ id: "P", symbol: "P", magnitude: 600, direction: "down", at: [4.5, 0], push: true }],
     loads: [{ id: "w", shape: "uniform", from: 0, to: 3, w: 400 }],
     view: "diagrams",
     showReactions: "reveal",

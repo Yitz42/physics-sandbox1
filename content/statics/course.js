@@ -68,7 +68,7 @@ const chapters = [
     units: [
       "internal-forces",
       "shear-moment-diagrams",
-      soon("V(x) and M(x) equations", "Write the shear and moment as equations for each part of the beam."),
+      "shear-moment-equations",
     ],
   },
   {

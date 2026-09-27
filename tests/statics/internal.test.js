@@ -13,12 +13,13 @@ const beam = (L, extra) => ({
   ...extra,
 });
 // Simply supported, 6 m, P = 1200 N at 2 m: A_y = 800 N, B_y = 400 N.
-const pointLoad = beam(6, { forces: [{ id: "P", symbol: "P", magnitude: 1200, direction: "down", at: [2, 0] }] });
+const pointLoad = beam(6, { forces: [{ id: "P", symbol: "P", magnitude: 1200, direction: "down", at: [2, 0] }], view: "cut" });
 // Cantilever fixed at A, 3 m, w = 400 N/m all along: A_y = 1200 N, M_A = 1800 N·m (counterclockwise).
 const cantilever = {
   body: { points: [[0, 0], [3, 0]] },
   supports: [{ id: "A", type: "fixed", at: [0, 0], normal: [1, 0] }],
   loads: [{ id: "w", shape: "uniform", from: 0, to: 3, w: 400 }],
+  view: "cut",
 };
 
 test("a point load: at x = 4 m, V = 800 − 1200 = −400 N and M = 800(4) − 1200(2) = 800 N·m", () => {
@@ -190,4 +191,33 @@ test("7.2 loading dock: M_max = 1378.1 N·m at 2.625 m; in every version V reach
   close(v.Mmax, 1378.125, 1e-3);
   close(v.xM, 2.625);
   for (let i = 0; i < 30; i++) ok(solveInternal(makeVariant(dock.setup, dock.vary)).values.xM < 3, "peak under the load");
+});
+
+import pureBending from "../../content/statics/shear-moment-equations/3-build.js";
+import eqDebug from "../../content/statics/shear-moment-equations/4-debug.js";
+import walkDebug from "../../content/statics/shear-moment-diagrams/4-debug.js";
+
+test("7.3 pure bending: P₂ at b = 6 − P₁a/P₂ (5 m for 800 N at 1.5 m and 1200 N); every version has a slider spot", () => {
+  const s = clone(pureBending.setup);
+  setPath(s, "forces.1.at.0", 5);
+  ok(pureBending.goal.check(solveInternal(s), s).ok, "b = 5 m");
+  const e = pureBending.editable[0];
+  for (let i = 0; i < 25; i++) {
+    const v = makeVariant(pureBending.setup, pureBending.vary);
+    ok(!pureBending.goal.check(solveInternal(v), v).ok, "start already done");
+    ok(settings(e).some((b) => { const t = clone(v); setPath(t, e.path, b); return pureBending.goal.check(solveInternal(t), t).ok; }), JSON.stringify(v.forces.map((f) => [f.magnitude, f.at[0]])));
+  }
+});
+
+test("debug stages: every mutation makes exactly one wrong line, with one right fix", () => {
+  for (const st of [eqDebug, walkDebug]) {
+    for (const m of st.debug.mutations) {
+      for (let i = 0; i < 5; i++) {
+        const w = internalSteps(makeVariant(st.setup, st.vary), m);
+        ok(w.wrong && w.lines.some((l) => l.id === w.wrong), `${st.id} ${JSON.stringify(m)}: no wrong line`);
+        equal(w.fixes.filter((f) => f.correct).length, 1);
+        ok(w.explain.length > 10, "explained");
+      }
+    }
+  }
 });

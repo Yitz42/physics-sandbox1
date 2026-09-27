@@ -157,11 +157,13 @@ function diagramScene(setup, res, opts) {
   const bottom = yM - hM - 0.04 * size;
   for (const e of events) shapes.push({ type: "line", from: [e, y - 0.02 * size], to: [e, bottom], style: "reference" });
 
+  let kV = null, kM = null; // metres of picture per newton (per N·m) in each diagram
   if (show) {
     const Vpeak = Math.max(1e-9, ...segs.flatMap((s) => sample(s.V, s.a, s.b).map((p) => Math.abs(p[1]))));
     const Mpeak = Math.max(1e-9, ...segs.flatMap((s) => sample(s.M, s.a, s.b).map((p) => Math.abs(p[1]))));
-    shapes.push(plotShape(segs, "V", yV, hV / Vpeak, 0, "N", x0, x1, setup));
-    shapes.push(plotShape(segs, "M", yM, hM / Mpeak, 1, "N·m", x0, x1, setup));
+    [kV, kM] = [hV / Vpeak, hM / Mpeak];
+    shapes.push(plotShape(segs, "V", yV, kV, 0, "N", x0, x1, setup));
+    shapes.push(plotShape(segs, "M", yM, kM, 1, "N·m", x0, x1, setup));
   } else {
     // Before the answer: just the two zero lines, named, to sketch on.
     shapes.push({ type: "plot", points: [[x0, yV], [x1, yV]], base: yV, name: "V", tint: 0, marks: [] });
@@ -170,10 +172,15 @@ function diagramScene(setup, res, opts) {
   if (setup.showSegments) {
     segs.forEach((s, i) => shapes.push({ type: "text", at: [(s.a + s.b) / 2, y - gapV + hV + 0.1 * size], text: `${i + 1}` }));
   }
-  // 7.3's section line at x, with V(x) and M(x) marked.
+  // 7.3's section line at x (in the force colour), with a ring where it meets each curve.
   if (setup.cut != null) {
     const xc = setup.cut;
-    shapes.push({ type: "line", from: [xc, y + 0.12 * size], to: [xc, bottom], style: "dashed" });
+    shapes.push({ type: "line", from: [xc, y + 0.12 * size], to: [xc, bottom], style: "action" });
+    const seg = segs.find((q) => xc >= q.a - 1e-9 && xc <= q.b + 1e-9);
+    if (show && seg) {
+      shapes.push({ type: "point", at: [xc, yV + evalPoly(seg.V, xc) * kV], label: "", style: "ring" });
+      shapes.push({ type: "point", at: [xc, yM + evalPoly(seg.M, xc) * kM], label: "", style: "ring" });
+    }
   }
   return shapes;
 }

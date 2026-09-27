@@ -212,8 +212,13 @@ Claude builds from it.
 - ⭐ Jumps in the diagrams: V jumps at point loads, M jumps at applied couples.
 - Bridge to later: this feeds "stress at a point" in mechanics of materials.
 
-**Unit 7.3: V(x) and M(x) equations** ⭐
+**Unit 7.3: V(x) and M(x) equations** ✅
 - Concept: write V(x) and M(x) as equations for each segment.
+- Built: slide a section along a beam and read its segment's V(x), M(x) and their values;
+  predict coefficients (half-loaded beam, uniform span, a point load's second segment, a
+  triangular load); place a second load so the middle is in pure bending (V = 0); debug a
+  student's segment equations (the ½ dropped, x instead of (x − a), a sign, a missing force);
+  concept check; solve an overhanging beam: choose each segment's V(x) and M(x), then use them.
 
 ### Chapter 8: Friction (textbook ch. 9)
 

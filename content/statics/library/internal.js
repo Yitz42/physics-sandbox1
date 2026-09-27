@@ -225,3 +225,27 @@ export const shelfSegments = scenario({
     },
   },
 });
+
+// triangle span: pin A (0), roller B (6), load rising from 0 at A to w₀ = 600 N/m at B
+//   → 1800 N at 4 m: A_y = 600, B_y = 1200 N.  V = 600 − 50x² (w = 100x, its area 50x²),
+//   M = 600x − 50x³/3;  V = 0 at x = √12 = 3.464 m, M_max = 1385.6 N·m.
+export const triangleSpan = scenario({
+  name: "triangle-loaded span",
+  story: "A tank wall's support beam, on a pin at A and a roller at B, carries a load that grows steadily from zero at A to $w_0$ at B.",
+  setup: { body: body(6), supports: [pin("A", 0), roller("B", 6)], loads: [{ id: "w", shape: "triangle", from: 0, to: 6, w: 600, peak: "right" }], view: "diagrams", showReactions: "reveal" },
+  vary: [
+    { path: "loads.#w.w", min: 300, max: 900, step: 25 },
+    { paths: ["body.points.1.0", "supports.#B.at.0", "loads.#w.to"], values: [5, 6] },
+  ],
+  questions: {
+    segments: {
+      instruction: "Write $V(x) = c_0 + c_2 x^2$: predict $c_0$ and $c_2$.",
+      ask: [{ quantity: "V0_1", precision: 0.1 }, { quantity: "V2_1", precision: 0.01 }],
+      hints: [
+        "At x the load is $w = w_0 x / L$. The load on the left piece is a triangle: area $\\tfrac{1}{2} x \\cdot w_0 x / L$.",
+        "$V = A_y - \\dfrac{w_0}{2L} x^2$.",
+        "So $c_0 = A_y = w_0 L / 6$ and $c_2 = -w_0/(2L)$.",
+      ],
+    },
+  },
+});

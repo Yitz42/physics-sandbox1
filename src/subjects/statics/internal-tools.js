@@ -303,7 +303,9 @@ export function internalSummary(setup, result, { reveal = true } = {}) {
     if (reveal) lines.push(`N = ${fixedTex(v.N, "N")},\\quad V = ${fixedTex(v.V, "N")},\\quad M = ${fixedTex(v.M, "N·m")}`);
     return lines;
   }
-  if (setup.cut != null) {
+  // 7.3's section at x: its segment's equations and their values there — live in an
+  // explore stage (setup.liveEquations), else once the answer is shown.
+  if (setup.cut != null && (reveal || setup.liveEquations)) {
     const r = solveInternal(setup);
     const seg = r.segments.find((s) => setup.cut >= s.a - 1e-9 && setup.cut <= s.b + 1e-9);
     const k = r.segments.indexOf(seg) + 1;
