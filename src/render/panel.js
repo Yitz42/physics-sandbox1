@@ -34,7 +34,10 @@ export function renderMixed(el, text) {
     const p = document.createElement("p");
     para.split(/(\$[^$]+\$)/).forEach((chunk) => {
       if (chunk.startsWith("$") && chunk.endsWith("$") && chunk.length > 1) {
+        // One unbreakable box per formula (style.css .mixed-math): a formula split
+        // over two lines let tall fractions overlap the line above.
         const span = document.createElement("span");
+        span.className = "mixed-math";
         renderTex(span, chunk.slice(1, -1));
         p.appendChild(span);
       } else {

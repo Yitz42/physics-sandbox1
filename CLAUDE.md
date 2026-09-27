@@ -239,6 +239,13 @@ different situation (all are seen before any repeats), then new numbers from its
   (`showConcurrency`), and trusses (`statics.truss`, method of joints). Truss
   sign convention: every member assumed in TENSION, negative = compression;
   members red for tension, blue for compression, grey for zero-force.
+- Math inside running text (explanations, hints, questions) is never split
+  across lines: each formula is one box, so tall fractions push lines apart
+  instead of overlapping.
+- Whatever a slider controls is marked in the picture, in the sliders' colour:
+  a block shows its symbol and value ("K = 25", "set by slider"), a
+  signal-flow branch shows "−k (k = 0.1)". The workspace passes the slider
+  paths to every picture as sceneOpts.tunable.
 - **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
   (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
   imported files are all translated there; old ids must never reach an export.

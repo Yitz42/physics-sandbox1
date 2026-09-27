@@ -43,9 +43,15 @@ export function signalScene(setup, result, opts = {}) {
   const lit = litParts(setup, m);
   const at = Object.fromEntries(setup.nodes.map((n) => [n.id, n.at]));
   const shapes = [];
+  // A gain a slider sets ("symbols.k.value" is tunable): its branch is marked and
+  // labelled with the value, e.g. "−k (k = 0.1)".
+  const tuned = (opts.tunable || []).map((p) => (p.match(/^symbols\.([^.]+)\.value$/) || [])[1]).filter(Boolean);
   setup.branches.forEach((b, i) => {
     const role = lit ? (lit.branches.includes(i) ? "on" : "off") : null;
-    shapes.push({ type: "sfgbranch", from: at[b.from], to: at[b.to], bend: b.bend || 0, label: gainLabel(setup, b.gain), role });
+    const id = String(b.gain).replace(/^-/, "");
+    const tunable = tuned.includes(id);
+    const label = gainLabel(setup, b.gain) + (tunable ? `  (${gainLabel(setup, id)} = ${setup.symbols[id].value})` : "");
+    shapes.push({ type: "sfgbranch", from: at[b.from], to: at[b.to], bend: b.bend || 0, label, role, tunable });
   });
   for (const n of setup.nodes) {
     shapes.push({ type: "sfgnode", at: n.at, label: n.label ?? n.id, labelAt: n.labelAt, role: lit && lit.nodes.includes(n.id) ? "on" : null });

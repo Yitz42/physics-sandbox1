@@ -22,10 +22,28 @@ const GAP = 0.9; // arrow length between parts
 const R = 0.24; // summing junction radius
 const LEAD = 0.45; // pickoff to branch start
 
+// A parameter's name as it's written: "Kt" → "K_t" (the first letter, then a subscript).
+const paramName = (w) => (w.length > 1 ? `${w[0]}_${w.slice(1)}` : w);
+
 // What a block shows: a symbol ("G_1"), or its transfer function as a fraction.
-function blockLabel(b, params) {
+// A block that a slider controls (tunable: parameter names) shows its symbol
+// with the slider's value, e.g. "K = 25" or "K_t s = 0.1 s", and is marked
+// (role "tunable", drawn in the sliders' colour) so it's clear what the slider changes.
+function blockLabel(b, params, tunable = []) {
   const sub = (text) => String(text).replace(/\b[A-Za-z]\w*\b/g, (w) => (w in params ? coeffText(params[w]) : w));
-  if (b.show) return b.show.length > 1 ? { fraction: b.show.map(sub) } : { label: sub(b.show[0]) };
+  const uses = (text) => (String(text).match(/\b[A-Za-z]\w*\b/g) || []).some((w) => tunable.includes(w));
+  if (b.show) {
+    const tuned = b.show.some(uses);
+    if (b.show.length > 1) return { fraction: b.show.map(sub), tuned };
+    const named = String(b.show[0]).replace(/\b[A-Za-z]\w*\b/g, (w) => (w in params ? paramName(w) : w));
+    return { label: tuned ? `${named} = ${sub(b.show[0])}` : sub(b.show[0]), tuned };
+  }
+  const tfUses = b.tf && [...(b.tf.num || []), ...(b.tf.den || [])].some((c) => typeof c === "string" && tunable.includes(c));
+  if (tfUses && !b.reduced && !(b.tf.den && b.tf.den.length > 1)) {
+    // A gain block such as K: its name and its value.
+    const text = polyText(fromDescending(b.tf.num.map((c) => coeff(c, params))));
+    return { label: `${blockTex(b)} = ${text}`, tuned: true };
+  }
   if (b.tf && !b.reduced) {
     const text = (list) => polyText(fromDescending(list.map((c) => coeff(c, params))));
     const num = text(b.tf.num), den = text(b.tf.den || [1]);
@@ -41,12 +59,12 @@ const textWidth = (t) => 0.14 * String(t).replace(/[_{}]/g, "").length + 0.55;
 function layout(node, ctx) {
   const kind = kindOf(node);
   if (kind === "block") {
-    const lab = blockLabel(node, ctx.params);
+    const { tuned, ...lab } = blockLabel(node, ctx.params, ctx.tunable);
     const w = Math.max(1.15, ...(lab.fraction ? lab.fraction : [lab.label]).map(textWidth));
     return {
       w, up: H / 2, down: H / 2,
       place(x, y, out) {
-        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, role: node.reduced ? "reduced" : "block" });
+        out.push({ type: "tfblock", id: node.block, at: [x + w / 2, y], w, h: H, ...lab, role: node.reduced ? "reduced" : tuned ? "tunable" : "block" });
         ctx.boxes.set(node.src || node, [x, y - H / 2, x + w, y + H / 2]);
       },
     };
@@ -145,7 +163,9 @@ function layout(node, ctx) {
 export function blockScene(setup, result, opts = {}) {
   const n = setup.reduce ?? 0;
   const { diagram, red } = partialDiagram(setup, n);
-  const ctx = { params: setup.params || {}, boxes: new Map() };
+  // Parameters a slider changes ("params.K" → "K"), for marking their blocks.
+  const tunable = (opts.tunable || []).filter((p) => p.startsWith("params.")).map((p) => p.slice(7));
+  const ctx = { params: setup.params || {}, boxes: new Map(), tunable };
   const L = layout(diagram, ctx);
   const shapes = [];
   const IN = 1.1, OUT = 1.1;

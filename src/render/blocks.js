@@ -1,6 +1,8 @@
 // blocks.js — drawings for block diagrams and signal-flow graphs (controls):
 //   tfblock      { at, w, h, label | fraction: [top, bottom], role? }  a block (box)
-//                role "reduced": a block that replaced a group (drawn in purple)
+//                role "reduced": a block that replaced a group (drawn in purple);
+//                role "tunable": a block a slider controls (drawn in the sliders' colour,
+//                with a soft tint and a "set by slider" tag above it)
 //   sumjunction  { at, r, signs: [{ at, text }] }  a summing junction (circle with ×)
 //   wire         { points, arrow? }       a signal line; arrow: arrowhead at the end
 //   pickoff      { at }                   a pickoff point (dot)
@@ -9,11 +11,12 @@
 //   sfgnode      { at, label, labelAt }   a signal-flow graph node
 //   sfgbranch    { from, to, bend, label, role? }  a branch: a curved arrow, arrowhead in
 //                the middle; bend = how far the middle bows out (sideways, in units)
-//                role "on" (part of a highlighted path or loop) or "off" (faded)
+//                role "on" (part of a highlighted path or loop) or "off" (faded);
+//                tunable: true — its gain is set by a slider (drawn in the sliders' colour)
 // drawBlockShape returns { boxes, segments, labels } like the other shape files,
 // or null for a shape type it doesn't know. Drawing only: no controls physics.
 
-import { drawLabel } from "./arrows.js";
+import { drawLabel, cssColor } from "./arrows.js";
 
 function arrowHead(ctx, tip, dir, size = 9) {
   const [ux, uy] = dir;
@@ -42,14 +45,25 @@ export function drawBlockShape(cv, s, env, roleColor) {
       case "tfblock": {
         const [x, y] = S(s.at);
         const w = s.w * cv.view.scale, h = s.h * cv.view.scale;
-        const color = s.role === "reduced" ? purple : env.lit ? roleColor("known") : ink;
+        const tunable = s.role === "tunable";
+        const accent = cssColor("--c-accent", "#1f5fbf");
+        const color = s.role === "reduced" ? purple : tunable ? accent : env.lit ? roleColor("known") : ink;
         ctx.fillStyle = paper;
         ctx.strokeStyle = color;
-        ctx.lineWidth = s.role === "reduced" ? 2.6 : 2;
+        ctx.lineWidth = s.role === "reduced" || tunable ? 2.6 : 2;
         ctx.beginPath();
         ctx.rect(x - w / 2, y - h / 2, w, h);
         ctx.fill();
+        if (tunable) {
+          // A soft tint of the accent colour inside, so the box reads as "the one you change".
+          ctx.save();
+          ctx.globalAlpha = 0.12;
+          ctx.fillStyle = accent;
+          ctx.fill();
+          ctx.restore();
+        }
         ctx.stroke();
+        if (tunable) drawLabel(ctx, "set by slider", x, y - h / 2 - 9, { color: accent, size: 11, weight: 700 });
         if (s.fraction) {
           const [top, bottom] = s.fraction;
           ctx.font = "15px system-ui, sans-serif";
@@ -157,10 +171,11 @@ export function drawBlockShape(cv, s, env, roleColor) {
         const ctrl = [mid[0] + n[0] * bend * 2, mid[1] + n[1] * bend * 2]; // a quadratic's middle is halfway to its control point
         const peak = [mid[0] + n[0] * bend, mid[1] + n[1] * bend];
         const [A, C, B] = [S(a), S(ctrl), S(b)];
-        const color = s.role === "on" ? purple : s.role === "off" ? faint : ink;
+        const tunable = s.tunable; // a branch whose gain a slider sets: the sliders' colour
+        const color = s.role === "on" ? purple : s.role === "off" ? faint : tunable ? cssColor("--c-accent", "#1f5fbf") : ink;
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
-        ctx.lineWidth = s.role === "on" ? 3 : 1.8;
+        ctx.lineWidth = s.role === "on" || tunable ? 3 : 1.8;
         ctx.globalAlpha = s.role === "off" ? 0.55 : 1;
         ctx.beginPath();
         ctx.moveTo(A[0], A[1]);
@@ -173,7 +188,7 @@ export function drawBlockShape(cv, s, env, roleColor) {
         if (s.label) {
           const side = bend >= 0 ? 1 : -1;
           const lp = S([peak[0] + n[0] * 0.28 * side, peak[1] + n[1] * 0.28 * side]);
-          out.boxes.push(drawLabel(ctx, s.label, lp[0], lp[1], { color: s.role === "on" ? purple : ink, size: 15, background: paper }));
+          out.boxes.push(drawLabel(ctx, s.label, lp[0], lp[1], { color: s.role === "on" ? purple : tunable ? color : ink, size: 15, background: paper, weight: tunable ? 700 : 500 }));
         }
         out.segments.push([A, P], [P, B]);
         return out;

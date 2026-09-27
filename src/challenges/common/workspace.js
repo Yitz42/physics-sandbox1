@@ -30,7 +30,9 @@ export function createWorkspace(ctx, opts = {}) {
     reveal: !!opts.reveal,
     mode: "symbolic",
     highlight: null,
-    sceneOpts: { ...(opts.sceneOpts || {}) },
+    // tunable: the setup paths the sliders change, so a picture can mark what
+    // they control (e.g. a block diagram's gain block, see block-layout.js).
+    sceneOpts: { ...(opts.sceneOpts || {}), tunable: (opts.editable || []).map((e) => e.path).filter(Boolean) },
     extraShapes: () => [], // challenges can add shapes (e.g. the student's FBD)
     onPointer: null, // challenges can take over the pointer: { down, move, up } returning true if handled
     shapes: [],

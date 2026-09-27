@@ -222,6 +222,9 @@ p { margin: 0 0 8px; }
 .msg-bad { background: var(--c-bad-bg); color: var(--c-bad); }
 .msg-info { background: var(--c-info-bg); color: var(--c-info); }
 .msg-warn { background: var(--c-warn-bg); color: var(--c-warn); }
+/* Math inside running text (panel.js renderMixed): kept whole on one line, so a
+   tall fraction makes its line taller instead of overlapping the next one. */
+.mixed-math { display: inline-block; max-width: 100%; margin: 5px 0; vertical-align: baseline; }
 .explanation { border-left: 4px solid var(--c-accent); padding: 6px 12px; background: var(--c-bg); border-radius: 0 8px 8px 0; }
 .hint-list { margin: 6px 0 0; padding-left: 22px; color: var(--c-muted); }
 .hint-list p { margin: 0 0 4px; }
