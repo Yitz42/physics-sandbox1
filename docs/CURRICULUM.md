@@ -145,8 +145,14 @@ Claude builds from it.
   predict member forces (apex load, load plus wind); choose a roof truss's height within
   a member rating; debug a joint's two equations; solve a wall truss at its loaded joint.
 
-**Unit 5.2: Zero-force members** ⭐
+**Unit 5.2: Zero-force members** ⭐ ✅
 - Concept: spot members that carry no force by inspection, before solving.
+- Built: move the load around a Pratt bridge and see which members go idle, with the
+  joint-by-joint working; count zero members and find a member force (bridge loaded
+  below or on top, a wall bracket whose roller pushes along a member); choose the bracing
+  so thin rods only pull and the posts stay idle (Pratt); debug a student's inspection
+  (a loaded joint, a support joint, members not in line, the wrong member); concept
+  check; solve: spot the idle members, then joint A and B.
 
 **Unit 5.3: Trusses, method of sections**
 - Concept: cut through the truss and solve for up to three members directly.

@@ -51,7 +51,7 @@ const chapters = [
     id: "structures", title: "Structures",
     units: [
       "trusses",
-      soon("Zero-force members", "Spot the members that carry no force, just by looking, before solving."),
+      "zero-force-members",
       soon("Trusses: method of sections", "Cut through the truss and find up to three member forces at once."),
       soon("Frames and machines", "Take multi-part structures apart into separate free-body diagrams."),
     ],

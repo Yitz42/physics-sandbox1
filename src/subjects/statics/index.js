@@ -28,7 +28,8 @@ import { rigidBodyScene } from "./rigid-body-scene.js";
 import { rigidBodyFbd, rigidBodyMutate, rigidBodyMistakes, rigidBodySummary } from "./rigid-body-tools.js";
 import { classifySteps } from "./rigid-body-count.js";
 import { solveTruss, trussQuantities } from "./truss.js";
-import { trussScene, trussFbd, trussMistakes, trussSummary, trussEquations } from "./truss-scene.js";
+import { trussScene, trussFbd, trussMistakes, trussEquations } from "./truss-scene.js";
+import { solveTrussZero, trussZeroSummary, zeroSteps, zeroMistakes } from "./truss-zero.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -120,13 +121,15 @@ registerSolver("statics.rigidBody", {
   debugSteps: classifySteps, // a student's working when classifying a structure (Unit 4.4)
 });
 
-// Unit 5.1 on: plane trusses, joint by joint (tension positive).
+// Unit 5.1 on: plane trusses, joint by joint (tension positive); Unit 5.2 adds
+// zero-force members found by inspection (values.zeroCount, setup.showZero).
 registerSolver("statics.truss", {
-  solve: solveTruss,
+  solve: solveTrussZero,
   equations: (setup, result) => trussEquations(setup, result || solveTruss(setup)),
-  summary: trussSummary,
+  summary: trussZeroSummary,
   scene: trussScene,
-  quantities: trussQuantities,
-  mistakes: trussMistakes,
+  quantities: (setup) => ({ ...trussQuantities(setup), zeroCount: { label: "\\text{zero-force members}", unit: "" } }),
+  mistakes: (setup, name) => (name === "zeroCount" ? zeroMistakes(setup) : trussMistakes(setup, name)),
   fbd: trussFbd,
+  debugSteps: zeroSteps, // a student's inspection for zero-force members, one line wrong (Unit 5.2)
 });

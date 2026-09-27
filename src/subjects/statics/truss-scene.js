@@ -61,7 +61,8 @@ export function trussScene(setup, result, opts = {}) {
   for (const f of trussLoads(setup)) {
     const u = directionOf(f), len = Math.max(0.12 * size, magnitudeOf(f) * k);
     const tail = f.push ? add(f.at, scale(u, -len)) : f.at;
-    shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
+    // (A push ends on its joint and is labelled at its outer end, like any push on a body.)
+    shapes.push({ type: "arrow", id: f.id, from: tail, to: add(tail, scale(u, len)), role: "known", onBody: !!f.push, label: `${f.symbol} = ${format(magnitudeOf(f), "N")}` });
   }
   // Support reactions: "?" until solved.
   if (shown) {
