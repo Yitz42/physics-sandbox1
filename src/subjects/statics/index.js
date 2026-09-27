@@ -38,7 +38,7 @@ import { solveInternal, internalQuantities } from "./internal.js";
 import { internalScene } from "./internal-scene.js";
 import { internalSummary, internalMistakes, internalChoices, internalSteps } from "./internal-tools.js";
 import { solveFriction, frictionQuantities, isBody, placeAlong } from "./friction.js";
-import { frictionScene } from "./friction-scene.js";
+import { frictionScene, bodyPicture } from "./friction-scene.js";
 import { frictionEquations, frictionSummary, frictionMistakes, frictionSteps } from "./friction-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
@@ -195,6 +195,6 @@ registerSolver("statics.friction", {
   quantities: (setup) => frictionQuantities(setup, isBody(setup) ? rigidBodyQuantities(placeAlong(setup)) : {}),
   mistakes: frictionMistakes,
   // (A ladder's FBD, drawn by the student; a crate's is drawn for them.)
-  fbd: (setup, sceneOpts) => (isBody(setup) ? rigidBodyFbd(placeAlong(setup), sceneOpts) : { forces: [], directions: [], origin: [0, 0] }),
+  fbd: (setup, sceneOpts) => (isBody(setup) ? rigidBodyFbd(bodyPicture(setup), sceneOpts) : { forces: [], directions: [], origin: [0, 0] }),
   debugSteps: frictionSteps, // a student's working for a crate, one line wrong
 });

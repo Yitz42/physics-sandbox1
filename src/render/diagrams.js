@@ -5,7 +5,7 @@
 //   arrow    { id, from, to, label, role, headGap?, tailGap? }   role: known | unknown | resultant |
 //                                            component | target | wrong | student | shadow
 //   line     { id?, from, to, style }        style: cable | reference | dashed
-//   support  { from, to, normal }            hatched ground/ceiling/wall
+//   support  { from, to, normal, rough? }    hatched ground/ceiling/wall (rough: teeth on its face, friction)
 //   point    { at, label, style, labelAway? } style: ring | dot | pin; labelAway: a direction
 //                                            the name prefers (e.g. out from a truss)
 //   box      { id?, at, w, h, label, passable?, angle? } a crate or block (at = centre); passable: labels avoid it but may cover it;
@@ -128,7 +128,13 @@ export function drawScene(cv, shapes, opts = {}) {
       wanted.unshift({ text: s.label, pos: spots[0].slice(0, 2), align: spots[0][2], size: 14, weight: 700, color: env.ink, plain: true, breaks: true, spots, clear: LETTER_CLEAR, tight: drop });
     }
     if (s.type === "arrow" && s.label) {
-      const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
+      let a = cv.toScreen(s.from);
+      const b = cv.toScreen(s.to);
+      if (s.slideBack) {
+        // (Its tail was slid back to keep its length: the label goes there too.)
+        const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        a = [a[0] - ((b[0] - a[0]) / L) * s.slideBack, a[1] - ((b[1] - a[1]) / L) * s.slideBack];
+      }
       // Components and targets prefer the middle of their arrow. An arrow
       // pushing on a body (its head on the body) is labelled at its outer end;
       // any other arrow just past its tip, in line with it (below a downward
@@ -286,15 +292,22 @@ function touchBeams(shapes) {
     if (s.type !== "arrow" || s.headGap != null) return s;
     if (onPlate(s.to) && !onPlate(s.from)) return { ...s, onBody: true };
     const dir = [s.to[0] - s.from[0], s.to[1] - s.from[1]];
+    const half = (b) => ((b.width || 12) + 3) / 2; // beams are drawn width + 3 px thick
     const gapAt = (P) => {
       for (const b of beams) {
         const d = beamDirAt(b.points, P);
-        if (d) return surfaceGap(dir, d, ((b.width || 12) + 3) / 2); // beams are drawn width + 3 px thick
+        if (d) return surfaceGap(dir, d, half(b));
       }
       return 0;
     };
     const headGap = gapAt(s.to);
-    if (headGap) return { ...s, headGap, onBody: true };
+    if (headGap) {
+      // Meeting a slanted bar (a ladder) the surface is far along the arrow: slide the
+      // whole arrow back by the extra, so it keeps its length instead of shrinking.
+      const b = beams.find((q) => beamDirAt(q.points, s.to));
+      const slideBack = Math.max(0, headGap - half(b));
+      return { ...s, headGap, onBody: true, ...(slideBack > 0.5 ? { slideBack } : {}) };
+    }
     // An arrow that STARTS on a beam's centre line (a pull) starts at its surface
     // instead: no arrow runs inside a body.
     const tailGap = s.tailGap == null ? gapAt(s.from) : 0;

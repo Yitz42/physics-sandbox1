@@ -19,11 +19,7 @@ const deg = Math.PI / 180;
 const angleOf = (v) => (Math.atan2(v[1], v[0]) * 180) / Math.PI;
 
 export function frictionScene(setup, result, opts = {}) {
-  if (isBody(setup)) {
-    const placed = placeAlong(setup);
-    const extras = setup.ladderMarks ? ladderMarks(placed) : [];
-    return rigidBodyScene({ ...placed, extras: [...(placed.extras || []), ...extras] }, result, opts);
-  }
+  if (isBody(setup)) return rigidBodyScene(bodyPicture(setup), result, opts);
   // Once a "where does motion start?" answer is revealed, the picture shows that
   // moment: the push (or slope) at the value found, friction at its limit.
   let res = result || solveFriction(setup);
@@ -34,6 +30,14 @@ export function frictionScene(setup, result, opts = {}) {
     return blockScene(at, { ...r, values: { ...r.values, critical: res.values.critical } }, opts);
   }
   return blockScene(setup, res, opts);
+}
+
+// A body's setup as the rigid-body picture draws it: forces placed along it, and
+// its marks. (The FBD drawing tool uses the same, so the two lay out alike.)
+export function bodyPicture(setup) {
+  const placed = placeAlong(setup);
+  const extras = setup.ladderMarks ? ladderMarks(placed) : [];
+  return { ...placed, extras: [...(placed.extras || []), ...extras] };
 }
 
 // setup.ladderMarks (a straight body leaning on a wall, foot first): its length along
@@ -143,16 +147,22 @@ function blockScene(setup, res, opts) {
   }
   for (const p of pushes) fbd.push(...p);
 
-  const right0 = [G[0] - 0.45 * L, G[0] + 0.45 * L];
+  // The FBD's own extent: it is drawn at its own size, bigger than the model when its
+  // half has room (render/panels.js). From the crate and the longest an arrow can be
+  // (0.3 of L), not from the arrows themselves — so a slider never resizes it.
+  const reach = 0.3 * L + Math.max(w, h);
+  const right0 = [G[0] - reach - 0.1 * L, G[0] + reach + 0.1 * L];
+  const rightY = [G[1] - reach - 0.06 * L, G[1] + reach + 0.02 * L];
   const offset = left[1] - right0[0] + 0.08 * L;
   const right = [right0[0] + offset, right0[1] + offset];
   const captions = [
     { type: "text", at: [(left[0] + left[1]) / 2, capY], text: "Model", panel: "left" },
-    { type: "text", at: [(right[0] + right[1]) / 2, capY], text: "Free-body diagram", panel: "right" },
+    { type: "text", at: [(right[0] + right[1]) / 2, capY], text: "Free-body diagram", panel: "right", caption: true },
   ];
   const shapes = [{ type: "axes" }, ...model.map((s) => ({ ...s, panel: "left" })), ...fbd.map((s) => ({ ...shiftShape(s, offset), panel: "right" })), ...captions];
   const yLow = capY - 0.08 * size;
-  return spreadPanels(shapes, { divider: left[1] + 0.04 * L, left, right, y: [yLow, yTop], margin: 0.04 * L, size: opts.canvasSize });
+  return spreadPanels(shapes, { divider: left[1] + 0.04 * L, left, right, y: [yLow, yTop], margin: 0.04 * L, size: opts.canvasSize,
+    rightY, capTop: capY + 0.06 * L });
 }
 
 // A push (its arrowhead on the crate's face) or a rope's pull (starting at the crate),

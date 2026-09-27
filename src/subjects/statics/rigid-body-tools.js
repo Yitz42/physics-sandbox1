@@ -4,7 +4,7 @@
 //   • the lines under the equations (summary) and a shadow of wrong answers.
 
 import { scale } from "../../core/vector.js";
-import { fbdShiftX } from "./rigid-body-scene.js";
+import { fbdTransform } from "./rigid-body-scene.js";
 import { clone } from "../../core/paths.js";
 import { fixedTex, format } from "../../core/units.js";
 import { placeArrow } from "../../render/fbd.js";
@@ -16,12 +16,13 @@ import { swapTrig } from "./directions.js";
 
 // { forces, directions, points, arrowLength, origin } — see challenges/common/fbd-tool.js.
 // forces: every reaction, plus the weight if the body has mass.
-// The FBD is drawn to the right of the sketch (rigid-body-scene.js): every place
-// here is moved by the same amount, so the student's arrows land on it.
+// The FBD is drawn to the right of the sketch, at its own size (rigid-body-scene.js):
+// every place here goes through the same move, so the student's arrows land on it.
 export function rigidBodyFbd(setup, sceneOpts = {}) {
   const info = fbdTool(setup);
-  const dx = fbdShiftX(setup, sceneOpts);
-  const move = (p) => (p ? [p[0] + dx, p[1]] : p);
+  const T = fbdTransform(setup, sceneOpts);
+  const move = (p) => (p ? T.map(p) : p);
+  info.arrowLength *= T.f;
   for (const f of info.forces) f.at = move(f.at);
   for (const q of Object.values(info.points)) q.at = move(q.at);
   info.origin = move(info.origin);

@@ -91,6 +91,22 @@ for (const { unit, file, whole, stage: part } of stages) {
       }
     });
   }
+  // The FBD the student draws on may be drawn at its own size (render/panels.js): the
+  // drawing tool's points must land exactly on the FBD's letters, at every canvas size.
+  if (stage.challenge === "solve" && stage.solve && (stage.solve.steps || []).includes("fbd") && solver.fbd && solver.scene) {
+    test(`${stage.id}: the FBD tool's points sit on the drawn FBD`, () => {
+      for (const canvasSize of [{ width: 760, height: 440 }, { width: 343, height: 340 }, { width: 1000, height: 580 }]) {
+        const info = solver.fbd(stage.setup, { canvasSize });
+        const shapes = solver.scene(stage.setup, null, { canvasSize, hide: info.forces.map((f) => f.id) });
+        for (const [id, q] of Object.entries(info.points || {})) {
+          const drawn = shapes.find((sh) => sh.type === "point" && sh.panel === "right" && sh.label === id);
+          if (!drawn) continue;
+          close(q.at[0], drawn.at[0], 1e-6, `${id} x (${canvasSize.width} px):`);
+          close(q.at[1], drawn.at[1], 1e-6, `${id} y (${canvasSize.width} px):`);
+        }
+      }
+    });
+  }
   if (stage.challenge === "solve" && solver.choices) {
     test(`${stage.id}: every wrong line to choose from has a known kind`, () => {
       for (const g of solver.choices(stage.setup)) for (const o of g.options) if (!o.correct) ok(isKnownKind(o.kind), `${g.title}: ${o.kind}`);

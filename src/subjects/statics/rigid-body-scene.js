@@ -22,7 +22,7 @@ import { intensityAt } from "./distributed-loads.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
 import { concurrency } from "./rigid-body-count.js";
 import { angleMarks } from "./particle-scene.js";
-import { spreadPanels, shiftShape, panelShift } from "../../render/panels.js";
+import { spreadPanels, shiftShape, panelTransform } from "../../render/panels.js";
 
 // Picture metres per newton: the biggest force drawn 0.3 of the body's size
 // (setup.arrowSize: another fraction, e.g. shorter arrows above a beam's diagrams).
@@ -59,7 +59,7 @@ export function rigidBodyScene(setup, result, opts = {}) {
   const fbd = [];
   for (const sh of full) {
     if (sh.type === "axes" || extras.has(sh)) continue;
-    if (["support", "supportSymbol", "dim", "text"].includes(sh.type)) continue;
+    if (["support", "supportSymbol", "dim", "text"].includes(sh.type) || sh.supportLetter) continue;
     // (No caption, no details. An end built into a wall stays square, as in the model.)
     if (sh.type === "beam") fbd.push({ type: "beam", points: sh.points, width: 7, flat: wallEnds(setup, sh.points) });
     else fbd.push(sh);
@@ -72,8 +72,9 @@ export function rigidBodyScene(setup, result, opts = {}) {
     { type: "text", at: [(lay.left[0] + lay.left[1]) / 2 + lay.offset, lay.capY], text: "Free-body diagram" },
   ];
   const shapes = [{ type: "axes" }, ...sketch.map((sh) => ({ ...sh, panel: "left" })), ...fbd.map((sh) => ({ ...shiftShape(sh, lay.offset), panel: "right" })),
-    { ...captions[0], panel: "left" }, { ...captions[1], panel: "right" }];
-  return spreadPanels(shapes, { divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: opts.canvasSize });
+    { ...captions[0], panel: "left" }, { ...captions[1], panel: "right", caption: true }];
+  // (The FBD gets its own size — bigger than the model when there's room, agreed with the owner.)
+  return spreadPanels(shapes, panelOpts(lay, opts.canvasSize));
 }
 
 // Where the two diagrams go (metres, from the geometry only — not from arrow
@@ -85,20 +86,44 @@ export function fbdLayout(setup) {
   const pts = [...((setup.body && setup.body.points) || []), ...(setup.supports || []).flatMap((q) => [q.at, q.anchor].filter(Boolean)),
     ...(setup.forces || []).map((f) => f.at)];
   for (const l of setup.loads || []) pts.push([l.from, l.y ?? 0], [l.to, l.y ?? 0]);
+  for (const g of setup.grounds || []) pts.push(g.from, g.to);
   for (const x of setup.extras || []) for (const p of [x.at, x.from, x.to, ...(x.points || [])]) if (Array.isArray(p)) pts.push(p);
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
   const padX = 0.2 * size, padY = 0.36 * size; // room round each diagram for arrows and their labels
   const x0 = Math.min(...xs) - padX, x1 = Math.max(...xs) + padX;
   const offset = x1 - x0 + 0.12 * size;
-  const capY = Math.min(...ys) - 0.66 * size; // (under the model's dimension lines)
-  return { offset, left: [x0, x1], right: [x0 + offset, x1 + offset], divider: x1 + 0.06 * size, capY, y: [capY - 0.06 * size, Math.max(...ys) + padY] };
+  // The captions: under the model's dimension lines — or, with none below the body
+  // (a ladder's run along it), just under the body.
+  const dimsBelow = autoDims(setup, size).length > 0 || (setup.dims || []).some((d) => Math.min(d.from[1], d.to[1]) < Math.min(...ys) + 1e-9);
+  const capY = Math.min(...ys) - (dimsBelow ? 0.66 : 0.24) * size;
+  // The model's top: what really reaches up — the loads' arrows (a push starts above
+  // its point, a pull ends past it; at most about 0.32 of the size long) and the
+  // distributed loads — plus room for their labels. (Not a fixed margin: the
+  // reactions, which need room all round, are on the FBD.)
+  const H = heightPerLoad(setup, size);
+  const loadReach = [];
+  for (const f of setup.forces || []) {
+    const u = directionOf(f);
+    loadReach.push(f.at[1], f.at[1] + (f.push ? -u[1] : u[1]) * 0.32 * size);
+  }
+  for (const l of setup.loads || []) loadReach.push(...loadShape(l, H).profile.map((p) => p[1]));
+  const top = Math.max(...ys, ...loadReach) + 0.14 * size;
+  // The FBD's own height: the body, its supports and its loads (not the model's walls
+  // or dimension lines), with room for the reactions round it.
+  const body = [...((setup.body && setup.body.points) || []), ...(setup.supports || []).map((q) => q.at)].map((p) => p[1]);
+  const rightY = [Math.min(...body) - 0.3 * size, Math.max(...body, ...loadReach) + 0.22 * size];
+  return { offset, left: [x0, x1], right: [x0 + offset, x1 + offset], divider: x1 + 0.06 * size, capY, y: [capY - 0.06 * size, Math.min(Math.max(...ys) + padY, top)], rightY, size };
 }
 
-// How far the FBD is drawn from where the setup puts the body (metres), for the
-// FBD drawing tool: the offset plus the panels' slide for this canvas size.
-export function fbdShiftX(setup, sceneOpts = {}) {
+// The options spreadPanels (and the FBD tool) use for this layout.
+const panelOpts = (lay, canvasSize) => ({ divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: canvasSize, rightY: lay.rightY, capTop: lay.capY + 0.1 * lay.size });
+
+// Where the FBD is drawn, for the FBD drawing tool: { map, f } — map takes a point
+// where the setup puts it to where it is on the FBD (moved right, and scaled by f).
+export function fbdTransform(setup, sceneOpts = {}) {
   const lay = fbdLayout(setup);
-  return lay.offset + panelShift({ divider: lay.divider, left: lay.left, right: lay.right, y: lay.y, margin: 0.3, size: sceneOpts.canvasSize }).dxR;
+  const T = panelTransform(panelOpts(lay, sceneOpts.canvasSize));
+  return { map: (p) => T.map([p[0] + lay.offset, p[1]]), f: T.f };
 }
 
 function overlayScene(setup, result, opts = {}) {
@@ -110,7 +135,7 @@ function overlayScene(setup, result, opts = {}) {
   const shown = setup.showReactions !== "reveal" || opts.reveal || !!opts.fbdSetup;
   const shapes = [{ type: "axes" }];
 
-  for (const g of setup.grounds || []) shapes.push({ type: "support", from: g.from, to: g.to, normal: g.normal });
+  for (const g of setup.grounds || []) shapes.push({ type: "support", from: g.from, to: g.to, normal: g.normal, rough: g.rough });
   for (const x of setup.extras || []) shapes.push(x);
   // The body: a wide bar, so its caption fits inside it. setup.massLabel: a
   // caption such as "40 kg beam" that follows the (random) mass, written IN the
@@ -119,7 +144,7 @@ function overlayScene(setup, result, opts = {}) {
     const pts = setup.body.points;
     const ml = setup.massLabel && setup.body.mass ? setup.massLabel : null;
     const inside = ml && pts.length === 2 && Math.abs(pts[0][1] - pts[1][1]) < 1e-9;
-    shapes.push({ type: "beam", points: pts, width: 20, ...(setup.body.look ? { look: setup.body.look } : {}), ...(inside ? { text: { at: [ml.at[0], pts[0][1]], text: `${setup.body.mass} kg ${ml.text || ""}`.trim() } } : {}) });
+    shapes.push({ type: "beam", points: pts, width: 20, ...(setup.body.look ? { look: setup.body.look, clip: setup.body.clip } : {}), ...(inside ? { text: { at: [ml.at[0], pts[0][1]], text: `${setup.body.mass} kg ${ml.text || ""}`.trim() } } : {}) });
     if (ml && !inside) shapes.push({ type: "text", at: ml.at, text: `${setup.body.mass} kg ${ml.text || ""}`.trim() });
   }
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });
@@ -129,6 +154,11 @@ function overlayScene(setup, result, opts = {}) {
   // Supports: faint whenever their reactions are drawn (or being drawn by the student).
   const faint = shown || hide.length > 0;
   for (const s of setup.supports || []) {
+    // (drawn: false — the wall or floor itself is drawn instead, setup.grounds: just the letter.)
+    if (s.drawn === false) {
+      shapes.push({ type: "point", at: s.at, label: s.id, style: "none", supportLetter: true });
+      continue;
+    }
     if (s.type === "none") shapes.push({ type: "point", at: s.at, label: s.id, style: "dot" });
     else shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], anchor: s.anchor, anchorLabel: s.anchorLabel, anchorNormal: anchorNormal(setup, s), label: s.id, alpha: faint ? 0.28 : 1 });
   }

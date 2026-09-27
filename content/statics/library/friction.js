@@ -19,7 +19,8 @@ import { scenario } from "../../../src/core/library.js";
 
 const ramp = (angle) => ({ angle, length: 6 });
 const crate = { w: 1.2, h: 0.8, at: 3.2 };
-const floorCrate = { w: 1.2, h: 0.9, at: 3.4 };
+const floorCrate = { w: 1.2, h: 0.9, at: 2.7 };
+const floor = { angle: 0, length: 4.5 }; // (shorter than a ramp: the picture is bigger)
 const steps = (a, b, s) => Array.from({ length: Math.round((b - a) / s) + 1 }, (_, i) => +(a + i * s).toFixed(6));
 
 const FRICTION_HINTS = [
@@ -76,7 +77,7 @@ export const tippingBed = scenario({
 export const floorPush = scenario({
   name: "crate pushed on a floor",
   story: "A worker pushes a crate across a level floor, pushing down at an angle to the floor. The coefficient of static friction is $\\mu_s$.",
-  setup: { ramp: ramp(0), block: floorCrate, weight: 400, mus: 0.4, showFbd: "reveal",
+  setup: { ramp: floor, block: floorCrate, weight: 400, mus: 0.4, showFbd: "reveal",
     forces: [{ id: "P", symbol: "P", magnitude: 150, along: "up", tilt: -30 }],
     find: { path: "forces.#P.magnitude", motion: "right", min: 0, max: 4000, symbol: "P", unit: "N" } },
   vary: [
@@ -92,7 +93,7 @@ export const floorPush = scenario({
 export const sledPull = scenario({
   name: "sled pulled by a rope",
   story: "A loaded sled rests on snow. It is pulled by a rope at an angle above the level. The coefficient of static friction is $\\mu_s$.",
-  setup: { ramp: ramp(0), block: { w: 1.4, h: 0.6, at: 2.6, label: "" }, weight: 300, mus: 0.3, showFbd: "reveal",
+  setup: { ramp: floor, block: { w: 1.4, h: 0.6, at: 1.9, label: "" }, weight: 300, mus: 0.3, showFbd: "reveal",
     forces: [{ id: "P", symbol: "P", magnitude: 60, along: "up", tilt: 30, rope: true }],
     find: { path: "forces.#P.magnitude", motion: "right", min: 0, max: 4000, symbol: "P", unit: "N" } },
   vary: [

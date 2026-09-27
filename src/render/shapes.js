@@ -49,7 +49,7 @@ export function drawShape(cv, s, env) {
         const hg = s.headGap || 0, tg = s.tailGap || 0;
         if (len > hg + tg + 12) {
           const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
-          a = [a[0] + u[0] * tg, a[1] + u[1] * tg];
+          a = [a[0] + u[0] * (tg - (s.slideBack || 0)), a[1] + u[1] * (tg - (s.slideBack || 0))];
           b = [b[0] - u[0] * hg, b[1] - u[1] * hg];
         }
       }
@@ -117,6 +117,18 @@ export function drawShape(cv, s, env) {
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x + n[0] * 9 + n[1] * 6, y + n[1] * 9 - n[0] * 6);
+        ctx.stroke();
+      }
+      if (s.rough) {
+        // A rough surface (friction): small teeth along its face.
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        const m = [-n[0], -n[1]]; // off the face, toward the body
+        for (let t = 0, k = 0; t <= len; t += 4, k++) {
+          const x = a[0] + ((b[0] - a[0]) * t) / len + (k % 2 ? m[0] * 3.5 : 0), y = a[1] + ((b[1] - a[1]) * t) / len + (k % 2 ? m[1] * 3.5 : 0);
+          if (k === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
         ctx.stroke();
       }
       out.segments.push([a, b]);

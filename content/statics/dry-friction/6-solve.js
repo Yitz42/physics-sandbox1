@@ -20,12 +20,17 @@ export default {
     "A 5 m ladder leans against a smooth wall at 60° to the floor, with a painter partway up. The floor is rough ($\\mu_s = 0.4$); the wall is smooth. " +
     "Draw the ladder's free-body diagram, choose the equations, then find the reactions and the smallest $\\mu_s$ that stops the foot slipping.",
   setup: {
-    body: { points: [[2.5, 0], [0, H]], mass: 20, look: "ladder" },
-    supports: [
-      { id: "A", type: "rough", at: [2.5, 0], normal: [0, 1], friction: "left", mus: 0.4 },
-      { id: "B", type: "smooth", at: [0, H], normal: [1, 0] },
+    body: { points: [[2.5, 0], [0, H]], mass: 20, look: "ladder", clip: { xmin: 0, ymin: 0 } },
+    // The wall and the rough floor themselves, drawn full length (not support symbols).
+    grounds: [
+      { from: [0, 0], to: [4, 0], normal: [0, 1], rough: true },
+      { from: [0, 0], to: [0, H + 0.4], normal: [1, 0] },
     ],
-    forces: [{ id: "P", symbol: "P", magnitude: 700, direction: "down", along: 3 }],
+    supports: [
+      { id: "A", type: "rough", at: [2.5, 0], normal: [0, 1], friction: "left", mus: 0.4, drawn: false },
+      { id: "B", type: "smooth", at: [0, H], normal: [1, 0], drawn: false },
+    ],
+    forces: [{ id: "P", symbol: "P", magnitude: 700, direction: "down", along: 3, push: true }], // (the painter presses down on a rung)
     ladderMarks: true,
     massLabel: { at: [3.4, 3.8], text: "ladder" }, // "20 kg ladder", in the open space right of its top
   },

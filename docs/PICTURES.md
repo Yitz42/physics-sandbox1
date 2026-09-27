@@ -95,7 +95,17 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   FBD on the right: the body simplified to a plain thin bar with no details, the
   supports replaced by their reactions (their letters kept at their points), the loads
   and the weight (rigid-body-scene.js, fbdLayout; the FBD drawing tool follows it,
-  fbdShiftX). The beam above a shear and moment diagram stays one picture (overlay).
+  fbdTransform). The beam above a shear and moment diagram stays one picture (overlay).
+- **The FBD at its own size** (agreed with the owner): the FBD needn't match the
+  model's scale — it is scaled up to fill its half when there's room (a tall body like
+  a ladder; a crate), above the captions' row (spreadPanels `rightY`). Its box comes
+  from the geometry, never from arrow lengths, so sliders don't resize it. The drawing
+  tool uses the same map (a test checks its points sit on the drawn FBD at 3 sizes).
+- **Real surfaces**: a ladder is drawn as a ladder (beam `look: "ladder"`), cut flush
+  where it meets the wall and floor (`clip`); the wall and floor are drawn full length
+  (setup.grounds, `rough: true` adds teeth for friction) and those supports aren't
+  drawn as symbols (`drawn: false`, their letters kept). A push that meets a slanted
+  bar slides back instead of shrinking (slideBack), so it keeps its length.
 - **Letters as close as possible**: point and support letters are measured by a tight
   box round the letter itself (labelBox `tight`), and points and pin/roller symbols
   report their true outlines (ring, triangle slices, wheels, hatch), so a letter sits

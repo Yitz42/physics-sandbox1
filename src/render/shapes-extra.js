@@ -2,7 +2,8 @@
 //   beam       { points, width?, flat?, text?, alpha?, look? } a bar, bracket or plank (polyline, metres); flat:
 //              [start, end] true = a square end (built into a wall, see support-clear.js);
 //              text: { at, text } a caption written inside the bar (e.g. "40 kg beam");
-//              look: "ladder" — drawn as a ladder: two rails and rungs (a straight bar only)
+//              look: "ladder" — drawn as a ladder: two rails and rungs (a straight bar only),
+//              clip: { xmin?, xmax?, ymin?, ymax? } — cut flush at a wall or floor there
 //   pivot      { at }                          triangle support under a pin (seesaw)
 //   dim        { from, to, label, role?, labelSide?, labelOn?, noExt? }  a dimension / moment-arm
 //              line with end ticks; its label sits in a break in the middle of the line
@@ -68,8 +69,20 @@ export function drawExtraShape(cv, s, env, roleColor) {
           ctx.lineTo(q[0] + n[0] * h * k, q[1] + n[1] * h * k);
           ctx.stroke();
         };
+        ctx.save();
+        if (s.clip) {
+          // Cut flush where it meets a wall or the floor (clip: the region it may be
+          // drawn in, { xmin?, xmax?, ymin?, ymax? } metres).
+          // (A side with no limit runs to the canvas's edge — huge rectangles don't clip reliably.)
+          const c = s.clip, W = cv.view.width, H = cv.view.height;
+          const x0 = c.xmin != null ? S([c.xmin, 0])[0] : 0, x1 = c.xmax != null ? S([c.xmax, 0])[0] : W;
+          const y0 = c.ymax != null ? S([0, c.ymax])[1] : 0, y1 = c.ymin != null ? S([0, c.ymin])[1] : H;
+          ctx.beginPath();
+          ctx.rect(x0, y0, x1 - x0, y1 - y0);
+          ctx.clip();
+        }
         ctx.strokeStyle = ink;
-        ctx.lineCap = "round";
+        ctx.lineCap = "butt";
         ctx.lineWidth = 1.8;
         const rungs = Math.max(2, Math.round(L / 16));
         for (let i = 1; i < rungs; i++) {
@@ -82,6 +95,7 @@ export function drawExtraShape(cv, s, env, roleColor) {
         ctx.lineWidth = 3;
         rail(1);
         rail(-1);
+        ctx.restore();
         out.segments.push([p, q]);
         out.boxes.push(...barBoxes(p, q, w + 3));
         ctx.globalAlpha = alpha0;
