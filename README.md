@@ -11,11 +11,11 @@ The first course is **Statics**. Mechanics of materials and dynamics come later.
 
 | Unit | Topic | What students learn |
 |---|---|---|
-| 1 | Forces as vectors | Components $F_x$, $F_y$; adding forces into a resultant |
-| 2 | Equilibrium of a particle | $\Sigma F_x = 0$, $\Sigma F_y = 0$; cable tensions |
-| 3 | Moment of a force | $M = Fd$, the moment arm, clockwise vs counterclockwise |
+| 1 | Forces as vectors | Components $F_x$, $F_y$; Cartesian form and unit vectors; forces along a cable from coordinates; adding forces into a resultant |
+| 2 | Equilibrium of a particle | $\Sigma F_x = 0$, $\Sigma F_y = 0$; cable tensions; springs ($F = ks$); pulleys |
+| 3 | Moment of a force | $M = Fd$, the moment arm, clockwise vs counterclockwise; Varignon's theorem |
 | 4 | Couples | Equal, opposite, offset forces; $M = Fd$ about any point; equivalent couples |
-| 5 | Equivalent force systems | Replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
+| 5 | Equivalent force systems | Moving a force to a point (force + couple); replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
 
 Every unit has six stages, each testing the idea a different way:
 
@@ -25,6 +25,14 @@ Every unit has six stages, each testing the idea a different way:
 4. **Debug** — find and fix a mistake in someone else's work.
 5. **Concept check** — multiple choice, with an explanation for every wrong answer.
 6. **Solve** — a full textbook problem, step by step.
+
+A stage can have several parts ("Part 2 of 3"), each testing another idea the same
+way — for example Unit 1's Predict stage covers components, then the unit vector,
+then a force along a cable. Progress is saved part by part.
+
+Each unit page also links to the matching chapter of a free textbook
+(*Engineering Statics: Open and Interactive*). The book is set in
+`content/statics/reading.js`, so it can be swapped for another.
 
 Wrong answers get specific feedback (a wrong sign, a missing force, the wrong
 moment arm …) and a faint "shadow" on the picture showing what the student's

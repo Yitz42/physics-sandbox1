@@ -1,8 +1,11 @@
 # Curriculum
 
 Each unit teaches one concept and tests it several ways (see challenge types in
-CLAUDE.md). A typical unit has 4–6 stages: explore → predict → build → debug →
-concept-check → solve. Units may skip a type when it doesn't fit.
+CLAUDE.md). Every unit has 6 stages: explore → predict → build → debug →
+concept-check → solve. A stage can have several **parts**: new ideas in a unit are
+added as extra parts of its existing stages (not as extra stages).
+
+Items marked ⭐ were agreed with the owner as additions to the textbook plan.
 
 Edit this file freely: reorder units, add ideas, change what is tested.
 Claude builds from it.
@@ -18,11 +21,17 @@ Also builds: core, level runner, all challenge types, test page.
 - Concept: a force has magnitude and direction; it splits into x and y components.
 - Test ideas: drag an arrow and watch Fx, Fy change; predict components of a 30° force;
   add two forces to hit a target resultant; debug a sin/cos swap.
+- ⭐ Cartesian vector form F = {Fx i + Fy j} N and the unit vector u = F/F (built).
+- ⭐ A force along a line from coordinates: r_AB = r_B − r_A, u_AB = r_AB/r_AB (built:
+  a part in every stage; e.g. anchor a cable so it pulls with a given force).
 
 **Unit 2: Equilibrium of a particle**
 - Concept: ΣFx = 0, ΣFy = 0 for forces through one point.
 - Test ideas: a weight hanging from two cables; predict cable tensions;
   pick cable angles so neither exceeds a limit; debug an FBD missing a force.
+- ⭐ Springs, F = k s: find the stretch, or choose k so a spring reaches its hook (built).
+- ⭐ Pulleys: a cable over a frictionless pulley pulls twice with the same tension T
+  (built: a pulley riding on a cable, held by a rope).
 
 ### Phase 2: Moments and equivalent systems
 
@@ -30,6 +39,8 @@ Also builds: core, level runner, all challenge types, test page.
 - Concept: M = F × d (perpendicular distance); sign convention.
 - Test ideas: seesaw balance; predict the moment of an angled force two ways
   (components vs. perpendicular distance); find the wrong moment arm.
+- ⭐ Varignon's theorem named and tested: predict the moments of F_x and F_y
+  separately, then their sum (built).
 
 **Unit 4: Couples**
 - Concept: two equal, opposite, offset forces make a pure moment that is the same about any point.
@@ -39,6 +50,8 @@ Also builds: core, level runner, all challenge types, test page.
 **Unit 5: Equivalent force systems**
 - Concept: replace several forces with one resultant force plus a moment.
 - Test ideas: find where a single force must act to replace a set of loads.
+- ⭐ Moving one force to a point: the same force plus a couple M = Fd
+  (built: slide O along a beam; a force on a bracket moved to its bolt).
 
 **Unit 6: Distributed loads**
 - Concept: a distributed load is replaced by its area, acting at its centroid.
@@ -54,6 +67,8 @@ Also builds: core, level runner, all challenge types, test page.
 - Concept: ΣFx = 0, ΣFy = 0, ΣM = 0; choosing a smart moment point.
 - Test ideas: simply supported beam, cantilever, L-shaped bracket; predict reactions;
   compare the effort of taking moments about different points.
+- ⭐ Alternative equation sets: two moment equations plus one force equation
+  (and when that works).
 
 **Unit 9: Stability and determinacy**
 - Concept: too few supports → mechanism; too many → indeterminate; improper supports.
@@ -69,6 +84,7 @@ Also builds: core, level runner, all challenge types, test page.
 - Concept: pin-jointed members in pure tension or compression; solve joint by joint.
 - Test ideas: build a truss to carry a load across a gap; predict member forces;
   color members red (tension) / blue (compression); identify zero-force members.
+- ⭐ Zero-force members get their own part: spot them by inspection before solving.
 
 **Unit 12: Trusses, method of sections**
 - Concept: cut through the truss and solve for up to three members directly.
@@ -87,6 +103,8 @@ Also builds: core, level runner, all challenge types, test page.
 **Unit 15: Shear and moment diagrams**
 - Concept: V and M along a beam; relationships dV/dx = −w, dM/dx = V.
 - Test ideas: sketch the diagram, then compare; find the max moment location.
+- ⭐ Write V(x) and M(x) as equations for each segment.
+- ⭐ Jumps in the diagrams: V jumps at point loads, M jumps at applied couples.
 - Bridge to later: this feeds "stress at a point" in mechanics of materials.
 
 ### Phase 6: Friction
@@ -94,6 +112,7 @@ Also builds: core, level runner, all challenge types, test page.
 **Unit 16: Dry friction**
 - Concept: F ≤ μN; impending motion; slipping vs. tipping.
 - Test ideas: box on a ramp; ladder against a wall; predict the angle it slips.
+- ⭐ Tipping versus slipping as its own part: which happens first, and why.
 
 **Unit 17: Wedges and belt friction**
 - Concept: wedges; belt friction T2 = T1·e^(μβ).
@@ -104,6 +123,7 @@ Also builds: core, level runner, all challenge types, test page.
 **Unit 18: Centroids and center of gravity**
 - Concept: composite shapes; where the weight acts.
 - Test ideas: build a shape that balances on a pin at a given point.
+- ⭐ Composite shapes with holes: a hole counts as negative area.
 
 **Unit 19: Area moments of inertia**
 - Concept: I = ∫y² dA; parallel axis theorem.

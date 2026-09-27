@@ -47,13 +47,15 @@ src/
     explore.js  predict.js  build.js  debug.js  concept-check.js  solve.js
   render/                  drawing only, no physics
     canvas.js  arrows.js  fbd.js  diagrams.js  panel.js
+    objects.js (motor, lamp, eyebolt …)  mechanisms.js (springs, pulleys)
   ui/
     controls.js  menus.js  feedback.js
   subjects/                one folder per subject; each is a plug-in
     statics/
       index.js             registers the statics solvers with the core
-      particle.js          concurrent forces, ΣF = 0
-      moment.js            moments about a point: M = Fd = xFy − yFx, balance ΣM = 0
+      particle.js          concurrent forces, ΣF = 0; unit and position vectors; springs (F = ks);
+                           pulleys (forces sharing one tension)
+      moment.js            moments about a point: M = Fd = xFy − yFx (Varignon), balance ΣM = 0
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
@@ -119,10 +121,21 @@ export default {
 };
 ```
 
+A stage can be split into **parts** that run in order ("Part 2 of 3: …"):
+`{ id, challenge, title, solver, explanation, parts: [ {...}, {...} ] }`. Each part
+is written like a whole stage (title, instructions, setup, vary, ask, hints,
+explanation…) and takes the stage's id, challenge type, title and (by default)
+solver. The part reached is saved; the stage is complete after the last part.
+`vary` rules apply in order; `{ paths: [a, b], values }` puts one value at several paths.
+
 ## Teaching decisions (agreed with the owner)
 - **Angles, textbook style**: directions are given as an angle from the nearest axis
   (`{ angle: 30, from: "-x", toward: "+y" }`), a slope triangle (`{ slope: [-4, 3] }`),
-  or a word (`"down"`). Students pick sin/cos and signs by looking at the picture.
+  a word (`"down"`), or two points (`{ points: [[1, 2], [5, 5]], names: ["A", "B"] }`,
+  a cable from A to B). Students pick sin/cos and signs by looking at the picture.
+- **New concepts go into the existing six stages as extra parts**, not as new
+  stages or units (e.g. Unit 1 Predict: part 1 components, part 2 unit vector,
+  part 3 a force along a cable).
 - **Wrong answers**: unlimited tries with specific feedback. After 2 wrong tries a
   "Show answer" button appears. Showing the answer records the stage as
   **needs practice** — an internal record only, never shown to the student — and
