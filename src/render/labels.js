@@ -112,6 +112,9 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       for (const t of taken) {
         if (l.circle && t.circleOf === l.circle.id) continue; // (its own arrow's inside)
         cost += overlapArea(t.soft ? box : near, t) * (t.under ? 0.01 : t.soft ? 1 : t.heavy ? 60 : 4);
+        // (a letter shies away from drawings next to it too — a spring, a pulley … —
+        // but not from its own point's marker)
+        if (l.breaks && !t.soft && !t.heavy && !t.dim) cost += overlapArea(padded(box, 9), t) * 0.08;
       }
       // A faint dashed guide (a line of action) barely counts: a label may sit
       // on it (the line breaks around the label). A label that `breaks` lines
@@ -121,6 +124,9 @@ export function placeLabels(ctx, labels, { obstacles = [], segments = [], view }
       for (const [p, q, kind] of segments) {
         const faint = kind === true || (l.breaks && kind === "dim");
         cost += segmentHits(faint ? box : near, p, q) * (l.breaks && kind === "dim" ? 0.05 : faint ? 1 : 40);
+        // A letter also shies away from lines it doesn't touch: next to a spring or a
+        // rope it would read as THEIR label. It prefers the open side of its point.
+        if (l.breaks && !kind) cost += segmentHits(padded(box, 9), p, q) * 1.5;
       }
       // Stepping down may hop over dimension lines, but never past an arrow or
       // the body: check the strip the label would slide through.

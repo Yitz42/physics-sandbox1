@@ -14,6 +14,7 @@
 // or null for a shape type it doesn't know.
 
 import { cssColor } from "./arrows.js";
+import { barBoxes } from "./labels.js";
 
 export function drawMechanism(cv, s, env) {
   const { ctx } = cv;
@@ -45,6 +46,9 @@ export function drawMechanism(cv, s, env) {
       ctx.stroke();
       ctx.restore();
       out.segments.push([a, b]); // labels keep off the spring
+      // …and off its coils: the zig-zag is 2·amp wide, so letters and labels see its
+      // true outline (not just its centre line) and pick the open side of a point.
+      out.boxes.push(...barBoxes(at(end, 0), at(len - end, 0), 2 * amp + 2));
       return out;
     }
     case "pulley": {
