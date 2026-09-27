@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "statics.equivalent",
   title: "Where's the Couple?",
+  mission: "Find the mistake in a student's force-couple system at the bolt.",
   instructions:
     "A student replaced the force $F$ on the bracket by a force-couple system at the bolt O. Check their work against the picture: " +
     "the force must stay the same, and the couple must equal $F$'s moment about O.",

@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "controls.blockDiagram",
   title: "Find the Wrong Step",
+  mission: "Find the step in a student's reduction that breaks a rule.",
   instructions:
     "A student reduced this diagram step by step (all feedback is negative). One line of their working breaks a rule. " +
     "Check each line against the rules: series multiply, parallel add, a loop is $\\dfrac{G}{1 + GH}$.",

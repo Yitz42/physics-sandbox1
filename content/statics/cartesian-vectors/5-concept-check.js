@@ -6,6 +6,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.particle",
   title: "Cartesian Sense",
+  mission: "Show you know how to write a force with $\\mathbf{i}$ and $\\mathbf{j}$.",
   instructions: "Answer 3 questions about writing forces with $\\mathbf{i}$ and $\\mathbf{j}$. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

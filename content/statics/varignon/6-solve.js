@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.moment",
   title: "Moment by Components",
+  mission: "Find a moment about O from the force's components, using Varignon's theorem.",
   instructions:
     "A force $F$ acts on the bracket at A, along the slope shown. Use Varignon's theorem: find the moment of each component about O, then add them for $M_O$. " +
     "First choose the correct equations.",

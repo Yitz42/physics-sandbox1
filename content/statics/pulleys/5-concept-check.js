@@ -6,6 +6,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.particle",
   title: "Pulley Sense",
+  mission: "Show you know how a cable over a pulley pulls.",
   instructions: "Answer 3 questions about pulleys. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

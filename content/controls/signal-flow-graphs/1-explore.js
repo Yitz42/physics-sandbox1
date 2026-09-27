@@ -8,6 +8,7 @@ export default {
   challenge: "explore",
   solver: "controls.signalFlow",
   title: "Trace Paths and Loops",
+  mission: "Trace the forward paths and loops that Mason's rule needs.",
   instructions:
     "In a signal-flow graph every dot is a signal and every arrow multiplies it by its gain. Mason's rule needs three things: " +
     "the **forward paths** (input to output, no node twice), the **loops** (back to the start, no node twice), and which loops **don't touch** (share no node). " +

@@ -5,7 +5,7 @@
 :root {
   --c-bg: #f4f6f9;
   --c-panel: #ffffff;
-  --c-canvas: #ffffff;
+  --c-canvas: #eceef1;     /* behind labels in the picture: matches the picture's grey */
   --c-ink: #1d2330;
   --c-muted: #5b6474;
   --c-faint: #94a3b8;
@@ -32,7 +32,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --c-bg: #11151c; --c-panel: #1a202b; --c-canvas: #1a202b; --c-ink: #e6e9ef;
+    --c-bg: #11151c; --c-panel: #1a202b; --c-canvas: #232a36; --c-ink: #e6e9ef;
     --c-muted: #a4adbd; --c-faint: #6b7688; --c-line: #2c3444; --c-accent: #7aa7ff;
     --c-force: #6ea0ff; --c-unknown: #ff9a5c; --c-resultant: #b794ff; --c-component: #93a3b8;
     --c-target: #4ade80; --c-wrong: #f87171; --c-student: #2dd4bf; --c-crate: #6b5a3a; --c-arm: #fbbf24;
@@ -42,8 +42,8 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--c-bg); color: var(--c-ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-#app { max-width: 1280px; margin: 0 auto; padding: 16px; }
+body { margin: 0; background: var(--c-bg); color: var(--c-ink); font: 16px/1.5 "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif; }
+#app { max-width: 1280px; margin: 0 auto; padding: 0 16px 24px; }
 a { color: var(--c-accent); }
 h1 { font-size: 26px; margin: 4px 0; }
 h2 { font-size: 18px; margin: 0 0 4px; }
@@ -209,6 +209,7 @@ p { margin: 0 0 8px; }
 .answer-tol { font-size: 15px; color: var(--c-ink); background: var(--c-bg); border-radius: 999px; padding: 1px 8px; }
 .status-badge[hidden] { display: none; }
 .answer-note { font-size: 14px; margin-top: 4px; }
+.answer-note p { margin: 0; } /* notes may hold math, rendered as a paragraph */
 .answer-row.is-wrong .answer-note { color: var(--c-bad); }
 .answer-row.is-right .answer-note { color: var(--c-good); }
 .answer-row.is-shown { border-color: var(--c-info); background: var(--c-info-bg); }
@@ -267,8 +268,124 @@ div.debug-line { cursor: default; }
 @keyframes pop-in { from { transform: scale(.9); opacity: 0; } }
 .error-page pre { white-space: pre-wrap; background: var(--c-bad-bg); color: var(--c-bad); padding: 12px; border-radius: 8px; }
 
+/* ---------- The "simulation lab" look ----------
+   Top tab with its menu, title with the unit's progress bar, soft panels,
+   MISSION line, objectives with check boxes, and the dock at the bottom of
+   the panel (hint button left, Test / Continue right). */
+:root {
+  --c-tab-a: #fbfbfc; --c-tab-b: #e2e5ea; --c-edge: #cfd4db;
+  --c-figure-a: #f6f7f9; --c-figure-b: #dde1e6;
+  --c-mission: #b0661f;
+  --c-progress: #7aa3d9; --c-progress-track: #dde1e7;
+  --c-thumb: #d6e4f6; --c-thumb-rim: #4f7fc0;
+  --c-steel: #c9d0d9; --c-nut: #8f99a6; /* the wrench */
+  --shadow: 0 2px 10px rgba(20, 30, 50, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-tab-a: #2a3140; --c-tab-b: #1f2530; --c-edge: #394253;
+    --c-figure-a: #283040; --c-figure-b: #1b212b;
+    --c-mission: #f0a660; --c-progress: #4f7fc0; --c-progress-track: #2c3444;
+    --c-thumb: #9dbde8; --c-thumb-rim: #dbe7f7;
+    --c-steel: #5b6474; --c-nut: #3c4452;
+    --shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  }
+}
+
+/* The tab at the top centre, and the menu it opens */
+.topnav { position: relative; display: flex; justify-content: center; z-index: 40; margin-bottom: 6px; }
+.topnav-tab { position: relative; font: inherit; font-size: 14px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--c-ink);
+  padding: 7px 42px 8px; border: 0; background: none; cursor: pointer; }
+.topnav-tab::before { /* the tab's slanted shape, like a folder tab */
+  content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(var(--c-tab-a), var(--c-tab-b));
+  border: 1px solid var(--c-edge); border-top: 0; border-radius: 0 0 14px 14px; transform: perspective(30px) rotateX(-4deg); transform-origin: top; }
+.topnav-tab:hover::before, .topnav.open .topnav-tab::before { border-color: var(--c-accent); }
+.topnav-menu { display: none; position: absolute; top: 100%; min-width: 300px; max-width: min(420px, calc(100vw - 32px)); padding: 6px; max-height: min(72vh, 620px); overflow-y: auto; /* many units: it scrolls */
+  background: var(--c-panel); border: 1px solid var(--c-edge); border-radius: 12px; box-shadow: 0 10px 30px rgba(20, 30, 50, .18); }
+.topnav-menu::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 10px; } /* keeps the menu open while the pointer moves down to it */
+@media (hover: hover) { .topnav:hover .topnav-menu { display: block; } }
+.topnav:focus-within .topnav-menu, .topnav.open .topnav-menu { display: block; }
+.topnav-item { display: flex; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 8px; color: var(--c-ink); text-decoration: none; font-size: 15px; }
+a.topnav-item:hover, a.topnav-item:focus { background: var(--c-bg); outline: none; }
+.topnav-item.is-current { background: var(--c-info-bg); font-weight: 600; }
+.topnav-item.is-disabled { color: var(--c-faint); cursor: default; }
+.topnav-heading { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted); padding: 8px 10px 2px; }
+.topnav-divider { border-top: 1px solid var(--c-line); margin: 6px 4px; }
+.topnav-count { margin-left: auto; padding-left: 12px; font-size: 13px; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.topnav-tick { width: 16px; color: var(--c-good); font-weight: 700; text-align: center; flex: none; }
+
+/* Title and the unit's progress bar */
+/* The progress bar fills whatever room the title leaves (a clean 32 px gap
+   after the title), up to 420 px wide and at least 84 px. */
+.stage-header, .unit-header { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-bottom: 14px; }
+.stage-header h1 { font-size: 30px; font-weight: 600; margin: 0; flex: 0 1 auto; min-width: 0; }
+.stage-header .progress-bar, .unit-header .progress-bar { flex: 1 1 0; min-width: 84px; max-width: 420px; }
+.progress-bar.compact .progress-word { display: none; } /* too narrow for "complete": just "83%" */
+.progress-bar { position: relative; width: min(380px, 100%); height: 28px; border-radius: 999px; background: var(--c-progress-track); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--c-progress); border-radius: 999px 0 0 999px; transition: width .4s ease-out; }
+.progress-word { margin-left: .35em; }
+.progress-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Panels */
+.figure { background: radial-gradient(ellipse at 50% 38%, var(--c-figure-a), var(--c-figure-b)); border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow);
+  height: clamp(420px, 58vh, 580px); } /* taller on tall screens, so drawings can be bigger */
+.stage-right, .equations { border-color: var(--c-edge); border-radius: 14px; box-shadow: var(--shadow); }
+.stage-right { padding: 18px; }
+
+/* MISSION line, then the details */
+.mission:empty { display: none; }
+.mission { font-weight: 700; padding-bottom: 12px; border-bottom: 1px solid var(--c-line); }
+.mission-label { color: var(--c-mission); text-transform: uppercase; letter-spacing: .02em; }
+.mission-text p { display: inline; margin: 0; }
+.instructions { font-size: 15px; }
+.area-title { text-transform: uppercase; letter-spacing: .03em; font-weight: 700; font-size: 15px; margin: 8px 0 6px; }
+
+/* Objectives with check boxes */
+.task { padding: 5px 0 5px 30px; }
+.task::before { content: ""; left: 2px; top: 7px; width: 17px; height: 17px; border: 1.5px solid var(--c-faint); border-radius: 4px; background: var(--c-panel); }
+.task.done::before { content: "✓"; color: var(--c-ink); font-weight: 700; font-size: 15px; line-height: 16px; text-align: center; border-color: var(--c-muted); }
+.task.done { color: var(--c-ink); }
+
+/* The dock: hint button on the left, the main button on the right */
+.dock { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.dock:has(.hints:empty):has(.finish-actions:empty) { display: none; }
+.dock .finish-actions { margin: 0 0 0 auto; }
+.btn-icon { flex: none; }
+.btn-hint { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(var(--c-tab-a), var(--c-tab-b)); color: var(--c-ink); border: 1px solid var(--c-edge); border-radius: 10px; font-weight: 500; padding: 8px 14px; }
+.btn-hint:hover { border-color: var(--c-accent); filter: none; }
+/* Main buttons (Test, Check, Next step, Continue): a raised pill */
+.btn-play { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 9px 24px; color: var(--c-ink);
+  background: linear-gradient(var(--c-tab-a), var(--c-tab-b)); border: 1.5px solid #8a93a0; }
+.btn-play:hover { filter: none; border-color: var(--c-accent); }
+.btn-test { font-size: 19px; font-weight: 500; padding: 10px 36px; min-width: 150px; justify-content: center; }
+.btn { border-radius: 10px; }
+.hint-box:empty, .hint-box:not(:has(li)) { display: none; } /* nothing until a hint is opened */
+.step-intro { margin-bottom: 12px; }
+.actions:empty { display: none; } /* a spot waiting for a button (e.g. "Show answer") takes no room */
+.area > :last-child, .step-body > :last-child { margin-bottom: 0; }
+.step-body > .actions { margin-bottom: 0; }
+.hint-list { margin-top: 0; }
+
+/* Symbols | Numbers, sliders, dropdowns */
+.toggle { border-color: var(--c-edge); background: var(--c-bg); }
+.toggle-btn.on { background: var(--c-tab-b); color: var(--c-ink); font-weight: 600; }
+/* Sliders drawn the same in every browser: a light track, filled in blue up
+   to the value (--fill, set by controls.js), and a round handle in a LIGHTER
+   blue with a darker rim, so it stands out from the filled track. */
+.control-row input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; margin: 0; cursor: pointer;
+  background: linear-gradient(to right, var(--c-progress) var(--fill, 50%), var(--c-progress-track) var(--fill, 50%)); }
+.control-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--c-thumb); border: 2px solid var(--c-thumb-rim); }
+.control-row input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--c-thumb); border: 2px solid var(--c-thumb-rim); }
+.control-row input[type=range]::-moz-range-track { background: transparent; }
+.control-row input[type=range]:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 4px; }
+.control-row select { border: 1px solid var(--c-edge); border-radius: 8px; padding: 5px 8px; background: var(--c-panel); color: var(--c-ink); }
+.slider-number { border-color: var(--c-edge); }
+.card, .unit-card, .stage-link { border-color: var(--c-edge); border-radius: 12px; box-shadow: var(--shadow); }
+
 /* Phones and narrow windows: stack the picture above the panel. */
 @media (max-width: 860px) {
+  .stage-header, .unit-header { gap: 20px; }
+  .stage-header h1 { font-size: 26px; }
   .stage-body { grid-template-columns: 1fr; }
   .figure { height: 340px; }
   .unit-card { grid-template-columns: 1fr; gap: 4px; }

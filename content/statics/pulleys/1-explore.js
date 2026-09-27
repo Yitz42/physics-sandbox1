@@ -7,6 +7,7 @@ export default {
   challenge: "explore",
   solver: "statics.particle",
   title: "A Pulley on a Cable",
+  mission: "Change the cable angles and see that it pulls with the same tension on both sides.",
   instructions:
     "Pulley A rides on cable BAC, with a crate hanging from it, and rope AD holds it from the left. The **same cable** runs over the pulley, " +
     "so (with no friction) both sides pull with the **same tension** $T$ — in the equations $T$ appears twice, as one unknown. Move the sliders and watch $T$ and $T_{AD}$.",

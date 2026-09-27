@@ -8,6 +8,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "Two Cables, in Cartesian Form",
+  mission: "Find the resultant of two cable forces, written in Cartesian form.",
   instructions:
     "Two cables are tied to the ring at A. Their tensions are given, and the coordinates of A, B and C are in the picture (in metres). " +
     "Find the resultant force on the ring as a Cartesian vector $\\mathbf{F}_R = F_{Rx}\\,\\mathbf{i} + F_{Ry}\\,\\mathbf{j}$, then its size $F_R$ and the angle $\\theta$ it makes with the x-axis.",

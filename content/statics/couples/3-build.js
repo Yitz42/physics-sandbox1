@@ -18,6 +18,7 @@ export default {
   challenge: "build",
   solver: "statics.couple",
   title: "Make an Equivalent Couple",
+  mission: "Make a couple that turns the bar exactly as the motor does.",
   instructions:
     "A motor (left) turns the bar with a **60 N·m counterclockwise couple** (the green curved arrow). " +
     "Replace it with two forces, one at each end of the bar (A and B), that have exactly the same effect. Press **Test** to check.",

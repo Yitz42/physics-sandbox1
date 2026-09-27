@@ -6,6 +6,7 @@ export default {
   challenge: "explore",
   solver: "statics.equivalent",
   title: "Move a Force to O",
+  mission: "Move a force to another point and see which couple keeps its effect the same.",
   instructions:
     "A force $F$ pushes on the beam at A. You can move it to any other point O — as long as you add a **couple** that makes up for the turning effect it loses. " +
     "The purple arrows at O are that **force-couple system**: the same force $F$, plus a couple moment $M = Fd$. Slide O along the beam and watch the couple change.",

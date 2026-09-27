@@ -9,6 +9,7 @@ export default {
   challenge: "explore",
   solver: "statics.moment",
   title: "Two Turning Parts",
+  mission: "Watch a force's moment split into the moments of its two components.",
   instructions:
     "A force $F$ pulls on the bracket at A. The dashed arrows are its components $F_x$ and $F_y$, both acting at A. " +
     "**Varignon's theorem**: the moment of $F$ about O equals the moment of $F_x$ plus the moment of $F_y$. " +

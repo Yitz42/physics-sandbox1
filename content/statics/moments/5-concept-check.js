@@ -13,6 +13,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.moment",
   title: "Moment Sense",
+  mission: "Show you know what makes a moment, and which way it turns.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [
@@ -27,7 +28,7 @@ export default {
       explanation: "$M = Fd$: force (N) times distance (m), so N·m.",
     },
     {
-      prompt: "The force in the picture points straight up, at the right end of the bar. Which way does it turn the bar about O?",
+      prompt: "The force in the picture points straight up, 0.4 m to the right of O. Which way does it turn the bar about O?",
       setup: bar("up"),
       options: [
         { text: "Counterclockwise, so $M_O$ is positive", correct: true },

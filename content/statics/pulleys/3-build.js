@@ -14,6 +14,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Cut the Rope",
+  mission: "Set the cable angles so rope AD carries no force and can be cut.",
   instructions:
     "A 35 kg crate hangs from a pulley riding on cable BAC, and rope AD holds the pulley in place. You'd like to **remove rope AD**. " +
     `Set the angles of the cable's two sides so the rope carries no force — then it can be cut — while the cable stays under its ${RATING} N rating. ` +

@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "The Spring-Hung Lamp",
+  mission: "Find the spring's force and length holding the lamp: FBD, equations, answers.",
   instructions:
     "A lamp hangs from ring A, held by spring AB (on a 3-4-5 slope; its stiffness and unstretched length are under the picture) and cable AC. " +
     "Work through the full problem: FBD, equations, then the cable tension and the spring's stretched length.",

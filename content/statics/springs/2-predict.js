@@ -9,6 +9,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "How Far Does It Stretch?",
+  mission: "Predict the cable tension and how far the spring stretches.",
   instructions:
     "Cable AC is now a spring (its stiffness $k$ and unstretched length $l_0$ are under the picture). The crate hangs at rest. " +
     "Predict the cable tension $T_{AB}$ and how far the spring is **stretched**, $s_{AC}$, then press **Test**.",

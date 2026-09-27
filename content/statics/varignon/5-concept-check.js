@@ -5,6 +5,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.moment",
   title: "Varignon Sense",
+  mission: "Show you know why a force's moment equals its components' moments.",
   instructions: "Answer 3 questions about Varignon's theorem: finding a moment from the force's components. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

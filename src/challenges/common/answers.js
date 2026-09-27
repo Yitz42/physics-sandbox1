@@ -10,15 +10,19 @@
 //
 // Used by predict and solve. Checking has three outcomes:
 //   correct     within ± precision of the true value (default ±0.1 in the
-//               answer's unit, e.g. ±0.1 N or ±0.1°; a stage can set ask.precision)
+//               answer's unit, e.g. ±0.1 N or ±0.1°; a stage can set ask.precision).
+//               ask.whole: true asks for a whole number (a count), which must match exactly.
 //   known slip  close to what a common mistake gives → explain that mistake
 //   other       a general nudge (close-but-rounded, or "check your components")
 
 import { el } from "../../ui/controls.js";
-import { renderTex } from "../../render/panel.js";
+import { renderTex, renderMixed } from "../../render/panel.js";
 import { unitLabel } from "../../core/units.js";
 
 export const DEFAULT_PRECISION = 0.1;
+
+// The rounding step for an ask: 1 for a whole number, else its precision.
+const precisionOf = (ask) => (ask.whole ? 1 : ask.precision ?? DEFAULT_PRECISION);
 
 // Read numbers like "-200", "−200", "1,250", "346.4 N", "2.5 kN", "30 N·m" or "2.25 m".
 export function parseNumber(text) {
@@ -86,17 +90,19 @@ const OTHERWISE = {
 
 // Returns { ok, message, kinds }. kinds: what sort of mistake a wrong answer
 // looks like (see src/core/diagnosis.js) — recorded for the comprehension page.
-export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "", otherwise } = {}) {
+// exact: a whole number that must match exactly (a count, e.g. of unknowns).
+export function checkAnswer(text, correct, { precision = DEFAULT_PRECISION, mistakes = [], unit = "", otherwise, exact = false } = {}) {
   const typed = parseNumber(text);
   if (typed == null) return { ok: false, empty: true, message: "Type a number (for example 346.4 or -200.0)." };
   const value = roundToPrecision(typed, precision); // extra digits beyond the precision don't count
   // Tiny extra allowance so a correctly rounded answer (e.g. 346.4 for 346.4102) always passes.
-  if (Math.abs(value - correct) <= precision + 1e-9) return { ok: true };
+  if (Math.abs(value - correct) <= (exact ? 0 : precision) + 1e-9) return { ok: true };
   // Which common mistake is this answer closest to? (Diagnosis can be looser
   // than grading: a slip plus rounding still gets its explanation.)
   const near = (target) => Math.abs(value - target) <= Math.max(0.02 * Math.abs(target), precision);
   const slips = mistakes.filter((m) => near(m.value)).sort((a, b) => Math.abs(value - a.value) - Math.abs(value - b.value));
   if (slips.length) return { ok: false, message: slips[0].message, kinds: [slips[0].kind || "unexplained", slips[0].also].filter(Boolean) };
+  if (exact) return { ok: false, kinds: ["unexplained"], message: otherwise || "That doesn't match. Count again." };
   if (Math.abs(value - correct) <= Math.max(0.03 * Math.abs(correct), 5 * precision)) {
     return { ok: false, kinds: ["rounding"], message: `Very close, but it needs to be within ${precisionText(precision, unit)}. Keep more digits in the middle of your working and round only at the end.` };
   }
@@ -138,7 +144,7 @@ export function answerInputs(container, asks, quantities) {
       }
     });
     // Round extra digits away when the student leaves the box (and before checking).
-    const precision = ask.precision ?? DEFAULT_PRECISION;
+    const precision = precisionOf(ask);
     const tidy = () => {
       if (input.readOnly) return;
       input.value = last = tidyNumberText(input.value, precision);
@@ -165,7 +171,7 @@ export function answerInputs(container, asks, quantities) {
       el("div", { className: "answer-line" }, [
         label, sign, box,
         // e.g. "±0.1 N": the unit plus how close the answer must be
-        el("span", { className: "answer-tol", title: "How close your answer must be", textContent: precisionText(ask.precision ?? DEFAULT_PRECISION, unit) }),
+        el("span", { className: "answer-tol", title: "How close your answer must be", textContent: ask.whole ? "whole number" : precisionText(precision, unit) }),
       ]),
       note,
     ]);
@@ -179,7 +185,7 @@ export function answerInputs(container, asks, quantities) {
     mark(row, ok, message = "") {
       row.row.classList.toggle("is-right", ok);
       row.row.classList.toggle("is-wrong", !ok);
-      row.note.textContent = message;
+      renderMixed(row.note, message); // a note may contain $math$
       if (ok) {
         row.done = true;
         row.input.readOnly = true;
@@ -199,7 +205,7 @@ export function answerInputs(container, asks, quantities) {
     fill(values) {
       rows.forEach((r) => {
         // Shown to the precision asked for (e.g. one decimal for ±0.1), the way a student would type it.
-        r.input.value = values[r.ask.quantity].toFixed(decimalsFor(r.ask.precision ?? DEFAULT_PRECISION));
+        r.input.value = values[r.ask.quantity].toFixed(decimalsFor(precisionOf(r.ask)));
         r.input.readOnly = true;
         r.row.classList.remove("is-wrong");
         r.row.classList.add("is-shown");
@@ -220,7 +226,7 @@ export function checkRows(inputs, result, mistakesFor, otherwise, record = null)
     if (r.done) continue;
     if (r.tidy) r.tidy(); // show the rounded number that is actually being checked
     const correct = result.values[r.ask.quantity];
-    const out = checkAnswer(r.input.value, correct, { precision: r.ask.precision ?? DEFAULT_PRECISION, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise || otherwise });
+    const out = checkAnswer(r.input.value, correct, { precision: precisionOf(r.ask), exact: !!r.ask.whole, unit: r.unit, mistakes: mistakesFor(r.ask.quantity), otherwise: r.ask.otherwise || otherwise });
     inputs.mark(r, out.ok, out.ok ? "✓ Correct" : out.message);
     if (record && !out.empty) record({ q: r.ask.quantity, ok: out.ok, kinds: out.kinds || [] });
     if (!out.ok) allOk = false;

@@ -5,6 +5,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.equivalent",
   title: "Moving a Force",
+  mission: "Show you know what must be added when a force is moved.",
   instructions: "Answer 3 questions about moving a force to a new point. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

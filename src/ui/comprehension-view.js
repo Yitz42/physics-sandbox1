@@ -8,6 +8,7 @@
 // (reading the picture) and physics errors (misunderstanding a principle).
 
 import { el } from "./controls.js";
+import { topNav } from "./chrome.js";
 import { AREAS } from "../core/comprehension.js";
 import { SIGNALS } from "../core/pace.js";
 
@@ -160,7 +161,7 @@ export function renderComprehension(root, course, summary) {
     ]);
   });
   root.append(
-    el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title })]),
+    topNav({ course }), // the top tab: Home and back to the course
     el("header", { className: "page-header" }, [
       el("h1", { textContent: `${course.title} comprehension` }),
       el("p", { className: "lead", textContent: "Worked out in the background from every answer on this computer. Students don't see these scores while they play; they just complete units." }),

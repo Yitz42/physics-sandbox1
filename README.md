@@ -31,6 +31,9 @@ one concept.
 | 3.3 | Couples | Equal, opposite, offset forces; $M = Fd$ about any point; equivalent couples |
 | 3.4 | Moving a force | A force moved to a point needs a couple $M = Fd$ |
 | 3.5 | Equivalent force systems | Replacing forces and couples with $F_R$ and $(M_R)_O$, or one force at the right spot |
+| 3.6 | Distributed loads | A load's resultant is its area, at its centroid; trapezoids split up; curved loads by $\int w\,dx$ |
+| **Chapter 4** | **Equilibrium of a rigid body** | |
+| 4.1 | Supports and free-body diagrams | Each support's reactions; drawing a rigid body's FBD; counting unknowns; reactions of a beam |
 
 Every unit has six stages, each testing the idea a different way:
 
@@ -72,9 +75,9 @@ index.html            the page students open
 style.css             how it looks
 src/core/             shared machinery: vectors, units, equations, progress saving
 src/challenges/       the six stage types (explore, predict, build, debug, concept-check, solve)
-src/render/           drawing only: arrows, labels, beams, lamps, motors …
+src/render/           drawing only: arrows, labels, beams, loads, supports, lamps, motors …
 src/ui/               menus, buttons, feedback messages
-src/subjects/statics/ the physics: one solver per topic (particle, moment, couple, equivalent)
+src/subjects/statics/ the physics: one solver per topic (particle, moment, couple, equivalent, distributed, rigid body)
 content/statics/      the lessons: course.js (chapters), one folder per unit, one file per stage
 tests/                the test page and test files
 docs/CURRICULUM.md    the plan for every unit

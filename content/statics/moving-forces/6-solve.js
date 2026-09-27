@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.equivalent",
   title: "Force and Couple at the Bolt",
+  mission: "Replace the force on the bracket with a force and a couple at the bolt.",
   instructions:
     "Replace the force $F$ on the bracket by an equivalent force-couple system at the bolt O: find $F_{Rx}$, $F_{Ry}$ and the couple $(M_R)_O$ (counterclockwise positive). " +
     "First choose the correct equations. Stuck? Press **Show the moment arms** under the picture.",

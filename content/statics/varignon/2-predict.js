@@ -8,6 +8,7 @@ export default {
   challenge: "predict",
   solver: "statics.moment",
   title: "Split the Force",
+  mission: "Predict the moment of an angled force from the moments of its components.",
   instructions:
     "An angled force $F$ acts on the bracket at A. **Varignon's theorem** says its moment about O equals the moments of its two components added together. " +
     "Predict the moment of $F_y$ alone, the moment of $F_x$ alone (both about O, counterclockwise positive), and their sum $M_O$. Then press **Test**.",

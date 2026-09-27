@@ -42,7 +42,12 @@ export function momentScene(setup, result, opts = {}) {
   const k = momentLengthPerNewton(setup);
   const balance = setup.analysis === "balance";
   const shapes = [{ type: "axes" }];
-  if (setup.body) shapes.push({ type: "beam", points: setup.body.points });
+  // The body: a beam, or (body.kind "wrench") a wrench whose ring is on the bolt at O.
+  if (setup.body) {
+    const pts = setup.body.points;
+    shapes.push(setup.body.kind === "wrench" ? { type: "wrench", from: pts[0], to: pts[pts.length - 1] } : { type: "beam", points: pts });
+  }
+  if (setup.listValues) shapes.push({ type: "listValues" }); // every force's value in the corner list
   if (setup.about.pivot) shapes.push({ type: "pivot", at: O });
 
   setup.forces.forEach((f, i) => {

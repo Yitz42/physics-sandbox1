@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "statics.particle",
   title: "Which Way Does the Spring Pull?",
+  mission: "Find the mistake in a student's free-body diagram with a spring.",
   instructions:
     "Ring A is held by cable AB and a stretched spring AC. A student drew the free-body diagram of ring A (right) and wrote equations from it. " +
     "Compare the FBD with the real setup (left) and find the mistake.",

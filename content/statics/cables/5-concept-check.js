@@ -7,6 +7,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.particle",
   title: "Equilibrium Ideas",
+  mission: "Show you know what it means for a point to be in equilibrium.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

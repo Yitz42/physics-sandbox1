@@ -11,6 +11,7 @@ export default {
   challenge: "debug",
   solver: "statics.moment",
   title: "Check the Components",
+  mission: "Find the mistake in a student's moments worked out from components.",
   instructions:
     "A student found the moment of three forces about O two ways. Their first line ($\\Sigma Fd$) is right. Their second line — Varignon's theorem, $xF_y - yF_x$ — has one mistake. " +
     "For each force, check which components it has, their moment arms ($x$ for $F_y$, $y$ for $F_x$) and their signs.",

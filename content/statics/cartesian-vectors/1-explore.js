@@ -6,6 +6,7 @@ export default {
   challenge: "explore",
   solver: "statics.particle",
   title: "A Cable from A to B",
+  mission: "Move anchor B and see how the coordinates of A and B set the cable's direction.",
   instructions:
     "A cable pulls on the ring at A toward the anchor B. Its direction comes from the **coordinates** of A and B, not from an angle. " +
     "Move B with the sliders and watch the lines under the equations:\n\n" +

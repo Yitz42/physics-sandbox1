@@ -12,6 +12,7 @@ export default {
   challenge: "solve",
   solver: "statics.couple",
   title: "Add Up the Couples",
+  mission: "Add up two couples and a couple moment into one resultant couple.",
   instructions:
     "Two couples and a couple moment $M_3$ act on the plate. Find the **resultant couple moment** $M_R$. " +
     "First choose the correct equation, then find $M_R$ (counterclockwise positive). " +

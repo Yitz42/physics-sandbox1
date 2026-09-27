@@ -24,6 +24,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "The Whole Problem",
+  mission: "Find the cable tensions holding the lamp: FBD, equations, answers.",
   ask: [{ quantity: "T_AB", min: 0 }, { quantity: "T_AC", min: 0 }], // tensions are never negative
   explanation:
     "The full method, whatever the picture: (1) isolate the point where the cables meet and draw every force on it, " +

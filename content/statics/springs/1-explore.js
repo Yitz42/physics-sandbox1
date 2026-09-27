@@ -7,6 +7,7 @@ export default {
   challenge: "explore",
   solver: "statics.particle",
   title: "Stretch a Spring",
+  mission: "Change the spring and watch how far it stretches to hold the crate.",
   instructions:
     "Now cable AC is replaced by a **spring**. A spring pulls with a force that grows with how far it is stretched: $F = k\\,s$, " +
     "where $k$ is its **stiffness** (in N/m) and $s$ its **stretch** (in m). Move the sliders and watch the spring force $F_{AC}$ and its stretch $s_{AC} = F_{AC}/k$.",

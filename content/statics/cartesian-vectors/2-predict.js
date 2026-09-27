@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "Unit Vectors and Cables",
+  mission: "Predict unit vectors, and the components of a force along a cable.",
   parts: [
     {
       title: "The unit vector",

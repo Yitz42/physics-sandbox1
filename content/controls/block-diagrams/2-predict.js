@@ -9,6 +9,7 @@ export default {
   challenge: "predict",
   solver: "controls.blockDiagram",
   title: "Close the Loop",
+  mission: "Predict the closed-loop gain of each block diagram.",
   parts: [
     {
       title: "Constant gains",

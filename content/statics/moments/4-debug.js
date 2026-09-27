@@ -11,6 +11,7 @@ export default {
   challenge: "debug",
   solver: "statics.moment",
   title: "Find the Wrong Moment Arm",
+  mission: "Find the wrong moment arm in a student's moment calculation.",
   instructions:
     "A student found the moment of three forces about O. Their $\\Sigma Fd$ line has one mistake — the other line ($xF_y - yF_x$) is right, and the two should agree.",
   setup: {

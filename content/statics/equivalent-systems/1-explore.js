@@ -7,6 +7,7 @@ export default {
   challenge: "explore",
   solver: "statics.equivalent",
   title: "Slide the Loads",
+  mission: "Change the loads and watch where the single equivalent force must act.",
   instructions:
     "Two loads push down on a beam. The dashed purple arrow is the **single force** that has exactly the same effect: the same total push $F_R$ and the same moment about O. " +
     "Change the loads and watch where it has to act.",

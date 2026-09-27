@@ -2,7 +2,8 @@
 //
 // Tests: can they spot mistakes. Three kinds of mistake:
 //   view: "equations"  one term is wrong (sin/cos swapped, wrong sign) or missing
-//   view: "fbd"        an arrow points the wrong way, or a force is missing
+//   view: "fbd"        an arrow points the wrong way, a force is missing, or
+//                      there's an extra one (a reaction the support can't give)
 //   view: "steps"      one line of a student's working is wrong (e.g. one step of a
 //                      block diagram reduction); the solver builds the lines with
 //                      solver.debugSteps(setup, mutation) → { lines: [{ id, tex }],
@@ -16,6 +17,7 @@
 //                                  one first, then the next one for each new version
 //   missingChoices: [{ id, label, feedback? }]   for "a force is missing"
 //   notes: { forceId: "why this one is actually fine" }  (optional)
+//   mutation.explain: what the mistake was, shown once it's found (optional)
 
 import { createWorkspace } from "./common/workspace.js";
 import { createAttempts } from "./common/attempts.js";
@@ -27,6 +29,8 @@ import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
 const EQ_MUTATORS = { swap: swapFactor, sign: flipSign, missing: removeTerm };
+// "w_{A}" → "wA", for plain-text button labels.
+const plain = (symbol) => String(symbol).replace(/[{}_]/g, "").replace(/\\/g, "");
 
 export function mount(ctx) {
   const { stage, solver } = ctx;
@@ -41,11 +45,19 @@ export function mount(ctx) {
 
   const ws = createWorkspace(ctx, { equations: "never", reveal: false, sceneOpts: { ...(stage.sceneOpts || {}), fbdSetup: wrongSetup } });
   const correctEqs = solver.equations(ws.setup, ws.result);
-  const wrongEqs = isFbd
+  const wrongEqs = (isFbd
     ? solver.equations(wrongSetup, solver.solve(wrongSetup))
-    : correctEqs.map((eq) => (eq.id === mutation.equation ? EQ_MUTATORS[mutation.kind](eq, mutation.term) : eq));
+    : correctEqs.map((eq) => (eq.id === mutation.equation ? EQ_MUTATORS[mutation.kind](eq, mutation.term) : eq))
+  ).map((eq) => JSON.parse(JSON.stringify(eq))); // own copies: changing them must not touch the correct ones
   // "define" equations (resultants) show their value; recompute it for the wrong version.
-  wrongEqs.forEach((eq) => eq.result && (eq.result = { ...eq.result, value: evaluate(eq) }));
+  // An equation can also define a value that later lines use (eq.defines, e.g.
+  // F_2 = ½Lw and then F_R = F_1 + F_2): the student's wrong value is carried
+  // forward, so their work reads the way they would really have written it.
+  wrongEqs.forEach((eq, i) => {
+    if (eq.result) eq.result = { ...eq.result, value: evaluate(eq) };
+    if (!eq.defines || !eq.result) return;
+    for (const later of wrongEqs.slice(i + 1)) for (const t of later.terms) if (t.id === eq.defines) t.value = eq.result.value;
+  });
 
   // ---- Layout ---------------------------------------------------------------
   const intro = el("div", { className: "debug-intro" });
@@ -69,7 +81,9 @@ export function mount(ctx) {
   // For the comprehension record: not finding (or fixing) this mistake counts
   // as trouble with its kind (see src/core/diagnosis.js).
   const mistakeKind = () => {
+    if (mutation.errorKind) return mutation.errorKind; // a stage can name it (e.g. "supports")
     if (mutation.kind === "remove" || mutation.kind === "missing") return "missing";
+    if (mutation.kind === "extra") return "extra"; // a reaction the support can't give
     if (mutation.kind === "reverse") return "direction";
     if (mutation.kind === "sign") return "sign";
     const eq = correctEqs.find((e) => e.id === mutation.equation);
@@ -82,7 +96,7 @@ export function mount(ctx) {
     ws.onPointer = {
       down(p) {
         if (stepNo !== 1) return false;
-        const hit = arrowAt(ws.shapes, p, ctx.canvas.pxToWorld(12));
+        const hit = arrowAt(ws.shapes, p, ctx.canvas.pxToWorld(12), ctx.canvas.pxToWorld);
         if (hit) pick(hit.id);
         return true;
       },
@@ -143,7 +157,15 @@ export function mount(ctx) {
       return dbg.missingChoices.map((c) => ({ label: c.label, correct: c.id === mutation.force, feedback: c.feedback || "That force doesn't act on this point." }));
     }
     if (mutation.kind === "missing") {
-      return ws.setup.forces.map((f) => ({ label: `Add the ${f.symbol.replace(/[{}_]/g, "")} term`, correct: f.id === mutation.term, feedback: "That force's term is already there. Which force is missing from this equation?" }));
+      // One choice per term of the correct equation (only the missing one fixes it).
+      return target.terms.map((t) => ({ label: `Add the ${plain(t.symbol)} term`, correct: t.id === mutation.term, feedback: "That term is already there. Which one is missing from this equation?" }));
+    }
+    if (mutation.kind === "extra") {
+      return [
+        { label: "Delete it: this support can't give that reaction", correct: true },
+        { label: "Reverse its direction", feedback: "Its direction isn't the problem: look at what this support can and can't stop." },
+        { label: "Move it to the other support", feedback: "No support here needs another reaction. This one simply shouldn't be on the FBD." },
+      ];
     }
     if (mutation.kind === "reverse") {
       return [
@@ -160,13 +182,18 @@ export function mount(ctx) {
     ];
   }
 
-  // Force id → its symbol as inline math, e.g. "T_AB" → "$T_{AB}$".
+  // Force id → its symbol as inline math, e.g. "T_AB" → "$T_{AB}$". Ids that
+  // aren't plain forces (a piece of a distributed load, a support reaction)
+  // are looked up in the equations.
   function sym(id) {
-    const f = ws.setup.forces.find((x) => x.id === id);
-    return `$${f ? f.symbol : id}$`;
+    const f = (ws.setup.forces || []).find((x) => x.id === id);
+    const t = [...correctEqs, ...wrongEqs].flatMap((e) => e.terms).find((x) => x.id === id);
+    return `$${f ? f.symbol : t ? t.symbol : id}$`;
   }
 
   function describeMistake() {
+    if (mutation.explain) return mutation.explain;
+    if (mutation.kind === "extra") return `${sym(mutation.force)} doesn't belong on the FBD: that support can't provide it.`;
     if (mutation.kind === "remove") return `A force is missing from the FBD. Every force acting on the point must be drawn — here that includes ${sym(mutation.force)}.`;
     if (mutation.kind === "reverse") return `The arrow for ${sym(mutation.force)} points the wrong way. It must be reversed.`;
     if (mutation.kind === "missing") return `The term for ${sym(mutation.term)} is missing from the equation.`;

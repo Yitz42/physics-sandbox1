@@ -6,6 +6,7 @@ export default {
   challenge: "concept-check",
   solver: "controls.signalFlow",
   title: "Mason Sense",
+  mission: "Show you know how signal-flow graphs and Mason's rule work.",
   instructions: "Answer 3 questions about signal-flow graphs and Mason's rule. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

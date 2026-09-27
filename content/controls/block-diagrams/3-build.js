@@ -11,6 +11,7 @@ export default {
   challenge: "build",
   solver: "controls.blockDiagram",
   title: "Tune the Loop",
+  mission: "Choose $K$ and $K_t$ so the whole system has the target transfer function.",
   instructions:
     "A motor position loop: gain $K$, the motor $\\dfrac{1}{s(s + 1)}$, and an inner loop that feeds back the motor's speed through a tachometer, $K_t s$. " +
     `Choose $K$ and $K_t$ so the whole system is $T(s) = \\dfrac{25}{s^2 + ${TARGET.a1}s + ${TARGET.a0}}$, then press **Test**.`,

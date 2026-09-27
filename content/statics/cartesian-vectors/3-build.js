@@ -7,6 +7,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Anchor the Cable",
+  mission: "Place anchor B so the cable pulls on the ring with exactly the force asked for.",
   instructions:
     "A cable will hold the ring at A. Its tension is $T = 200$ N, and it must pull on the ring with exactly " +
     `$\\mathbf{T} = \\{${WANT[0]}\\,\\mathbf{i} + ${WANT[1]}\\,\\mathbf{j}\\}$ N. ` +

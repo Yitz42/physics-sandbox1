@@ -10,6 +10,7 @@ export default {
   challenge: "solve",
   solver: "controls.signalFlow",
   title: "Mason Step by Step",
+  mission: "Find the transfer function of the graph with Mason's rule, step by step.",
   instructions:
     "Find the transfer function $C/R$ of this graph with Mason's rule. First choose the correct line for the loops, $\\Delta$, and each $\\Delta_k$ (in symbols); " +
     "then use the numbers in the key to find $\\Delta$ and $T$.",

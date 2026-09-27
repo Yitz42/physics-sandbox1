@@ -14,6 +14,7 @@ export default {
   challenge: "build",
   solver: "statics.moment",
   title: "Aim the Pull",
+  mission: "Aim the pull on the wrench so it turns the bolt with exactly the moment asked for.",
   instructions:
     `You pull on the end A of a wrench with a 150 N force. Choose its direction so that it turns the bolt O with exactly $M_O = +${TARGET}$ N·m (counterclockwise). ` +
     "Nothing is shown until you press **Test**: use Varignon's theorem, $M_O = xF_y - yF_x$, to check your choice first.",

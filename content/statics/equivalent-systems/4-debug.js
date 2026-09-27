@@ -11,6 +11,7 @@ export default {
   challenge: "debug",
   solver: "statics.equivalent",
   title: "Find the Mistake",
+  mission: "Find the mistake in a student's resultant moment about O.",
   instructions:
     "A student replaced these forces and the couple with a resultant force and moment at O. Their $F_{Rx}$ and $F_{Ry}$ lines are right; " +
     "their $(M_R)_O$ line has one mistake.",
@@ -27,10 +28,11 @@ export default {
       { id: "F3", symbol: "F_3", magnitude: 250, direction: "down", at: [5, 0], push: true },
     ],
     moments: [{ id: "M1", symbol: "M_1", magnitude: 400, sense: 1, at: [4, 0] }], // a couple moment acting on the beam at x = 4 m
+    // Dimensions well below the beam, clear of the couple moment's curved arrow.
     dims: [
-      { from: [0, -0.3], to: [1, -0.3] },
-      { from: [1, -0.3], to: [3, -0.3] },
-      { from: [3, -0.3], to: [5, -0.3] },
+      { from: [0, -0.6], to: [1, -0.6] },
+      { from: [1, -0.6], to: [3, -0.6] },
+      { from: [3, -0.6], to: [5, -0.6] },
     ],
   },
   view: { xmin: -0.8, xmax: 5.7, ymin: -1.1, ymax: 1.1 },

@@ -11,6 +11,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Pick the Spring",
+  mission: "Pick a spring stiffness that holds the crate exactly where it should hang.",
   instructions:
     `A ${SPRING.mass} kg crate hangs from ring A, held by cable AB at ${SPRING.angle}° and a spring AC hooked to the wall at C. ` +
     `The spring is ${SPRING.l0} m long before it is stretched, and C is ${SPRING.gap} m from A, so it must stretch to exactly that length. ` +

@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "statics.particle",
   title: "The Pulley",
+  mission: "Find the forces holding the pulley: FBD, equations, answers.",
   instructions:
     "A crate hangs from pulley A, which rides on cable BAC; rope AD holds the pulley in place. Work through the full problem: FBD of the pulley, equations, answers.",
   setup: pulleySetup({ angleAB: 60, angleAC: 30, mass: 30 }),

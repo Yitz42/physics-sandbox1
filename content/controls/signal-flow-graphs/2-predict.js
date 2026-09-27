@@ -10,6 +10,7 @@ export default {
   challenge: "predict",
   solver: "controls.signalFlow",
   title: "Count, Then Compute",
+  mission: "Count the paths and loops, then predict the graph's transfer function.",
   parts: [
     {
       title: "Count them",

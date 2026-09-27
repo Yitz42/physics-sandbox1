@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.equivalent",
   title: "Move a Force to the Bolt",
+  mission: "Predict the force and couple at the bolt that replace the force at A.",
   instructions:
     "The bracket is bolted to the floor at O. Replace the force $F$ at A by an equivalent **force-couple system at O**: a force $F_R$ at O plus a couple moment $(M_R)_O$. " +
     "Predict both (counterclockwise positive), then press **Test**.",

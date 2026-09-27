@@ -8,6 +8,7 @@ export default {
   challenge: "debug",
   solver: "statics.particle",
   title: "What's Wrong with This FBD?",
+  mission: "Find the mistake in a student's free-body diagram of ring A.",
   instructions:
     "A student drew the free-body diagram of ring A (right) and wrote equations from it. Compare the FBD with the real setup (left) and find the mistake.",
   setup: crateSetup({ angleAB: 35, angleAC: 50, mass: 40 }),

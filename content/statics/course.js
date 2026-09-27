@@ -32,16 +32,15 @@ const chapters = [
   {
     id: "moments", title: "Moments and static equivalence",
     units: [
-      "moments", "varignon", "couples", "moving-forces", "equivalent-systems",
+      "moments", "varignon", "couples", "moving-forces", "equivalent-systems", "distributed-loads",
       soon("Moments in 3D", "The moment as a cross product, $\\mathbf{M}_O = \\mathbf{r} \\times \\mathbf{F}$, pointing along the axis it turns about."),
       soon("Moment about an axis", "How hard a force turns something about a given axis, like a door about its hinges."),
-      soon("Distributed loads", "A load spread along a beam is replaced by one force: its area, acting at its centroid."),
     ],
   },
   {
     id: "rigid-bodies", title: "Equilibrium of a rigid body",
     units: [
-      soon("Supports and free-body diagrams", "Each kind of support — roller, pin, fixed, cable, smooth surface — pushes or pulls in its own way."),
+      "supports",
       soon("Equilibrium of a rigid body", "$\\Sigma F_x = 0$, $\\Sigma F_y = 0$ and $\\Sigma M = 0$, and how to choose a smart point for moments."),
       soon("Alternative equation sets", "Two moment equations plus one force equation — and when that works."),
       soon("Stability and determinacy", "Too few supports and it moves; too many and equilibrium can't find the forces."),

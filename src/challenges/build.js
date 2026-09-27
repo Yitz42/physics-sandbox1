@@ -22,7 +22,7 @@
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
-import { el, button } from "../ui/controls.js";
+import { el, testButton } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
 
@@ -59,7 +59,7 @@ export function mount(ctx) {
     },
   });
 
-  const goalBox = el("div", { className: "goal" }, [el("div", { className: "area-title", textContent: "Goal" })]);
+  const goalBox = el("div", { className: "goal" }, [el("div", { className: "area-title", textContent: "Challenge objective:" })]);
   const goalText = el("div");
   renderMixed(goalText, goal.text);
   goalBox.appendChild(goalText);
@@ -71,8 +71,11 @@ export function mount(ctx) {
     inputs = answerInputs(ctx.el.area, [].concat(goal.predict), quantities);
     inputs.rows.forEach((r) => r.input.addEventListener("keydown", (e) => e.key === "Enter" && onTest()));
   }
-  const testBtn = button("Test", onTest, "btn btn-play");
-  const actions = el("div", { className: "actions" }, [testBtn]);
+  // Test sits at the bottom right of the panel (Continue → replaces it when
+  // done); "Show answer" for the paper check appears in `actions`.
+  const testBtn = testButton(onTest);
+  ctx.el.actions.appendChild(testBtn);
+  const actions = el("div", { className: "actions" });
   ctx.el.area.append(actions);
 
   const attempts = inputs && createAttempts(ctx, actions, () => {

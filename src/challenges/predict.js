@@ -5,11 +5,12 @@
 // Stage fields used:
 //   ask        { quantity, label?, unit?, precision? }  (precision: ± allowed, default 0.1) or a list of them
 //   hints      shown one at a time
+//   correctMessage  (optional) what to say after a correct prediction
 
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
-import { el, button } from "../ui/controls.js";
+import { el, testButton } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
 
 export function mount(ctx) {
@@ -20,10 +21,12 @@ export function mount(ctx) {
 
   ctx.el.area.appendChild(el("div", { className: "area-title", textContent: "Your prediction:" }));
   const inputs = answerInputs(ctx.el.area, asks, quantities);
-  const actions = el("div", { className: "actions" });
-  const testBtn = button("Test", onTest, "btn btn-play");
-  actions.appendChild(testBtn);
+  const actions = el("div", { className: "actions" }); // "Show answer" appears here after 2 wrong tries
   ctx.el.area.appendChild(actions);
+  // Test sits at the bottom right of the panel; when the stage is done it
+  // makes way for "Continue →".
+  const testBtn = testButton(onTest);
+  ctx.el.actions.appendChild(testBtn);
 
   const attempts = createAttempts(ctx, actions, () => {
     delete ws.sceneOpts.guesses; // the real answer replaces the shadow
@@ -49,7 +52,8 @@ export function mount(ctx) {
       delete ws.sceneOpts.guesses;
       testBtn.disabled = true;
       ws.setReveal(true);
-      showMessage(ctx.el.feedback, "good", "Correct!", (solver.texts && solver.texts.correct) || "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
+      // The stage (correctMessage) or the solver (texts.correct) can word this itself.
+      showMessage(ctx.el.feedback, "good", "Correct!", stage.correctMessage || (solver.texts && solver.texts.correct) || "The picture now shows the solved values. Switch the equations to **Numbers** to see the substitution.");
       ctx.explain();
       ctx.finish();
     } else {

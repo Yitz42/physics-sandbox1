@@ -10,6 +10,7 @@ export default {
   challenge: "explore",
   solver: "controls.blockDiagram",
   title: "Collapse the Diagram",
+  mission: "Apply the reduction rules and collapse the block diagram to one block.",
   parts: [
     {
       title: "Step by step",

@@ -7,6 +7,7 @@ export default {
   challenge: "debug",
   solver: "statics.particle",
   title: "Cables from Coordinates",
+  mission: "Find the mistake in a student's cable forces worked out from coordinates.",
   instructions:
     "Two cables pull on the ring at A. A student found the resultant using the coordinates of A, B and C (in metres). " +
     "Check each fraction against the coordinates: the x-component uses $\\dfrac{x_B - x_A}{r_{AB}}$, and its sign must match which way the cable goes.",

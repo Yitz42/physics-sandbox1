@@ -9,6 +9,7 @@ export default {
   challenge: "solve",
   solver: "controls.blockDiagram",
   title: "Reduce It",
+  mission: "Reduce the block diagram step by step to find its transfer function.",
   instructions:
     "Find the closed-loop transfer function of this system. First choose the correct line for each reduction step (in symbols), " +
     "then work out $T(s) = \\dfrac{b_1 s + b_0}{s^2 + a_1 s + a_0}$ with the numbers in the picture.",

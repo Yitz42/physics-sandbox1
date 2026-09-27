@@ -38,6 +38,7 @@ export default {
   challenge: "build",
   solver: "statics.particle",
   title: "Stay Under the Rating",
+  mission: "Hang the crate so neither cable goes over its rating.",
   situations: [
     {
       name: "skylight",

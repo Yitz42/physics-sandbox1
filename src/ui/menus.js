@@ -5,6 +5,7 @@ import { renderMixed } from "../render/panel.js";
 import { getStatus, resetAll } from "../core/progress.js";
 import { unitPlace, readingFor } from "../core/content.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
+import { topNav, progressBar } from "./chrome.js";
 
 // "practice" (answer was shown) is an internal record: students just see "not done yet".
 // A block of content text that may contain math like $\\Sigma F_x = 0$.
@@ -21,6 +22,7 @@ const ICON_TITLE = { none: "Not done yet", practice: "Not done yet", complete: "
 export function renderHome(root, courses) {
   root.innerHTML = "";
   root.append(
+    topNav(),
     el("header", { className: "page-header" }, [
       el("h1", { textContent: "Engineering Mechanics Sandbox" }),
       el("p", { className: "lead", textContent: "Build it, load it, press Test — and see how forces become equations." }),
@@ -97,7 +99,7 @@ export function renderCourse(root, course, units) {
     units.forEach((u) => list.appendChild(unitCard(course, u)));
   }
   root.append(
-    el("nav", { className: "crumbs" }, [el("a", { href: "#/", textContent: "Courses" })]),
+    topNav({ course, units }), // the top tab's menu: Home and every unit
     el("header", { className: "page-header" }, [
       el("h1", { textContent: course.title }), mixed(course.description, "lead"),
       el("a", { className: "comp-link", href: `#/comprehension/${course.id}`, textContent: `${course.title} comprehension →` }),
@@ -115,7 +117,8 @@ export function renderCourse(root, course, units) {
 }
 
 // stages: loaded stage objects, in order
-export function renderUnit(root, course, unit, stages) {
+// units: every built unit of the course (the top menu lets the student switch unit)
+export function renderUnit(root, course, unit, stages, units = []) {
   const place = unitPlace(course, unit.id);
   root.innerHTML = "";
   const goals = el("ul", { className: "goals" }, (unit.goals || []).map((g) => {
@@ -137,12 +140,15 @@ export function renderUnit(root, course, unit, stages) {
   });
   const concept = el("p", { className: "lead" });
   renderMixed(concept, unit.concept);
+  // The top tab replaces the old breadcrumb links; the unit's progress bar sits beside its title.
+  const where = place.chapter ? `Chapter ${place.chapterNumber}: ${place.chapter.title} · Unit ${place.number}` : `Unit ${place.number}`;
   root.append(
-    el("nav", { className: "crumbs" }, [
-      el("a", { href: "#/", textContent: "Courses" }), " › ", el("a", { href: `#/${course.id}`, textContent: course.title }),
-      place.chapter ? ` › Chapter ${place.chapterNumber}: ${place.chapter.title}` : "",
+    topNav({ course, unit, unitNumber: place.number, stages, units }),
+    el("header", { className: "page-header unit-header" }, [
+      el("div", {}, [el("div", { className: "unit-num", textContent: where }), el("h1", { textContent: unit.title })]),
+      progressBar(course, unit),
     ]),
-    el("header", { className: "page-header" }, [el("div", { className: "unit-num", textContent: `Unit ${place.number}` }), el("h1", { textContent: unit.title }), concept]),
+    concept,
     el("h3", { textContent: "You will be able to:" }), goals,
     el("h3", { textContent: "Stages" }), list,
     readMore(readingFor(course, place.chapter)),

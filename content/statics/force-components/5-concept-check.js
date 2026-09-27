@@ -6,6 +6,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.particle",
   title: "Vector Sense",
+  mission: "Show you know how forces split into components and add as vectors.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

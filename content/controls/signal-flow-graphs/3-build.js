@@ -10,6 +10,7 @@ export default {
   challenge: "build",
   solver: "controls.signalFlow",
   title: "Set the Feedback Gain",
+  mission: "Set the feedback gain so the whole system has the gain asked for.",
   instructions:
     `This system has an inner loop ($-H_1$) and an outer feedback branch with an adjustable gain $k$. Choose $k$ so the overall gain is exactly $T = ${TARGET}$, then press **Test**. ` +
     "Gains: $G_1 = 5$, $G_2 = 2$, $H_1 = 0.2$.",

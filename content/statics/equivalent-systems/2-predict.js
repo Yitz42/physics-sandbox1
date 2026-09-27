@@ -7,6 +7,7 @@ export default {
   challenge: "predict",
   solver: "statics.equivalent",
   title: "Where Does the Resultant Act?",
+  mission: "Predict the one force that could replace all three loads on the beam.",
   instructions:
     "Replace the three loads with **one** force that has the same effect on the beam. How big is it, and how far from O must it act? Predict both, then press **Test**.",
   setup: {

@@ -7,6 +7,7 @@ export default {
   challenge: "debug",
   solver: "statics.particle",
   title: "Find the Slip",
+  mission: "Find and fix the slip in a student's force components.",
   instructions:
     "A student is finding the resultant of $F_1$ and $F_2$. Compare their equations with the picture — look carefully at **which axis each angle is measured from**.",
   setup: {

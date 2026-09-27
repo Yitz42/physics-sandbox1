@@ -13,6 +13,7 @@ export default {
   challenge: "build",
   solver: "statics.equivalent",
   title: "Where to Bolt It",
+  mission: "Place the bolt so the couple it must hold stays within its limit.",
   instructions:
     "A 500 N force pushes on top of the post at A. The base plate will be held down by ONE bolt, somewhere along the plate. " +
     `At the bolt, the force acts as a force-couple system: the same 500 N, plus a couple. The bolt can hold the force, but at most **${LIMIT} N·m** of couple. ` +

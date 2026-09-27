@@ -2,7 +2,7 @@
 //
 // Subjects describe WHAT to draw (see e.g. subjects/statics/particle-scene.js);
 // render/shapes.js decides HOW each shape looks. Shape types:
-//   arrow    { id, from, to, label, role }   role: known | unknown | resultant |
+//   arrow    { id, from, to, label, role, headGap?, tailGap? }   role: known | unknown | resultant |
 //                                            component | target | wrong | student | shadow
 //   line     { id?, from, to, style }        style: cable | reference | dashed
 //   support  { from, to, normal }            hatched ground/ceiling/wall
@@ -19,7 +19,11 @@
 //   spring, pulley                           see mechanisms.js
 //   trafficLight, balloon, pole              see scenery.js
 //   tfblock, sumjunction, wire, pickoff, signal, groupbox, sfgnode, sfgbranch   see blocks.js
+//   distload, wheel                          see loads.js
+//   supportSymbol                            pin, roller, fixed … see supports.js
+//   wrench, trailer                          see hardware.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
+//   listValues {}                            put every force's value in the corner list
 //   divider  { x, frame? }                   soft grey vertical line between two diagrams (frame: the
 //                                            exact view to show; see panels.js);
 //                                            every label stays on its own side of it
@@ -30,17 +34,19 @@
 import { labelPosition, drawLabel, cssColor } from "./arrows.js";
 import { drawShape, roleColor } from "./shapes.js";
 import { placeLabels, placeLegend } from "./labels.js";
+import { beamDirAt, surfaceGap } from "./fbd.js";
 
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "support", "pivot", "beam", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "support", "pivot", "wheel", "trailer", "beam", "wrench", "supportSymbol", "distload", "line", "dim", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 export function drawScene(cv, shapes, opts = {}) {
   const { ctx } = cv;
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
+  shapes = touchBeams(shapes);
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").
   const rank = (s) => ORDER.indexOf(s.layer || s.type);
@@ -50,9 +56,14 @@ export function drawScene(cv, shapes, opts = {}) {
   const wanted = []; // arrow labels, placed after everything else is drawn
 
   const notes = []; // "note" shapes: small text boxes placed in a free corner
+  let listAll = false; // a { type: "listValues" } shape: values go in the corner list
   for (const s of sorted) {
     if (s.type === "note") {
       notes.push(...s.lines);
+      continue;
+    }
+    if (s.type === "listValues") {
+      listAll = true; // the scene asks for every value in the corner list
       continue;
     }
     const lit = !!opts.highlight && s.id === opts.highlight;
@@ -62,16 +73,24 @@ export function drawScene(cv, shapes, opts = {}) {
     wanted.push(...out.labels);
     if (s.type === "point" && s.label) {
       const [x, y] = cv.toScreen(s.at);
-      // Point names go first, so they get their preferred spot (below-left).
-      wanted.unshift({ text: s.label, pos: [x - 10, y + 17], align: "right", size: 14, weight: 700, color: env.ink, plain: true });
+      // Point names go first, so they get their preferred spot: just below the
+      // point — and if a dimension line is there, further down, below it.
+      wanted.unshift({ text: s.label, pos: [x, y + 20], align: "center", size: 14, weight: 700, color: env.ink, plain: true, prefer: "down" });
     }
     if (s.type === "arrow" && s.label) {
       const a = cv.toScreen(s.from), b = cv.toScreen(s.to);
-      // Components and targets prefer the middle of their arrow; others the tip.
+      // Components and targets prefer the middle of their arrow. An arrow
+      // pushing on a body (its head on the body) is labelled at its outer end;
+      // any other arrow just past its tip, in line with it (below a downward
+      // arrow). A resultant ending on a beam keeps its label at the tip, below
+      // the beam and its dimension lines.
       const mid = s.role === "component" || s.role === "target";
       const side = s.labelSide || (s.role === "target" ? -1 : 1);
       const size = lit ? 15 : 14, weight = lit ? 700 : 500;
-      wanted.push({ text: s.label, ...labelPosition(a, b, 14, mid, side), size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow" });
+      const atTail = s.onBody && s.role !== "resultant" && !mid;
+      const place = atTail ? labelPosition(b, a, 14) : labelPosition(a, b, 14, mid, side);
+      const prefer = s.onBody && s.role === "resultant" ? "far-down" : undefined;
+      wanted.push({ text: s.label, ...place, size, weight, color: roleColor(s.role), fromArrow: s.role !== "shadow", prefer });
     }
   }
 
@@ -97,26 +116,60 @@ export function drawScene(cv, shapes, opts = {}) {
   }
   let placed = placeLabels(ctx, wanted, layout);
 
-  // Crowded picture (several arrow labels had to move well away from their arrows)?
-  // Then keep only the short name at each arrow ("W_10") and list the full
-  // values ("W_10 = 98.1 N") in a tidy box in a free corner.
+  // Values that can move to a tidy list in a free corner: then the drawing
+  // keeps only the short name ("W_10", "M") and the list says "W_10 = 98.1 N".
+  // That happens for every value when the picture is crowded (several labels
+  // had to move well away) or the scene asks for it (listValues), and for a
+  // curved moment arrow whose label ran into something (e.g. a dimension).
   const valued = wanted.filter((l) => l.fromArrow && l.text.includes(" = "));
   // "Struggled" = had to move ~45 px or more, or still overlaps something.
   const struggled = placed.filter((l) => l.fromArrow && l.cost > 45);
   const crowded = struggled.length >= 2 || struggled.some((l) => l.cost > 150);
-  if (crowded && valued.length > 1) {
-    const legend = placeLegend(ctx, valued.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles] });
-    const shortened = wanted.map((l) => (valued.includes(l) ? { ...l, text: l.text.split(" = ")[0] } : l));
+  const moved = (crowded || listAll) && valued.length > 1
+    ? valued
+    : valued.filter((l) => l.moment && placed[wanted.indexOf(l)].cost > 45);
+  if (moved.length) {
+    const legend = placeLegend(ctx, moved.map((l) => ({ text: l.text, color: l.color })), { ...layout, obstacles: [...obstacles] });
+    // A shortened name may move a little further to find a clear spot.
+    const shortened = wanted.map((l) => (moved.includes(l) ? { ...l, text: l.text.split(" = ")[0], maxMove: l.maxMove == null ? undefined : Math.max(l.maxMove, 40) } : l));
     placed = placeLabels(ctx, shortened, { ...layout, obstacles: [...obstacles, legend.box] });
     drawLegend(ctx, legend, env);
   }
 
+  // Labels are drawn as plain text, with no box behind them: a box never quite
+  // matches the picture's shaded background, and the placement above already
+  // keeps labels clear of lines and arrows.
   for (const l of placed) {
-    // Labels normally get a white box behind them, but not on top of a plate
-    // (a soft obstacle): there the box would hide the plate, and plain text reads fine.
-    const onPlate = l.box && obstacles.some((t) => t.soft && overlaps(l.box, t));
-    drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align, background: l.plain || onPlate ? null : env.paper });
+    drawLabel(ctx, l.text, l.pos[0], l.pos[1], { color: l.color, size: l.size, weight: l.weight, align: l.align });
   }
+}
+
+// An arrow that ENDS on a beam's centre line stops at the beam's surface
+// instead, so a push reads as pushing ON the beam, not into it. (An arrow
+// that starts on a beam still starts exactly at its point.) Such an arrow is
+// marked `onBody`, so its label goes at its outer end. Shapes that set
+// headGap themselves are left alone.
+function touchBeams(shapes) {
+  const beams = shapes.filter((s) => s.type === "beam");
+  // Plates (boxes drawn under everything) are bodies too: an arrow whose head
+  // is on a plate pushes on it.
+  const plates = shapes.filter((s) => s.type === "box" && s.passable);
+  const onPlate = (P) => plates.some((b) => Math.abs(P[0] - b.at[0]) <= b.w / 2 + 1e-6 && Math.abs(P[1] - b.at[1]) <= b.h / 2 + 1e-6);
+  if (!beams.length && !plates.length) return shapes;
+  return shapes.map((s) => {
+    if (s.type !== "arrow" || s.headGap != null) return s;
+    if (onPlate(s.to) && !onPlate(s.from)) return { ...s, onBody: true };
+    const dir = [s.to[0] - s.from[0], s.to[1] - s.from[1]];
+    const gapAt = (P) => {
+      for (const b of beams) {
+        const d = beamDirAt(b.points, P);
+        if (d) return surfaceGap(dir, d, ((b.width || 12) + 3) / 2); // beams are drawn width + 3 px thick
+      }
+      return 0;
+    };
+    const headGap = gapAt(s.to);
+    return headGap ? { ...s, headGap, onBody: true } : s;
+  });
 }
 
 // The corner list of values: a light box with one coloured line per force.
@@ -132,9 +185,4 @@ function drawLegend(ctx, legend, env) {
   ctx.strokeRect(box.x0 + 0.5, box.y0 + 0.5, box.x1 - box.x0 - 1, box.y1 - box.y0 - 1);
   ctx.restore();
   for (const l of lines) drawLabel(ctx, l.text, l.x, l.y, { color: l.color, size, align: "left" });
-}
-
-// Do two pixel boxes { x0, y0, x1, y1 } overlap?
-function overlaps(a, b) {
-  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 }

@@ -48,6 +48,9 @@ for (const { unit, file, whole, stage: part } of stages) {
   if (part.part.index === 0 && !(part.situation && part.situation.index > 0)) test(`${part.id}: stage file is valid`, () => {
     equal(checkStage(whole), []);
     equal(whole.id, `${unit.id}/${file}`, "id must be <unit folder>/<file name>:");
+    // The one-line MISSION shown at the top of the panel (the stage's, or each part's own).
+    const missions = stageParts(whole).map((p) => p.mission || whole.mission);
+    ok(missions.every((m) => typeof m === "string" && m.length > 0 && m.length <= 120), "needs a one-line mission (up to 120 characters)");
   });
 
   if (!stage.setup) continue;
@@ -55,7 +58,10 @@ for (const { unit, file, whole, stage: part } of stages) {
 
   test(`${stage.id}: solves, and every asked quantity has a value`, () => {
     const r = solver.solve(stage.setup);
-    ok(["resultant", "determinate"].includes(r.status), `status was ${r.status}: ${r.message}`);
+    // Explore and build stages may START with a structure that can't be solved
+    // (the student fixes it); every other stage must be solvable as given.
+    const fine = ["explore", "build"].includes(stage.challenge) ? ["resultant", "determinate", "unstable", "indeterminate"] : ["resultant", "determinate"];
+    ok(fine.includes(r.status), `status was ${r.status}: ${r.message}`);
     for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]), `no value for ${ask.quantity}`);
   });
 
@@ -98,7 +104,10 @@ for (const { unit, file, whole, stage: part } of stages) {
     test(`${stage.id}: every debug mutation names a real force/term`, () => {
       const eqs = solver.equations(stage.setup);
       for (const m of stage.debug.mutations) {
-        if (m.force) ok(stage.setup.forces.some((f) => f.id === m.force), `no force ${m.force}`);
+        // A force named by the stage, or one the solver puts on the FBD (a support reaction).
+        const onFbd = (id) => (stage.setup.forces || []).some((f) => f.id === id) || (solver.fbd ? solver.fbd(stage.setup, {}).forces.some((f) => f.id === id) : false);
+        if (m.kind === "extra") ok(m.extra && m.extra.support && !onFbd(m.force), `extra ${m.force} must be a reaction that isn't really there`);
+        else if (m.force) ok(onFbd(m.force), `no force ${m.force}`);
         if (m.equation) {
           const eq = eqs.find((e) => e.id === m.equation);
           ok(eq, `no equation ${m.equation}`);
@@ -636,4 +645,137 @@ test("controls solve stages: every choice group has exactly one right option, in
       }
     }
   }
+});
+
+// ---- Distributed loads and supports --------------------------------------
+
+test("Distributed loads explore: 200 → 600 N/m over 6 m gives F_R = 2400 N at x̄ = 3.5 m", () => {
+  const st = find("distributed-loads/1-explore");
+  const r = getSolver(st.solver).solve(st.setup);
+  close(r.values.R, 2400);
+  close(r.values.pos, 3.5);
+});
+
+test("Distributed loads predict: F_R = ½(600)(6) = 1800 N at x̄ = 4 m; every version's resultant is on the load", () => {
+  const st = find("distributed-loads/2-predict");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 1800);
+  close(r.values.pos, 4);
+  for (let i = 0; i < 30; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    const v = solver.solve(s).values, L = s.loads[0].to;
+    close(v.pos, s.loads[0].peak === "right" ? (2 * L) / 3 : L / 3, 1e-9, JSON.stringify(s.loads[0]));
+  }
+});
+
+test("Distributed loads build: the start fails; w_F = 2400, w_B = 600 N/m puts 6000 N over the axle; 3000/0 is too far forward", () => {
+  const st = find("distributed-loads/3-build");
+  const solver = getSolver(st.solver);
+  const tryLoad = (front, back) => {
+    const s = clone(st.setup);
+    setPath(s, "loads.#g.w.0", front);
+    setPath(s, "loads.#g.w.1", back);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting load should not meet the goal");
+  ok(tryLoad(2400, 600).ok, "hand-worked answer should meet the goal");
+  ok(/in front of/.test(tryLoad(3000, 0).message), "a triangle 3000 → 0 acts at 1.33 m, in front of the axle");
+  ok(/must be 6000/.test(tryLoad(1000, 1000).message));
+});
+
+test("Distributed loads debug: F_R = 4100 N and ΣFx̃ = 16100 N·m; every version's load rises left to right", () => {
+  const st = find("distributed-loads/4-debug");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 4100);
+  close(r.values.M, 16100);
+  for (let i = 0; i < 20; i++) {
+    const s = makeVariant(st.setup, st.vary);
+    ok(s.loads[0].w[1] > s.loads[0].w[0], "the triangle must sit on top of the rectangle");
+    equal(solver.equations(s).map((e) => e.id), ["A_w_rect", "A_w_tri", "F", "M"]);
+  }
+});
+
+test("Distributed loads solve: w = 600(x/4)² gives 800 N at 3.00 m; w = 900(x/5)³ gives 1125 N at 4.00 m", () => {
+  const st = find("distributed-loads/6-solve");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.R, 800);
+  close(r.values.pos, 3);
+  const s = clone(st.setup);
+  setPath(s, "loads.#w.w", 900);
+  setPath(s, "loads.#w.n", 3);
+  setPath(s, "loads.#w.to", 5);
+  const r3 = solver.solve(s);
+  close(r3.values.R, 1125);
+  close(r3.values.pos, 4);
+});
+
+test("Supports explore: the start can't hold the beam; pin + roller gives A_x = −480, A_y = 426.7, B_y = 213.3 N", () => {
+  const st = find("supports/1-explore");
+  const solver = getSolver(st.solver);
+  equal(solver.solve(st.setup).status, "unstable");
+  const s = clone(st.setup);
+  setPath(s, "supports.#A.type", "pin");
+  const r = solver.solve(s);
+  equal(r.status, "determinate");
+  close(r.values.A_x, -480);
+  close(r.values.A_y, 426.6667);
+  close(r.values.B_y, 213.3333);
+});
+
+test("Supports predict: every version's counts are pin 2, roller/surface/cable 1, fixed 3", () => {
+  const st = find("supports/2-predict");
+  const solver = getSolver(st.solver);
+  const expected = { pin: 2, roller: 1, smooth: 1, cable: 1, fixed: 3 };
+  for (const pair of st.vary[0].values) {
+    const s = clone(st.setup);
+    s.supports = pair;
+    const v = solver.solve(s).values;
+    equal([v.n_A, v.n_B], [expected[pair[0].type], expected[pair[1].type]], `${pair[0].type} + ${pair[1].type}:`);
+    // Every other count has its own explanation.
+    for (let n = 0; n <= 3; n++) if (n !== v.n_A) ok(solver.mistakes(s, "n_A").some((m) => m.value === n), `no explanation for ${n} at A (${pair[0].type})`);
+  }
+});
+
+test("Supports build: pin + roller (either way round) meets the goal; pin + pin, fixed + roller, roller + roller and fixed + nothing don't", () => {
+  const st = find("supports/3-build");
+  const solver = getSolver(st.solver);
+  const tryPair = (a, b) => {
+    const s = clone(st.setup);
+    setPath(s, "supports.#A.type", a);
+    setPath(s, "supports.#B.type", b);
+    if (a === "fixed") setPath(s, "supports.#A.normal", [1, 0]);
+    return st.goal.check(solver.solve(s), s);
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start (pin + pin) must not meet the goal");
+  ok(tryPair("pin", "roller").ok && tryPair("roller", "pin").ok);
+  ok(/grow longer/.test(tryPair("pin", "pin").message));
+  ok(/indeterminate/.test(tryPair("fixed", "roller").message));
+  ok(/moves/.test(tryPair("roller", "roller").message));
+  ok(/both piers/.test(tryPair("fixed", "none").message));
+});
+
+test("Supports debug: T_C = 870.3 N, A_x = 696.2 N, A_y = 372.2 N; each planted mistake changes the FBD as planned", () => {
+  const st = find("supports/4-debug");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.T_C, 870.25);
+  close(r.values.A_x, 696.2);
+  close(r.values.A_y, 372.15);
+  const unknowns = (m) => solver.solve(solver.mutate(st.setup, m)).unknowns.length;
+  const [extraCx, noAx, reversedT, noW, extraMA] = st.debug.mutations;
+  equal([unknowns(extraCx), unknowns(noAx), unknowns(reversedT), unknowns(noW), unknowns(extraMA)], [4, 2, 3, 3, 4]);
+  ok(!solver.solve(solver.mutate(st.setup, noW)).equations[1].terms.some((t) => t.id === "W"), "no W in ΣF_y once it's removed");
+});
+
+test("Supports solve: A_x = −300 N, A_y = 462.9 N, B_y = 329.5 N; every version's roller pushes", () => {
+  const st = find("supports/6-solve");
+  const solver = getSolver(st.solver);
+  const r = solver.solve(st.setup);
+  close(r.values.A_x, -300);
+  close(r.values.A_y, 462.8667);
+  close(r.values.B_y, 329.5333);
+  for (let i = 0; i < 30; i++) ok(solver.solve(makeVariant(st.setup, st.vary)).values.B_y > 0);
 });

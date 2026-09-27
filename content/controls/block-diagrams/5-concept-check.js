@@ -9,6 +9,7 @@ export default {
   challenge: "concept-check",
   solver: "controls.blockDiagram",
   title: "Block Diagram Sense",
+  mission: "Show you know the rules for reducing block diagrams.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

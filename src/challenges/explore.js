@@ -24,7 +24,7 @@ export function mount(ctx) {
     list.appendChild(li);
     return li;
   });
-  if (tasks.length) ctx.el.area.append(el("div", { className: "area-title", textContent: "Try to:" }), list);
+  if (tasks.length) ctx.el.area.append(el("div", { className: "area-title", textContent: "Challenge objectives:" }), list);
 
   let ws = null; // set just below; onChange runs once during creation, before ws exists
   let finished = false;
@@ -48,8 +48,9 @@ export function mount(ctx) {
           items[i].classList.add("done");
         }
       });
+      // The solver's note (e.g. "It moves!") shows only while it applies.
       if (result.message) showMessage(ctx.el.feedback, "warn", statusTitle(result.status), result.message);
-      else if (done.size < tasks.length || !tasks.length) ctx.el.feedback.innerHTML = "";
+      else ctx.el.feedback.innerHTML = "";
       if (tasks.length && done.size === tasks.length && !finished) finish();
     },
   });

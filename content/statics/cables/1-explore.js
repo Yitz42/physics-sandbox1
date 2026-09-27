@@ -7,6 +7,7 @@ export default {
   challenge: "explore",
   solver: "statics.particle",
   title: "Hang a Crate",
+  mission: "Change the cable angles and see how the tensions keep ring A in balance.",
   instructions:
     "A crate hangs from ring A, held by two cables. On the left is the real setup (the **space diagram**); on the right is the **free-body diagram** of ring A. " +
     "Move the sliders and watch the tensions — the equations $\\Sigma F_x = 0$ and $\\Sigma F_y = 0$ are solved live.",

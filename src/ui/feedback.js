@@ -26,21 +26,30 @@ export function clearMessage(container) {
 }
 
 // Hints are revealed one at a time, so students try before reading them all.
-export function buildHints(container, hints = []) {
+// The button goes in `container`; opened hints are listed in `listContainer`
+// (the stage page puts the button at the bottom of the panel, the list above it).
+export function buildHints(container, hints = [], listContainer = container) {
   container.innerHTML = "";
+  if (listContainer !== container) listContainer.innerHTML = "";
   if (!hints.length) return;
   let shown = 0;
   const list = el("ol", { className: "hint-list" });
-  const btn = el("button", { type: "button", className: "btn btn-quiet", textContent: "💡 Show a hint" });
+  const btn = el("button", { type: "button", className: "btn btn-hint" });
+  const label = (text) => (btn.innerHTML = `${BULB}<span>${text}</span>`);
+  label("Show a hint");
   btn.onclick = () => {
     const li = el("li");
     renderMixed(li, hints[shown++]);
     list.appendChild(li);
-    btn.textContent = shown < hints.length ? "💡 Another hint" : "No more hints";
+    label(shown < hints.length ? "Another hint" : "No more hints");
     btn.disabled = shown >= hints.length;
   };
-  container.append(btn, list);
+  container.append(btn);
+  listContainer.append(list);
 }
+
+// A small light-bulb icon, drawn with lines so it matches the text colour.
+const BULB = '<svg class="btn-icon" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M10 2.5a5 5 0 0 0-3 9c.6.5 1 1.1 1 1.8V14h4v-.7c0-.7.4-1.3 1-1.8a5 5 0 0 0-3-9zM8 16.5h4M8.8 18.5h2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 // Shown when a stage is finished (or when the answer was revealed).
 export function showExplanation(container, text) {

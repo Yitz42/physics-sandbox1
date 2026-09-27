@@ -61,7 +61,8 @@ src/
     scenery.js (traffic light, balloon, street pole)
     blocks.js (block diagrams, signal-flow graphs)
   ui/
-    controls.js  menus.js  feedback.js  comprehension-view.js (the Comprehension window)
+    controls.js  menus.js  feedback.js  stage-view.js  comprehension-view.js (the Comprehension window)
+    chrome.js (the top tab menu, the unit progress bar)
   subjects/                one folder per subject; each is a plug-in
     statics/
       index.js             registers the statics solvers with the core
@@ -70,6 +71,8 @@ src/
       moment.js            moments about a point: M = Fd = xFy − yFx (Varignon), balance ΣM = 0
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position
+      distributed.js       distributed loads: area and centroid (rectangle, triangle, trapezoid, ∫w dx)
+      supports.js          support types → reactions (pin, roller, smooth, cable, fixed)
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
       truss.js             method of joints and method of sections
       frame.js             frames and machines, multi-body
@@ -131,6 +134,7 @@ export default {
   challenge: "predict",          // one of the challenge types
   solver: "statics.rigidBody",   // solver registered by the subject
   title: "Balance the Seesaw",
+  mission: "Predict where child B must sit to balance the seesaw.", // one line, shown as MISSION:
   instructions: "Plain-language instructions shown to the student.",
   setup: { bodies: [...], supports: [...], loads: [...] },
   editable: ["loads.0.position"],
@@ -178,6 +182,24 @@ different situation (all are seen before any repeats), then new numbers from its
 - Moments: counterclockwise positive; students type clockwise moments as negative
   numbers. Answer precision: ±0.1 N and ±0.1 N·m for forces and moments, ±0.01 m
   for distances (set per ask with `precision`).
+- Page layout ("simulation lab" look, agreed with the owner): a tab at the top centre
+  ("STATICS SIMULATION LAB") opens a menu on hover or tap: Home, back to the unit, the
+  unit's stages (ticked when done), and a greyed "Account — coming soon" slot. The
+  stage title sits top left with a progress bar top right showing **stages done in
+  this unit**. No stage-type tag on the stage page. The panel starts with
+  **MISSION:** (the stage's `mission` line), explore objectives are titled
+  "Challenge objectives" and still tick themselves (no Test button in explore). The
+  hint button sits bottom left of the panel and the main button (Test, Continue →)
+  bottom right.
+- Picture rules (agreed with the owner): an arrow pushing on a body ends ON its
+  surface and is labelled at its outer end; other arrows start exactly at their
+  point and are labelled just past the tip, in line (below a downward arrow).
+  Point letters and a resultant's label go below, hopping over dimension lines.
+  Angle numbers sit between the angle's two sides, clear of both. Labels have no
+  background box. A moment label that runs into something becomes its name
+  ("M") with the value in the corner list; a stage can list every value there
+  (`listValues: true`). Pictures without sliders or dragging are zoomed to fill
+  the canvas. Real objects are drawn as themselves (wrench, trailer, eyebolt …).
 - Nothing moves on by itself: after a correct step the student presses **Next step →**,
   and a finished stage shows **Continue →**, which opens the "Stage complete" card.
 - The check button is called **Test** (not "Play"). Answer boxes show the accepted
@@ -216,6 +238,14 @@ different situation (all are seen before any repeats), then new numbers from its
   0.6, after more 0.3, with "Show answer" 0; a unit averages its 20 latest questions.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
+- Distributed loads (Unit 6) cover rectangles, triangles, trapezoids AND curved
+  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 6 takes down as positive.
+- FBD reaction arrows (Unit 7 on), textbook rule: pin and fixed-support components
+  (and the fixed-end moment) may point either way; rollers and smooth surfaces must
+  push, cables must pull, weight points down. Some beams have mass, so the student
+  must remember the weight W at the centre.
+- Unit 7's solve stage goes all the way to the reactions (FBD → equations → answers);
+  Unit 8 then goes deeper (choosing a smart moment point, harder shapes).
 
 ## Physics conventions
 - SI units by default: m, kg, N, N·m, g = 9.81 m/s².

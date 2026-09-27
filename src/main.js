@@ -52,7 +52,8 @@ async function route() {
     const unitIndex = course.units.indexOf(unitId);
     const unit = units[unitIndex];
     if (!unit) throw new Error(`No unit called "${unitId}" in ${course.title}.`);
-    if (!stageFile) return renderUnit(app, course, unit, await loadUnitStages(courseId, unit));
+    // (units: the top menu on a unit page lets the student switch unit)
+    if (!stageFile) return renderUnit(app, course, unit, await loadUnitStages(courseId, unit), units);
 
     const i = unit.stages.indexOf(stageFile);
     if (i < 0) throw new Error(`No stage called "${stageFile}" in ${unit.title}.`);
@@ -67,9 +68,10 @@ async function route() {
       next = `#/${courseId}`;
       nextLabel = `Back to ${course.title} →`;
     }
+    // The page's top menu lists every stage of this unit.
     const view = createStageView(app, stage, {
-      course: { href: `#/${courseId}`, title: course.title },
-      unit: { href: `#/${courseId}/${unitId}`, title: `Unit ${unitPlace(course, unitId).number}: ${unit.title}` },
+      course, unit, unitNumber: unitPlace(course, unitId).number, current: stageFile,
+      stages: await loadUnitStages(courseId, unit),
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
     runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });

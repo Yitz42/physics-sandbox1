@@ -9,6 +9,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "Predict the Pulley Forces",
+  mission: "Predict the cable tension and the rope force holding the pulley.",
   instructions:
     "Pulley A rides on cable BAC and rope AD holds it in place. The same cable runs over the pulley, so both sides pull with the same tension $T$. " +
     "Predict $T$ and the rope's pull $T_{AD}$, then press **Test**.",

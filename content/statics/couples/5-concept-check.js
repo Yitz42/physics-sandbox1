@@ -13,6 +13,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.couple",
   title: "Couple Sense",
+  mission: "Show you know what a couple is and what it does.",
   instructions: "Answer 3 questions. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

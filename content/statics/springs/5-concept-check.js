@@ -6,6 +6,7 @@ export default {
   challenge: "concept-check",
   solver: "statics.particle",
   title: "Spring Sense",
+  mission: "Show you know how a spring's force depends on its stretch.",
   instructions: "Answer 3 questions about springs. Every wrong choice explains the misconception behind it.",
   required: 3,
   questions: [

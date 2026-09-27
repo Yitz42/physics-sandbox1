@@ -8,6 +8,7 @@ export default {
   challenge: "debug",
   solver: "statics.particle",
   title: "The Pulley's FBD",
+  mission: "Find the mistake in a student's free-body diagram of the pulley.",
   instructions:
     "Pulley A rides on cable BAC and rope AD holds it. A student drew the free-body diagram of the pulley (right). Compare it with the real setup (left) and find the mistake.",
   setup: pulleySetup({ angleAB: 60, angleAC: 30, mass: 30 }),

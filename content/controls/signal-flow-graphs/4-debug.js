@@ -9,6 +9,7 @@ export default {
   challenge: "debug",
   solver: "controls.signalFlow",
   title: "Check the Working",
+  mission: "Find the wrong line in a student's use of Mason's rule.",
   instructions:
     "A student applied Mason's rule to this graph. One line of their working is wrong. " +
     "Check each line: the paths and loops, which loops don't touch, $\\Delta$, each $\\Delta_k$, and $T$.",

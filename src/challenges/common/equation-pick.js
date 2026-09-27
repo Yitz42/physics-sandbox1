@@ -17,7 +17,8 @@ function shuffle(list) {
   return a;
 }
 
-// Pick two different kinds of mistake when possible (a swap and a sign error).
+// Pick two different kinds of mistake when possible (a swap and a sign error);
+// if only one kind is possible (e.g. two wrong versions of a single term), take two of it.
 function pickMistakes(eq) {
   const all = shuffle(mistakesOf(eq));
   const chosen = [];
@@ -25,6 +26,7 @@ function pickMistakes(eq) {
     const m = all.find((x) => x.kind === kind && !chosen.includes(x));
     if (m && chosen.length < 2) chosen.push(m);
   }
+  for (const m of all) if (chosen.length < 2 && !chosen.includes(m)) chosen.push(m);
   return chosen;
 }
 
@@ -35,8 +37,13 @@ const KIND = {
   missing: () => "missing",
 };
 
+// A group's title: eq.title if the equation has one (e.g. "F_R" for a long
+// integral), else the last part of its left side (e.g. "ΣF_x").
+const groupName = (eq) => eq.title || eq.lhs.split("=").pop().trim();
+
 const REASONS = {
-  swap: (s, term) => `the $${s}$ term ${(term && term.factor && term.factor.swapReason) || "has sin and cos swapped — cos goes with the axis the angle is measured from"}`,
+  // A wrong version can bring its own reason (reason), or its term can (swapReason).
+  swap: (s, term, reason) => `the $${s}$ term ${reason || (term && term.factor && term.factor.swapReason) || "has sin and cos swapped — cos goes with the axis the angle is measured from"}`,
   sign: (s) => `the $${s}$ term has the wrong sign — check which way that component points`,
   missing: (s) => `the $${s}$ term is missing — every force with a component along this axis belongs`,
 };
@@ -48,7 +55,7 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong, mo
     const options = shuffle([{ eq, kind: "correct" }, ...pickMistakes(eq)]);
     const wrap = el("div", { className: "eq-pick" });
     const title = el("div", { className: "eq-pick-title" });
-    renderTex(title, eq.lhs.split("=").pop().trim()); // e.g. "ΣF_x"
+    renderTex(title, groupName(eq)); // e.g. "ΣF_x"
     wrap.appendChild(title);
     let selected = null;
     const buttons = options.map((o) => {
@@ -78,9 +85,9 @@ export function createEquationPick(equations, symbolOf, { onCorrect, onWrong, mo
       if (s.kind === "correct") b.classList.add("is-right");
       else {
         b.classList.add("is-wrong");
-        const name = g.eq.lhs.split("=").pop().trim();
-        problems.push(`In your $${name}$ choice, ${REASONS[s.kind](symbolOf(s.termId), s.term)}.`);
-        kinds.push(KIND[s.kind](s.term));
+        const name = groupName(g.eq);
+        problems.push(`In your $${name}$ choice, ${REASONS[s.kind](symbolOf(s.termId), s.term, s.reason)}.`);
+        kinds.push(s.altKind || KIND[s.kind](s.term)); // a wrong version can name its own kind of mistake
       }
     }
     if (problems.length) onWrong(problems, kinds);

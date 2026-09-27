@@ -11,8 +11,9 @@
 // "needs practice" and they must finish a new version without help.
 //
 // Stage fields used:
-//   solve: { steps, candidates, choicesName }   candidates = forces offered in the FBD
-//          palette; choicesName = what the "choices" step is called (e.g. "Reduce the diagram")
+//   solve: { steps, candidates, choicesName, intros? }   candidates = forces offered in the FBD
+//          palette; choicesName = what the "choices" step is called (e.g. "Reduce the diagram");
+//          intros: { fbd: "…" } replaces a step's standard introduction
 //   ask:   what to solve for (as in predict)
 
 import { createWorkspace } from "./common/workspace.js";
@@ -49,7 +50,14 @@ export function mount(ctx) {
   let current = null; // the active step's tool (has .reveal())
   const attempts = createAttempts(ctx, actions, () => current && current.reveal());
 
-  const symbolOf = (id) => (ws.setup.forces.find((f) => f.id === id) || { symbol: id }).symbol;
+  // A term's symbol, for messages: from the setup's forces, else from the
+  // equations themselves (support reactions, pieces of a distributed load …).
+  const symbolOf = (id) => {
+    const f = (ws.setup.forces || []).find((x) => x.id === id);
+    if (f) return f.symbol;
+    const t = solver.equations(ws.setup, ws.result).flatMap((e) => e.terms).find((x) => x.id === id);
+    return t ? t.symbol : id;
+  };
   const wrong = (problems) => {
     showMessage(ctx.el.feedback, "bad", "Not yet", problems.map((p) => "• " + p).join("\n\n"));
     attempts.wrong();
@@ -84,7 +92,8 @@ export function mount(ctx) {
     if (index >= steps.length) return; // all done: leave the last step's work on screen
     body.innerHTML = "";
     const step = steps[index];
-    showMessage(intro, "info", `Step ${index + 1}: ${names[step]}`, STEP_INTRO[step]);
+    // A stage can word a step's introduction itself (solve.intros), e.g. "isolate the beam".
+    showMessage(intro, "info", `Step ${index + 1}: ${names[step]}`, (stage.solve.intros || {})[step] || STEP_INTRO[step]);
     ctx.el.feedback.innerHTML = "";
 
     if (step === "fbd") {

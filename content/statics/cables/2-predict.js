@@ -28,6 +28,7 @@ export default {
   challenge: "predict",
   solver: "statics.particle",
   title: "Predict the Tensions",
+  mission: "Predict the tension in each cable holding the crate.",
   ask: [{ quantity: "T_AB", min: 0 }, { quantity: "T_AC", min: 0 }], // tensions are never negative
   explanation:
     "Two unknowns, two equations. $\\Sigma F_x = 0$ says the horizontal pulls cancel, which fixes the ratio of the tensions. " +
