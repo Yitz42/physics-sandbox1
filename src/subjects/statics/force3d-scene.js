@@ -149,7 +149,16 @@ export function force3dScene(setup, result, opts = {}) {
   const lines = [];
   for (let x = first(gx0); x <= gx1 + 1e-9; x += step) lines.push([at([x, gy0, 0]), at([x, gy1, 0])]);
   for (let y = first(gy0); y <= gy1 + 1e-9; y += step) lines.push([at([gx0, y, 0]), at([gx1, y, 0])]);
-  shapes.push({ type: "ground", corners: corners.map(at), lines });
+  // Shadows the bodies cast on the ground (agreed with the owner): light from above and a
+  // little in front, so each shadow falls back and to the right — where it meets its body
+  // shows how high the body stands. (Drawn into the ground, so they fade with it.)
+  const light = [-0.35, 0.3, -1]; // the way the light travels
+  const fall = (p) => [p[0] - (light[0] * p[2]) / light[2], p[1] - (light[1] * p[2]) / light[2], 0];
+  const shade = { lines: [], dots: [] };
+  if (setup.pole) shade.lines.push([at(fall(pointOf(setup, setup.pole[0]))), at(fall(pointOf(setup, setup.pole[1]))), 9]);
+  for (const [a2, b2] of setup.cables || []) shade.lines.push([at(fall(pointOf(setup, a2))), at(fall(pointOf(setup, b2))), 2.5]);
+  for (const p of Object.values(pts)) if (p[2] > 1e-9) shade.dots.push([at(fall(p)), 4.5]);
+  shapes.push({ type: "ground", corners: corners.map(at), lines, shadows: shade });
   return shapes;
 }
 

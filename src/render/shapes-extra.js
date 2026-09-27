@@ -9,7 +9,8 @@
 //              line with end ticks; its label sits in a break in the middle of the line
 //              (labelOn: false puts it beside the line). noExt: no extension lines (dims.js)
 //   rightangle { at, u, v }                    small square marking a 90° corner
-//   ground     { corners, lines }              a 3D picture's ground: shaded, gridded, fading at its edges
+//   ground     { corners, lines, shadows? }    a 3D picture's ground: shaded, gridded, fading at its
+//              edges; shadows: { lines: [[p, q, widthPx]], dots: [[p, rPx]] } cast on it
 //   curve      { points, label?, role?, dashed?, labelAway? } a thin curved line (a direction
 //              angle in a 3D picture), labelled by its middle, away from labelAway
 //   moment     { center, rPx, maxR?, sense, label, role, labelMove?, alpha? } curved arrow: sense +1 CCW, −1 CW;
@@ -169,6 +170,28 @@ export function drawExtraShape(cv, s, env, roleColor) {
         o.lineTo(q[0], q[1]);
       }
       o.stroke();
+      // Shadows cast on it (shadows: { lines: [[p, q, widthPx]], dots: [[p, rPx]] }): soft and faint.
+      if (s.shadows) {
+        o.save();
+        o.filter = "blur(1.6px)";
+        o.strokeStyle = o.fillStyle = cssColor("--c-shadow", "rgba(20, 30, 50, 0.34)");
+        o.lineCap = "round";
+        for (const [a, b, w] of s.shadows.lines || []) {
+          const [p, q] = [S(a), S(b)];
+          o.lineWidth = w;
+          o.beginPath();
+          o.moveTo(p[0], p[1]);
+          o.lineTo(q[0], q[1]);
+          o.stroke();
+        }
+        for (const [a, r] of s.shadows.dots || []) {
+          const p = S(a);
+          o.beginPath();
+          o.ellipse(p[0], p[1], r * 1.4, r * 0.8, 0, 0, Math.PI * 2);
+          o.fill();
+        }
+        o.restore();
+      }
       // The fade: in the plane's own frame the patch is the square −1…1. Each gradient
       // is clear at one pair of sides and solid inside them; together they fade every
       // side the same way, so the patch stays a rectangle.

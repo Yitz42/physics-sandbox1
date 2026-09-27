@@ -135,3 +135,7 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   ground then takes the biggest patch that fits inside the picture box (less 10 px), round
   the objects' feet — shifting behind them if that gives it more room. It is background:
   labels may cross it.
+- **Shadows** (3D pictures, agreed with the owner): the bodies — a pole, cables, points above
+  the ground — cast soft, faint shadows on the ground (light from above and a little in front,
+  so shadows fall back and to the right; --c-shadow). They're drawn into the ground layer, so
+  they fade with it; where a shadow meets its body shows how high the body stands.
