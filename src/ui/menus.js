@@ -58,20 +58,34 @@ function unitCard(course, u) {
   ]);
 }
 
+// A planned unit (course.js soon(...)): shown greyed out, not a link.
+function soonCard(number, u) {
+  return el("div", { className: "unit-card unit-soon", "aria-disabled": "true" }, [
+    el("div", { className: "unit-num", textContent: `Unit ${number}` }),
+    el("div", { className: "unit-text" }, [el("h2", { textContent: u.title }), mixed(u.concept)]),
+    el("span", { className: "chip chip-soon", textContent: "Coming soon" }),
+  ]);
+}
+
 // units: [{ id, title, concept, stages: [files] }]. With chapters, the units
-// are listed under their chapter's heading (with its textbook link).
+// are listed under their chapter's heading (with its textbook link); planned
+// units appear as "Coming soon".
 export function renderCourse(root, course, units) {
   root.innerHTML = "";
   const byId = Object.fromEntries(units.map((u) => [u.id, u]));
   const list = el("div", { className: "unit-list" });
   if (course.chapters) {
     course.chapters.forEach((ch, c) => {
-      list.appendChild(el("section", { className: "chapter" }, [
+      const allSoon = ch.units.every((u) => typeof u !== "string");
+      list.appendChild(el("section", { className: "chapter" + (allSoon ? " chapter-soon" : "") }, [
         el("div", { className: "chapter-head" }, [
-          el("h2", { className: "chapter-title" }, [el("span", { className: "chapter-num", textContent: `Chapter ${c + 1}` }), ch.title]),
+          el("h2", { className: "chapter-title" }, [
+            el("span", { className: "chapter-num", textContent: `Chapter ${c + 1}` }), ch.title,
+            allSoon ? el("span", { className: "chip chip-soon", textContent: "Coming soon" }) : null,
+          ]),
           readMore(readingFor(course, ch), { compact: true }),
         ]),
-        ...ch.units.map((id) => unitCard(course, byId[id])),
+        ...ch.units.map((u, i) => (typeof u === "string" ? unitCard(course, byId[u]) : soonCard(`${c + 1}.${i + 1}`, u))),
       ]));
     });
   } else {

@@ -68,7 +68,8 @@ src/
     dynamics/              later
 content/
   statics/
-    course.js              chapters (following the textbook), each an ordered list of units
+    course.js              chapters (following the textbook), each an ordered list of units;
+                           planned units are listed as soon(...) and shown as "Coming soon"
     reading.js             the free textbook, and its chapter for each course chapter
     shared/                setups used by several units (angle-options.js, crate.js)
     force-components/      one folder per unit (one concept), named after it

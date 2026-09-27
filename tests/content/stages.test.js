@@ -260,19 +260,20 @@ test("Equivalent systems solve: F_Rx = 240 N, F_Ry = −430 N, (M_R)_O = −448 
   close(r.values.M, -448);
 });
 
-test("every unit is in a chapter, and every chapter has a textbook chapter to read, with a web link", async () => {
+test("every unit is in a chapter; planned units have a title and a description; built chapters have a textbook link", async () => {
   for (const c of await loadCourseList()) {
     if (c.comingSoon) continue;
     const course = await loadCourse(c.id);
     if (!course.chapters) continue;
-    equal(course.units, course.chapters.flatMap((ch) => ch.units), "course.units must list the chapters' units in order:");
-    if (!course.reading) continue;
-    ok(/^https:\/\//.test(course.reading.book.url), "the book needs an https link");
+    const built = course.chapters.flatMap((ch) => ch.units.filter((u) => typeof u === "string"));
+    equal(course.units, built, "course.units must list the chapters' built units in order:");
     for (const ch of course.chapters) {
-      const r = course.reading.chapters[ch.id];
-      ok(r && r.chapter, `chapter ${ch.id} has no textbook chapter in reading.js`);
-      if (r.url) ok(/^https:\/\//.test(r.url), `chapter ${ch.id}: link must be https`);
+      for (const u of ch.units.filter((x) => typeof x !== "string")) ok(u.comingSoon && u.title && u.concept, `a planned unit in ${ch.id} needs a title and a concept`);
+      const r = course.reading && course.reading.chapters[ch.id];
+      if (ch.units.some((u) => typeof u === "string")) ok(r && r.chapter, `chapter ${ch.id} has built units but no textbook chapter in reading.js`);
+      if (r && r.url) ok(/^https:\/\//.test(r.url), `chapter ${ch.id}: link must be https`);
     }
+    if (course.reading) ok(/^https:\/\//.test(course.reading.book.url), "the book needs an https link");
   }
 });
 

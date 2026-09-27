@@ -18,8 +18,12 @@ export default {
     forces: { chapter: "Chapter 2: Forces and Other Vectors" },
     particles: { chapter: "Chapter 3: Equilibrium of Particles" },
     moments: { chapter: "Chapter 4: Moments and Static Equivalence" },
-    // Planned: distributed loads → Ch 4; supports, rigid bodies, determinacy → Ch 5;
-    // trusses, frames → Ch 6; centroids → Ch 7; internal forces, V & M → Ch 8;
-    // friction → Ch 9; moments of inertia → Ch 10.
+    "rigid-bodies": { chapter: "Chapter 5: Rigid Body Equilibrium" },
+    structures: { chapter: "Chapter 6: Equilibrium of Structures" },
+    centroids: { chapter: "Chapter 7: Centroids and Centers of Gravity" },
+    "internal-forces": { chapter: "Chapter 8: Internal Loadings" },
+    friction: { chapter: "Chapter 9: Friction" },
+    inertia: { chapter: "Chapter 10: Moments of Inertia" },
+    // "statics-3d": 3D problems are spread through the book's chapters, so no single link.
   },
 };

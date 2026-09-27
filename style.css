@@ -75,7 +75,7 @@ p { margin: 0 0 8px; }
 .card:hover, .unit-card:hover { border-color: var(--c-accent); }
 .card-disabled { opacity: .55; pointer-events: none; }
 .unit-list { display: grid; gap: 10px; }
-.unit-card { display: grid; grid-template-columns: 70px 1fr auto; gap: 14px; align-items: center; }
+.unit-card { display: grid; grid-template-columns: 84px 1fr auto; gap: 14px; align-items: center; }
 .unit-num { font-weight: 700; color: var(--c-accent); font-size: 14px; }
 .unit-progress { color: var(--c-muted); font-size: 14px; white-space: nowrap; }
 .unit-text p { color: var(--c-muted); margin: 0; }
@@ -89,6 +89,11 @@ p { margin: 0 0 8px; }
 .chapter-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-top: 6px; }
 .chapter-title { font-size: 1.3rem; margin: 0; display: flex; align-items: baseline; gap: 10px; }
 .chapter-num { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-accent); }
+/* Planned units and chapters: shown so students see the whole course, but not playable yet */
+.unit-soon { opacity: 0.55; background: transparent; border-style: dashed; }
+.unit-soon h2 { color: var(--c-muted); }
+.chip-soon { font-size: 11px; font-weight: 700; color: var(--c-muted); background: var(--c-line); align-self: center; }
+.chapter-soon .chapter-title { color: var(--c-muted); }
 .read-more.read-more-compact { padding: 6px 12px; margin: 0; font-size: 0.9rem; align-items: center; }
 .read-more-compact .read-more-icon { font-size: 1.1rem; }
 
