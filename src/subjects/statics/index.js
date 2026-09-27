@@ -194,6 +194,7 @@ registerSolver("statics.friction", {
   scene: frictionScene,
   quantities: (setup) => frictionQuantities(setup, isBody(setup) ? rigidBodyQuantities(placeAlong(setup)) : {}),
   mistakes: frictionMistakes,
-  fbd: (setup, sceneOpts) => rigidBodyFbd(placeAlong(setup), sceneOpts), // (a ladder's FBD; a block has none to draw)
+  // (A ladder's FBD, drawn by the student; a crate's is drawn for them.)
+  fbd: (setup, sceneOpts) => (isBody(setup) ? rigidBodyFbd(placeAlong(setup), sceneOpts) : { forces: [], directions: [], origin: [0, 0] }),
   debugSteps: frictionSteps, // a student's working for a crate, one line wrong
 });

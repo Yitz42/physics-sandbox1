@@ -3,12 +3,14 @@
 // A block: as for rigid bodies (agreed with the owner), the MODEL on the left — the
 // ramp (or floor), the crate on it and the push — and on the right its FREE-BODY
 // DIAGRAM: the crate alone, with its weight W, the surface's push N and friction F at
-// the contact, and the push. The FBD shows once it's needed (setup.showFbd: "always",
-// or once the answer is revealed); until then the model alone.
+// the contact, and the push. The FBD shows once it's needed (setup.showFbd: "always";
+// "unknowns" — from the start, N and F as "?"; or once the answer is revealed);
+// until then the model alone.
 // A body with rough contacts (a ladder) is drawn by the rigid-body picture.
 
 import { add, sub, scale } from "../../core/vector.js";
 import { format } from "../../core/units.js";
+import { clone, setPath } from "../../core/paths.js";
 import { spreadPanels, shiftShape } from "../../render/panels.js";
 import { rigidBodyScene } from "./rigid-body-scene.js";
 import { surfaceAxes, weightOfBlock, forceDir, isBody, placeAlong, solveFriction } from "./friction.js";
@@ -17,8 +19,42 @@ const deg = Math.PI / 180;
 const angleOf = (v) => (Math.atan2(v[1], v[0]) * 180) / Math.PI;
 
 export function frictionScene(setup, result, opts = {}) {
-  if (isBody(setup)) return rigidBodyScene(placeAlong(setup), result, opts);
-  return blockScene(setup, result || solveFriction(setup), opts);
+  if (isBody(setup)) {
+    const placed = placeAlong(setup);
+    const extras = setup.ladderMarks ? ladderMarks(placed) : [];
+    return rigidBodyScene({ ...placed, extras: [...(placed.extras || []), ...extras] }, result, opts);
+  }
+  // Once a "where does motion start?" answer is revealed, the picture shows that
+  // moment: the push (or slope) at the value found, friction at its limit.
+  let res = result || solveFriction(setup);
+  if (setup.find && opts.reveal && Number.isFinite(res.values.critical)) {
+    const at = clone(setup);
+    setPath(at, setup.find.path, res.values.critical);
+    const r = solveFriction(at);
+    return blockScene(at, { ...r, values: { ...r.values, critical: res.values.critical } }, opts);
+  }
+  return blockScene(setup, res, opts);
+}
+
+// setup.ladderMarks (a straight body leaning on a wall, foot first): its length along
+// it, how far up each force given `along` it acts, and its angle with the floor at the foot.
+function ladderMarks(setup) {
+  const [A, B] = [setup.body.points[0], setup.body.points[setup.body.points.length - 1]];
+  const L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+  const u = [(B[0] - A[0]) / L, (B[1] - A[1]) / L];
+  // The side away from the wall: of the two directions square to the ladder, the one
+  // pointing the way the foot is from the top.
+  const sq = [u[1], -u[0]];
+  const out = sq[0] * (A[0] - B[0]) >= 0 ? sq : [-sq[0], -sq[1]];
+  const off = (P, k) => add(P, scale(out, k * L));
+  const marks = [{ type: "dim", from: off(A, 0.28), to: off(B, 0.28), label: format(L, "m") }];
+  for (const f of setup.forces || []) {
+    if (typeof f.along !== "number") continue;
+    marks.push({ type: "dim", from: off(A, 0.1), to: off(f.at, 0.1), label: `${format(f.along, "m")}` });
+  }
+  const up = (Math.atan2(u[1], u[0]) * 180) / Math.PI;
+  marks.push({ type: "arc", center: A, r: 0.14 * L, start: u[0] < 0 ? 180 : 0, end: up, label: format(Math.round(Math.abs(u[0] < 0 ? 180 - up : up) * 10) / 10, "deg") });
+  return marks;
 }
 
 // Where a line from the crate's centre G, in direction u, leaves the crate
@@ -39,6 +75,10 @@ function blockScene(setup, res, opts) {
   const forces = setup.forces || [];
   const k = (0.3 * L) / Math.max(1, W, ...forces.map((f) => f.magnitude)); // metres per newton
   const minLen = 0.1 * L;
+  // setup.find: the number the question asks for (a push, the angle) — shown as "?"
+  // until the answer is revealed, then as the value found.
+  const asked = setup.find ? setup.find.path : null;
+  const found = asked && opts.reveal && Number.isFinite(res.values.critical) ? res.values.critical : null;
 
   // ---- The model ----
   const model = [];
@@ -46,41 +86,59 @@ function blockScene(setup, res, opts) {
   if (angle) {
     model.push({ type: "support", from: [-0.12 * L, 0], to: [top[0] + 0.1 * L, 0], normal: [0, 1] });
     model.push({ type: "ramp", points: [[0, 0], [top[0], 0], top] });
-    model.push({ type: "arc", center: [0, 0], r: 0.2 * L, start: 0, end: angle, label: `${format(angle, "deg")}` });
+    // (The angle the question asks for shows as θ = ? until the answer is revealed.)
+    const text = asked === "ramp.angle" ? (found != null ? `θ = ${format(found, "deg")}` : "θ = ?") : format(angle, "deg");
+    model.push({ type: "arc", center: [0, 0], r: 0.2 * L, start: 0, end: angle, label: text });
   } else {
     model.push({ type: "support", from: [0, 0], to: [L, 0], normal: [0, 1] });
   }
   model.push({ type: "box", at: G, w, h, angle, label: setup.block.label || "" });
-  const pushes = forces.map((f) => pushArrow(f, setup, G, t, n, w, h, Math.max(minLen, f.magnitude * k)));
+  // The numbers the student needs, in a key in a free corner.
+  model.push({ type: "note", lines: [`W = ${format(W, "N")}`, `μ_s = ${setup.mus}`, ...(setup.muk != null ? [`μ_k = ${setup.muk}`] : [])] });
+  // (A push set to zero on a slider isn't drawn: nothing pushes.)
+  const pushes = forces.filter((f) => f.magnitude > 1e-9).map((f) => {
+    const unknown = asked === `forces.#${f.id}.magnitude`;
+    const size = unknown ? found : f.magnitude;
+    return pushArrow(f, setup, G, t, n, w, h, size == null ? 0.2 * L : Math.max(minLen, size * k), unknown ? (size == null ? "?" : format(size, "N")) : null);
+  });
   for (const p of pushes) model.push(...p);
 
   // ---- The FBD (when needed) ----
-  const needed = setup.showFbd === "always" || opts.reveal || opts.showFbd;
+  // (showFbd "unknowns": the FBD from the start, with N and F as "?" — a debug stage,
+  // where their values would give the answer away.)
+  const needed = setup.showFbd === "always" || setup.showFbd === "unknowns" || opts.reveal || opts.showFbd;
   const size = L;
   const left = [Math.min(-0.16 * L, ...pushes.flat().filter((s) => s.from).map((s) => Math.min(s.from[0], s.to[0]))), Math.max(top[0], L) + 0.14 * L];
   // (Room for the steepest the ramp can be made, so a slider doesn't rescale the picture.)
   const steepest = setup.ramp.maxAngle ?? angle;
   const pushYs = pushes.flat().filter((s) => s.from).flatMap((s) => [s.from[1], s.to[1]]);
   const yTop = Math.max(L * Math.sin(steepest * deg), G[1] + 0.2 * L, ...pushYs) + 0.22 * L;
-  const capY = -0.2 * size;
+  // Captions under everything: the FBD's W and N reach down below the crate.
+  const Wlen = Math.max(minLen, W * k);
+  const Nlen = res.status === "determinate" && (opts.reveal || setup.showFbd === "always") ? Math.max(minLen, res.values.N * k) : 0.2 * L;
+  const capY = Math.min(-0.2 * size, G[1] - Wlen - 0.17 * L, C[1] - Nlen * n[1] - 0.17 * L);
   if (!needed) {
-    return [{ type: "axes" }, ...model, { type: "frame", frame: { xmin: left[0], xmax: left[1], ymin: capY - 0.1 * size, ymax: yTop } }];
+    // (No FBD, no captions: just room under the ground for the slope's angle.)
+    return [{ type: "axes" }, ...model, { type: "frame", frame: { xmin: left[0], xmax: left[1], ymin: -0.16 * size, ymax: yTop - 0.08 * size } }];
   }
   const known = res.status === "determinate" && (opts.reveal || setup.showFbd === "always");
   const v = res.values;
   const fbd = [];
   fbd.push({ type: "box", at: G, w, h, angle });
   // W at the centre, straight down.
-  fbd.push({ type: "arrow", id: "W", from: G, to: add(G, [0, -Math.max(minLen, W * k)]), role: "known", label: `W = ${format(W, "N")}` });
+  fbd.push({ type: "arrow", id: "W", from: G, to: add(G, [0, -Wlen]), role: "known", label: `W = ${format(W, "N")}` });
   fbd.push({ type: "point", at: G, label: "", style: "dot" });
-  // N pushes on the bottom face, across the surface.
-  const Nlen = known ? Math.max(minLen, v.N * k) : 0.2 * L;
-  fbd.push({ type: "arrow", id: "N", from: sub(C, scale(n, Nlen)), to: C, role: "unknown", label: `N = ${known ? format(v.N, "N") : "?"}` });
-  // F along the bottom face, from the contact: assumed up the slope until solved.
+  // N pushes on the bottom face, across the surface — uphill of the middle, so its
+  // tail leans away from W's arrow instead of running along it (for a crate treated
+  // as a particle, where along the face N acts doesn't matter).
+  const Nat = add(C, scale(t, 0.3 * w));
+  fbd.push({ type: "arrow", id: "N", from: sub(Nat, scale(n, Nlen)), to: Nat, onBody: true, role: "unknown", label: `N = ${known ? format(v.N, "N") : "?"}` });
+  // F along the bottom face's line, out from its corner on the side it points to:
+  // assumed up the slope until solved.
   const Fdir = known && v.F < 0 ? scale(t, -1) : t;
   const Flen = known ? Math.max(minLen * 0.8, Math.abs(v.F) * k) : 0.16 * L;
   if (!known || Math.abs(v.F) > 1e-6) {
-    const from = add(C, scale(Fdir, Math.min(w / 2, 0.02 * L)));
+    const from = add(C, scale(Fdir, w / 2));
     fbd.push({ type: "arrow", id: "F", from, to: add(from, scale(Fdir, Flen)), role: "unknown", label: `F = ${known ? format(Math.abs(v.F), "N") : "?"}` });
   }
   for (const p of pushes) fbd.push(...p);
@@ -93,14 +151,14 @@ function blockScene(setup, res, opts) {
     { type: "text", at: [(right[0] + right[1]) / 2, capY], text: "Free-body diagram", panel: "right" },
   ];
   const shapes = [{ type: "axes" }, ...model.map((s) => ({ ...s, panel: "left" })), ...fbd.map((s) => ({ ...shiftShape(s, offset), panel: "right" })), ...captions];
-  const yLow = Math.min(capY - 0.08 * size, G[1] - Math.max(minLen, W * k) - 0.12 * L, C[1] - Nlen - 0.12 * L);
+  const yLow = capY - 0.08 * size;
   return spreadPanels(shapes, { divider: left[1] + 0.04 * L, left, right, y: [yLow, yTop], margin: 0.04 * L, size: opts.canvasSize });
 }
 
 // A push (its arrowhead on the crate's face) or a rope's pull (starting at the crate),
 // with its angle to the surface when it has one — an arc at the arrow's tail, from a
 // dashed line along the surface.
-function pushArrow(f, setup, G, t, n, w, h, len) {
+function pushArrow(f, setup, G, t, n, w, h, len, value = null) {
   const u = forceDir(f, setup);
   const out = [];
   let from, to;
@@ -111,7 +169,8 @@ function pushArrow(f, setup, G, t, n, w, h, len) {
     to = edgePoint(G, scale(u, -1), t, n, w, h);
     from = sub(to, scale(u, len));
   }
-  out.push({ type: "arrow", id: f.id, from, to, role: "known", label: `${f.symbol} = ${format(f.magnitude, "N")}` });
+  // (A push is labelled at its outer end, like any arrow pushing on a body.)
+  out.push({ type: "arrow", id: f.id, from, to, ...(f.rope ? {} : { onBody: true }), role: value ? "unknown" : "known", label: `${f.symbol} = ${value || format(f.magnitude, "N")}` });
   if (f.tilt) {
     const s = f.along === "down" ? -1 : 1;
     const ref = scale(t, s);

@@ -57,7 +57,7 @@ export function frictionEquations(setup, result) {
 const STATE_TEXT = {
   holds: "|F| < \\mu_s N: \\text{ friction holds it}",
   impending: "|F| = \\mu_s N: \\text{ motion is impending (about to slip)}",
-  slides: "|F| > \\mu_s N \\text{ would be needed: it slides, and } F = \\mu_k N",
+  slides: "|F| > \\mu_s N \\text{ would be needed: it slides}",
   lifts: "N < 0: \\text{ it would lift off}",
 };
 
@@ -83,8 +83,9 @@ export function frictionSummary(setup, result, { mode = "symbolic", reveal = tru
   }
   const up = surfaceAxes(setup).angle ? "up the slope" : "to the right";
   lines.push(`N = ${fixedTex(v.N, "N")},\\quad \\mu_s N = (${setup.mus})(${num(v.N)}) = ${fixedTex(v.Fmax, "N")}`);
-  lines.push(`\\text{Friction needed: } F = ${fixedTex(v.Fneed, "N")} \\;(\\text{+ ${up}}) \\qquad ${STATE_TEXT[res.state]}`);
-  if (res.state === "slides") lines.push(`F = \\mu_k N = (${setup.muk})(${num(v.N)}) = ${fixedTex(Math.abs(v.F), "N")},\\ \\text{against the motion (${res.moves === "down" ? "down" : "up"} the slope)}`);
+  lines.push(`\\text{Friction needed: } F = ${fixedTex(v.Fneed, "N")} \\;(\\text{+ ${up}})`);
+  lines.push(STATE_TEXT[res.state]);
+  if (res.state === "slides" && setup.muk != null) lines.push(`F = \\mu_k N = (${setup.muk})(${num(v.N)}) = ${fixedTex(Math.abs(v.F), "N")},\\ \\text{against the motion (${res.moves === "down" ? "down" : "up"} the slope)}`);
   if (setup.find && Number.isFinite(v.critical)) {
     lines.push(`\\text{Impending motion ${setup.find.motion} — friction at its limit, } F = ${["up", "right"].includes(setup.find.motion) ? "-" : ""}\\mu_s N: \\quad ${setup.find.symbol} = ${fixedTex(v.critical, setup.find.unit || "", setup.find.unit === "deg" ? 1 : 1)}`);
   }

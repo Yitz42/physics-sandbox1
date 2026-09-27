@@ -231,9 +231,18 @@ Claude builds from it.
 
 ### Chapter 9: Friction
 
-**Unit 9.1: Dry friction**
-- Concept: F ≤ μN; impending motion.
-- Test ideas: box on a ramp; ladder against a wall; predict the angle it slips.
+**Unit 9.1: Dry friction** ✅
+- Concept: friction is only what equilibrium needs, up to $|F| \le \mu_s N$; at impending
+  motion $F = \mu_s N$ against the motion; sliding $F = \mu_k N$.
+- Built: tilt a ramp, change μs and push a crate, watching N, the friction needed and μs N
+  (the steepest ramp that holds, a push that holds it, friction down the slope, no friction);
+  predict N and F on a crate that holds, the slip angle (tan θ = μs), the push or pull that
+  starts a crate on a floor (angled down / a sled's rope angled up) and up a ramp; set a push
+  that holds a crate on a too-steep ramp (the whole range works); debug a student's working
+  (N = W, sin/cos swapped, F = μs N though it holds, μs W, friction's direction); concept
+  check; solve a painter's ladder on a rough floor against a smooth wall (FBD → equations →
+  N_B, F_A, N_A and the smallest μs that holds).
+- Axes on a ramp: x' up the slope, y' across it; F positive up the slope (to the right on a floor).
 
 **Unit 9.2: Tipping versus slipping** ⭐
 - Concept: which happens first, and why.
