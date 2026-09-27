@@ -5,7 +5,10 @@ Students work with forces, beams and plates, and the game shows the free-body
 diagrams and the equations behind them — first in symbols, then with the numbers
 substituted — so they can see how forces become formulas.
 
-The first course is **Statics**. Mechanics of materials and dynamics come later.
+The first course is **Statics**. A second course, **Automatic Controls**, is laid
+out chapter by chapter following Nise's *Control Systems Engineering* (7th ed.),
+with its units marked "Coming soon" until they're built. Mechanics of materials
+and dynamics come later.
 
 ## What's in it so far
 

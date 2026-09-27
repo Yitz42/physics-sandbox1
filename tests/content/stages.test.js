@@ -273,7 +273,9 @@ test("every unit is in a chapter; planned units have a title and a description; 
       if (ch.units.some((u) => typeof u === "string")) ok(r && r.chapter, `chapter ${ch.id} has built units but no textbook chapter in reading.js`);
       if (r && r.url) ok(/^https:\/\//.test(r.url), `chapter ${ch.id}: link must be https`);
     }
-    if (course.reading) ok(/^https:\/\//.test(course.reading.book.url), "the book needs an https link");
+    // A book is either free online (an https link) or not (url: null: students use their own copy).
+    if (course.reading) ok(course.reading.book.url === null || /^https:\/\//.test(course.reading.book.url), "the book's link must be https (or null)");
+    if (course.reading && course.reading.book.free) ok(/^https:\/\//.test(course.reading.book.free.url), "the free alternative needs an https link");
   }
 });
 

@@ -179,6 +179,73 @@ Claude builds from it.
 
 ---
 
+## Automatic controls (follows Nise, Control Systems Engineering, 7th ed.)
+
+The owner is taking this course. Chapters follow Nise chapter for chapter
+(content/controls/course.js); every unit is listed on the course page as
+"Coming soon" until it is built. Same rules as statics: one concept per unit,
+six stages each, hand-checked tests.
+
+**What the engine will need first** (general tools, added to render/ and core/):
+- a plot shape: curves against time or frequency, with axes and grid (step
+  responses, Bode plots), and markers (%OS, Ts, Tp read off the curve);
+- an s-plane shape: poles (×) and zeros (○), the jω axis, root locus branches;
+- block diagrams: boxes, summing junctions and arrows;
+- math: polynomial roots, partial fractions, step response by simulation.
+
+How the six challenge types fit controls (examples):
+- explore: sliders for ζ and ω_n (or K) and watch the step response and poles move;
+- predict: %OS, settling time, a steady-state error, a range of stable K;
+- build: tune K or a compensator to meet specs (e.g. %OS < 10%, Ts < 2 s);
+- debug: a wrong block-diagram reduction, a wrong Routh row, a wrong asymptote;
+- concept-check: what a pole's location means, which system type removes a ramp error;
+- solve: a full textbook problem, step by step.
+
+### Chapter 1: Introduction
+1.1 Open and closed loop · 1.2 What a control system must do (transient, steady state, stability)
+
+### Chapter 2: Modeling in the frequency domain
+2.1 Laplace transforms · 2.2 Transfer functions · 2.3 Electrical networks ·
+2.4 Translational mechanical systems · 2.5 Rotational systems and gears ·
+2.6 Electromechanical systems (DC motor) · 2.7 Linearization
+
+### Chapter 3: Modeling in the time domain
+3.1 State-space representation · 3.2 Transfer functions and state space
+
+### Chapter 4: Time response
+4.1 Poles, zeros and the response · 4.2 First-order systems · 4.3 Second-order systems ·
+4.4 Underdamped specifications (%OS, Tp, Ts, Tr) · 4.5 Higher-order systems (dominant poles)
+
+### Chapter 5: Reduction of multiple subsystems
+5.1 Block diagram reduction · 5.2 Signal-flow graphs and Mason's rule
+
+### Chapter 6: Stability
+6.1 Stability and pole locations · 6.2 Routh–Hurwitz criterion · 6.3 Stability with a gain
+
+### Chapter 7: Steady-state errors
+7.1 Steady-state error · 7.2 System type and error constants · 7.3 Errors from disturbances
+
+### Chapter 8: Root locus techniques
+8.1 Sketching the root locus · 8.2 Refining the sketch · 8.3 Transient response via gain
+
+### Chapter 9: Design via root locus
+9.1 Improving steady-state error (PI, lag) · 9.2 Improving transient response (PD, lead) ·
+9.3 PID and lag-lead design
+
+### Chapter 10: Frequency response techniques
+10.1 Frequency response · 10.2 Bode plots · 10.3 Nyquist criterion · 10.4 Gain and phase margins
+
+### Chapter 11: Design via frequency response
+11.1 Transient response via gain · 11.2 Lag compensation · 11.3 Lead compensation
+
+### Chapter 12: Design via state space
+12.1 Controllability and pole placement · 12.2 Observers
+
+### Chapter 13: Digital control systems
+13.1 Sampling and the z-transform · 13.2 Digital stability and design
+
+---
+
 ## Subject 2: Mechanics of materials (later)
 - Stress and strain, axial loading
 - Torsion

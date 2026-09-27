@@ -7,6 +7,9 @@ press Play. The game shows free-body diagrams and the governing equations, first
 symbols, then with numbers substituted, so students see how forces become formulas.
 
 Phase 1 goal: cover all of an intro statics course (see `docs/CURRICULUM.md`).
+A second course, **Automatic Controls**, follows the owner's class textbook (Nise,
+Control Systems Engineering, 7th ed.); its units are planned and listed as
+"Coming soon", built the same way as statics.
 Later phases add mechanics of materials (stress at a point, Mohr's circle, beam
 stresses) and dynamics. The architecture must make those additions possible without
 rewriting the statics code.
@@ -64,6 +67,7 @@ src/
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
       geometry.js          centroids, area moments of inertia
+    controls/              automatic controls (index.js lists the planned solvers)
     materials/             later: stress, strain, Mohr's circle
     dynamics/              later
 content/
@@ -76,6 +80,7 @@ content/
       unit.js              concept, learning goals, ordered list of stages
       1-explore.js  2-predict.js  3-build.js  4-debug.js  5-concept-check.js  6-solve.js
     cartesian-vectors/ …
+  controls/                same layout: course.js (chapters follow Nise), reading.js
 tests/
   tests.html               open with Live Server: runs every test, shows pass/fail
   statics/*.test.js        textbook problems with known answers

@@ -34,15 +34,20 @@ export function renderHome(root, courses) {
   );
 }
 
-// "Read more in the textbook": a link to the textbook chapter (opens in a new tab).
+// "Read more in the textbook": the textbook chapter, as a link when the book is
+// free online (opens in a new tab), else as plain text to read in your own copy.
+// A free alternative book, if the course names one, is linked underneath.
 function readMore(reading, { compact = false } = {}) {
   if (!reading) return null;
+  const link = (url, text) => el("a", { href: url, target: "_blank", rel: "noopener", textContent: text });
+  const book = reading.book;
   return el("div", { className: "read-more" + (compact ? " read-more-compact" : "") }, [
     el("span", { className: "read-more-icon", textContent: "📖" }),
     el("div", {}, [
       el("div", { className: "read-more-title", textContent: "Read more in the textbook" }),
-      el("a", { href: reading.url, target: "_blank", rel: "noopener", textContent: reading.chapter }),
-      compact ? null : el("div", { className: "read-more-book", textContent: `${reading.book.title}, by ${reading.book.authors} (free online)` }),
+      reading.url ? link(reading.url, reading.chapter) : el("span", { className: "read-more-chapter", textContent: reading.chapter }),
+      compact ? null : el("div", { className: "read-more-book", textContent: `${book.title}, by ${book.authors}${reading.url ? " (free online)" : ""}` }),
+      !compact && reading.free ? el("div", { className: "read-more-book" }, ["No copy? Free alternative: ", link(reading.free.url, reading.free.title)]) : null,
     ]),
   ]);
 }

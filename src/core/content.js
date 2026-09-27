@@ -46,11 +46,13 @@ export function unitPlace(course, unitId) {
   return { chapter: null, chapterNumber: null, number: String(course.units.indexOf(unitId) + 1) };
 }
 
-// The textbook chapter to read with a unit or chapter: { book, chapter, url } or null.
+// The textbook chapter to read with a unit or chapter, or null:
+//   { book, chapter, url, free }  url is null for a book that isn't free online
+//   (students use their own copy); free is an optional free alternative { title, url }.
 export function readingFor(course, chapter) {
   const r = course.reading;
   const entry = r && chapter && r.chapters && r.chapters[chapter.id];
-  return entry ? { book: r.book, chapter: entry.chapter, url: entry.url || r.book.url } : null;
+  return entry ? { book: r.book, chapter: entry.chapter, url: entry.url || r.book.url || null, free: r.book.free || null } : null;
 }
 
 // Load every stage of a unit (for the unit page's list).

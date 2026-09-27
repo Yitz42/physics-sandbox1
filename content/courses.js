@@ -21,4 +21,10 @@ export default [
     description: "Motion, Newton's second law, energy and momentum.",
     comingSoon: true,
   },
+  {
+    id: "controls",
+    title: "Automatic Controls",
+    subject: "controls",
+    description: "Feedback, transfer functions, stability, root locus, Bode plots and PID control: making systems do what you want.",
+  },
 ];
