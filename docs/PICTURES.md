@@ -124,3 +124,7 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   own diagram (panel: "left" | "right", render/panels.js).
 - **Segment numbers** (Unit 8.3) sit below the moment diagram, between the guides,
   clear of the dimension lines.
+- **3D pictures** (Unit 2.3, agreed with the owner): drawn by projection (render/projection.js).
+  The axes are a little x-y-z icon in the bottom-left corner, like the 2D pictures' x-y icon
+  (axes shape `dirs`), turned the way the picture is; where an angle or a component is
+  measured from an axis, a faint dashed line runs along it through the force's point.

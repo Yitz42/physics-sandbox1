@@ -21,6 +21,7 @@ export default {
     showAngles: { alpha: "given", beta: "given", gamma: "given" },
     axisLength: 3,
     fullScale: 1100, // N to a whole axis: the arrow grows and shrinks with the sliders
+    reach: [600, 600, 600], // the sliders' limits: the picture keeps room for all of them
     view3d: { yaw: 30, pitch: 22 },
   },
   editable: [

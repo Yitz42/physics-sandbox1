@@ -261,6 +261,21 @@ export function drawShape(cv, s, env) {
     }
     case "axes": {
       // Always in the bottom-left corner of the canvas, out of the way.
+      // s.dirs (a 3D picture): { x, y, z } — each axis's direction as drawn ([dx, dy],
+      // y up), so the little icon shows x, y and z the way the picture is turned.
+      if (s.dirs) {
+        const L = 30, names = Object.keys(s.dirs);
+        const tips = names.map((k) => [s.dirs[k][0] * L, -s.dirs[k][1] * L]);
+        const ox = 16 + Math.max(0, ...tips.map((t) => -t[0])) + 6, oy = cv.view.height - 14 - Math.max(0, ...tips.map((t) => t[1])) - 6;
+        names.forEach((k, i) => {
+          const t = tips[i], m = Math.hypot(t[0], t[1]) || 1;
+          drawArrow(ctx, [ox, oy], [ox + t[0], oy + t[1]], { color: faint, width: 1.5 });
+          drawLabel(ctx, k, ox + t[0] + (t[0] / m) * 9, oy + t[1] + (t[1] / m) * 9, { color: faint, size: 12 });
+        });
+        const xs = tips.map((t) => ox + t[0]), ys = tips.map((t) => oy + t[1]);
+        out.boxes.push({ x0: Math.min(ox, ...xs) - 12, y0: Math.min(oy, ...ys) - 12, x1: Math.max(ox, ...xs) + 12, y1: Math.max(oy, ...ys) + 12 });
+        break;
+      }
       const x = 18, y = cv.view.height - 16;
       drawArrow(ctx, [x, y], [x + 34, y], { color: faint, width: 1.5 });
       drawArrow(ctx, [x, y], [x, y - 34], { color: faint, width: 1.5 });

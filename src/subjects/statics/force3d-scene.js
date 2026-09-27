@@ -1,6 +1,8 @@
 // force3d-scene.js — the picture for forces in 3D (Unit 2.3), drawn in perspective
-// on the flat canvas (render/projection.js): the x, y and z axes from O, named points,
-// a pole and its cables, the ground, and each force as an arrow in space.
+// on the flat canvas (render/projection.js): named points, a pole and its cables, the
+// ground, and each force as an arrow in space. The axes are a little x-y-z icon in the
+// corner, as in the 2D pictures; faint dashed lines along the axes mark where angles
+// and components are measured from.
 //   setup.view3d: { yaw, pitch }  where it's looked at from (default: the textbook look)
 //   setup.ground: [xmin, xmax, ymin, ymax]  a faint patch of the x-y plane (the ground)
 //   setup.pole: ["O", "A"]  a post between two points;  setup.cables: [["A", "B"], …]
@@ -19,6 +21,7 @@ import { solveForce3d, pointOf, directionOf3 } from "./force3d.js";
 const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale3 = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 const nice = (v) => format(v, "").replace(/^-/, "−");
+const unit2 = (d) => { const m = Math.hypot(d[0], d[1]) || 1; return [d[0] / m, d[1] / m]; };
 
 // Points on the arc from direction a to direction b (unit vectors), radius r, round c.
 function arcPoints(c, a, b, r, n = 18) {
@@ -53,21 +56,24 @@ export function force3dScene(setup, result, opts = {}) {
     shapes.push({ type: "region", points: corners.map(at), tint: 0, alpha: 0.35 });
     fixed.push(...corners);
   }
-  const axes = [[1, 0, 0, "x"], [0, 1, 0, "y"], [0, 0, 1, "z"]];
-  axes.forEach(([a, b, c, name], i) => {
-    const e = [a, b, c];
-    const neg = Math.min(0, ...coords.map((p) => p[i]));
-    if (neg < -1e-9) shapes.push({ type: "line", from: at(scale3(e, neg - 0.15 * size)), to: at([0, 0, 0]), style: "reference" });
-    shapes.push({ type: "arrow", id: `axis-${name}`, from: at([0, 0, 0]), to: at(scale3(e, size)), role: "axis", label: name });
-    fixed.push(scale3(e, size), scale3(e, Math.min(0, neg - 0.15 * size)));
-  });
-
+  // The coordinate axes: a little x-y-z icon in the corner, as in the 2D pictures
+  // (agreed with the owner). Where an angle or a component is measured from an axis,
+  // a faint dashed line along it through the force's point, as a 2D picture does.
+  shapes.push({ type: "axes", dirs: { x: unit2(P.screenDir([1, 0, 0])), y: unit2(P.screenDir([0, 1, 0])), z: unit2(P.screenDir([0, 0, 1])) } });
   // A pole, cables, the named points.
   if (setup.pole) shapes.push({ type: "beam", points: setup.pole.map((n) => at(pointOf(setup, n))), width: 10 });
   for (const [a, b] of setup.cables || []) shapes.push({ type: "line", from: at(pointOf(setup, a)), to: at(pointOf(setup, b)), style: "cable" });
   for (const [name, p] of Object.entries(pts)) {
     shapes.push({ type: "point", at: at(p), label: name, style: "dot" });
     fixed.push(p);
+  }
+
+  // Forces whose components sliders set (setup.reach: the sliders' limits, N per axis):
+  // room for the whole box they can reach, so the picture never rescales as they move.
+  const kFixed = setup.fullScale ? size / setup.fullScale : null;
+  if (setup.reach && kFixed) {
+    const [rx, ry, rz] = setup.reach.map((n) => n * kFixed);
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) fixed.push([sx * rx, sy * ry, sz * rz]);
   }
 
   // The forces: arrows in space, all to one scale — the biggest 0.8 of an axis, or
@@ -81,7 +87,20 @@ export function force3dScene(setup, result, opts = {}) {
     const tip = add3(start, scale3(d.u, F * k));
     const asked = setup.hideMagnitude && !reveal;
     shapes.push({ type: "arrow", id: f.id, from: at(start), to: at(tip), role: "known", label: `${f.symbol} = ${asked ? "?" : format(F, "N")}` });
-    fixed.push(add3(start, scale3(d.u, 0.8 * size)));
+    // (The frame keeps room for the arrow at its longest — unless sliders set it: then
+    // the box they can reach is already in, setup.reach.)
+    fixed.push(start, ...(setup.reach ? [] : [add3(start, scale3(d.u, 0.8 * size))]));
+    // Reference lines along the axes the picture measures from (dashed, unlabelled).
+    const want = setup.showAngles || {};
+    const refs = [];
+    if (want.alpha || want.theta || shown(setup.showComponents)) refs.push([1, 0, 0]);
+    if (want.beta || shown(setup.showComponents)) refs.push([0, 1, 0]);
+    if (want.gamma || shown(setup.showComponents)) refs.push([0, 0, 1]);
+    for (const e of refs) {
+      const end = add3(start, scale3(e, (setup.reach ? 0.45 : 0.6) * size));
+      shapes.push({ type: "line", from: at(start), to: at(end), style: "reference" });
+      fixed.push(end);
+    }
     if (shown(setup.showComponents)) shapes.push(...componentBox(f, start, scale3(d.u, F * k), d.u, F, at, reveal || setup.showComponents === "always"));
     if (setup.showAngles) shapes.push(...angleMarks(setup, f, start, d.u, 0.3 * size, at, reveal));
   }

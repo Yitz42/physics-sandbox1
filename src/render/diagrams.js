@@ -15,7 +15,8 @@
 //   triangle { at, dx, dy, labels }          slope triangle, e.g. 3-4-5
 //   zone     { from, to, label, labelBelow? } a shaded "not allowed" area, labelled above (or below)
 //   text     { at, text }                    a caption
-//   axes     {}                              little x-y axes (bottom-left corner)
+//   axes     { dirs? }                       little x-y axes (bottom-left corner); dirs: a 3D picture's
+//                                            x, y, z as drawn ({ x: [dx, dy], … })
 //   handle   { at }                          a grab circle on a draggable arrow tip
 //   beam, pivot, dim, rightangle, moment, curve   see shapes-extra.js (curve: a 3D picture's angle)
 //   spring, pulley                           see mechanisms.js
