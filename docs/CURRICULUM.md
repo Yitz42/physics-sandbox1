@@ -113,8 +113,13 @@ Claude builds from it.
   student's equations (perpendicular arm, sign, missing weight); concept check on
   smart points; solve an L-shaped jib crane from FBD to reactions.
 
-**Unit 4.3: Alternative equation sets** ⭐
+**Unit 4.3: Alternative equation sets** ⭐ ✅
 - Concept: two moment equations plus one force equation (and when that works).
+- Built: choose the three equations for a jib crane and watch the unknowns in each (and
+  a set that fails); predict reactions one equation each (crane, slanted push); find the
+  three moment points (A, B and E, where the roller's line meets the wall line) that give a
+  ramp-roller beam one unknown per equation; debug two moment equations; concept check;
+  solve a loading ramp, choosing the third equation before writing them.
 
 **Unit 4.4: Stability and determinacy** ✅
 - Concept: too few supports → mechanism; too many → indeterminate; improper supports.

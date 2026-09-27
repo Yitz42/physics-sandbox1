@@ -134,6 +134,12 @@ export function rigidBodySummary(setup, result, { mode = "symbolic", reveal = tr
     const inM = result.momentUnknowns.map((id) => reactions.find((r) => r.id === id).symbol).join(",\\ ") || "\\text{none}";
     lines.push(`\\text{Unknowns in } \\Sigma M_{${P.label}}\\text{: } ${inM} \\;(${result.momentUnknowns.length})`);
   }
+  // A chosen equation set (Unit 4.3): the unknowns in each equation, and whether it works.
+  if (setup.sums && setup.showSetUnknowns && result.setUnknowns) {
+    const sym = (id) => reactions.find((r) => r.id === id).symbol;
+    lines.push(result.equations.map((e, i) => `${e.lhs}\\text{: } ${result.setUnknowns[i].map(sym).join(",\\ ") || "\\text{none}"}`).join(" \\qquad "));
+    if (result.setCheck) lines.push(`\\text{${result.setCheck.ok ? "✓ These three can find all three unknowns." : "✗ These three can't find all three unknowns."}}`);
+  }
   const W = weightOf(setup);
   if (W && mode === "numeric") lines.push(`W = mg = (${W.mass}\\,\\text{kg})(9.81\\,\\text{m/s}^2) = ${fixedTex(W.mass * 9.81, "N")}`);
   if (reveal && result.status === "determinate" && setup.analysis !== "count") {

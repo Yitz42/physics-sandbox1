@@ -13,6 +13,9 @@
 // Stage fields used:
 //   solve: { steps, candidates, choicesName, intros? }   candidates = forces offered in the FBD
 //          palette; choicesName = what the "choices" step is called (e.g. "Reduce the diagram");
+//          choices: the stage's own groups for the "choices" step, asked before the working
+//          (e.g. "which third equation?"; same form as solver.choices); choicesDone: the
+//          message after them;
 //          intros: { fbd: "…" } replaces a step's standard introduction;
 //          hints: { fbd: [...], equations: [...] } optional hints for each step (else the stage's)
 //   ask:   what to solve for (as in predict)
@@ -133,9 +136,16 @@ export function mount(ctx) {
       });
       body.appendChild(current.element);
     } else if (step === "choices") {
-      current = createChoicePick(solver.choices(ws.setup, ws.result), {
+      // The stage's own questions (solve.choices, e.g. "which three equations?",
+      // asked BEFORE the working: nothing is revealed), or the solver's lines of working.
+      const own = stage.solve.choices;
+      current = createChoicePick(own || solver.choices(ws.setup, ws.result), {
         onCorrect: () => {
           stepRight();
+          if (own) {
+            showMessage(ctx.el.feedback, "good", "Good choice ✓", stage.solve.choicesDone || "");
+            return waitForNext();
+          }
           ws.showEquations(true);
           ws.setReveal(true);
           showMessage(ctx.el.feedback, "good", "All correct ✓", "The working is now in the Equations panel.");

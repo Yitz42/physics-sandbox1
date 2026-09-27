@@ -106,6 +106,7 @@ export function drawScene(cv, shapes, opts = {}) {
     obstacles.push(...out.boxes);
     segments.push(...out.segments);
     wanted.push(...out.labels);
+    if (out.arcs) arcs.push(...out.arcs); // angle marks a drawing asks for (e.g. a slope's angle), drawn last
     if (s.type === "point" && s.label) {
       const [x, y] = cv.toScreen(s.at);
       // Point names go first, as close to their point as they can: just below

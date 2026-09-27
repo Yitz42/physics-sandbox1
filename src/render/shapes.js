@@ -220,6 +220,7 @@ export function drawShape(cv, s, env) {
       out.boxes.push(...extra.boxes);
       out.segments.push(...extra.segments);
       out.labels.push(...extra.labels);
+      if (extra.arcs) out.arcs = extra.arcs; // angle marks it asks for (drawn last, see diagrams.js)
     }
   }
   ctx.restore();

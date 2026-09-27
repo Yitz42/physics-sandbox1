@@ -18,6 +18,8 @@
 //   moments:  applied couple moments [{ id, symbol, magnitude, sense: ±1, at }]
 //   about:    "A" (a support id) or { at, label } — the moment point (default: the
 //             support with the most reactions). Any point works, on the body or off it.
+//   sums:     another set of three equations, e.g. [{ M: "A" }, { M: "B" }, { F: "y" }]
+//             (Unit 4.3; see rigid-body-sets.js); points: { C: [x, y] } names extra points
 //   analysis: "equilibrium" (default) or "count" (just count the unknowns; status "resultant")
 //   fbdEdits: a deliberately wrong FBD (debug stages, see supports.js)
 //   Drawing only: grounds, dims, texts, showReactions ("always" | "reveal"), weightLabel,
@@ -41,6 +43,7 @@ import { componentFactors } from "./directions.js";
 import { armOf } from "./moment.js";
 import { allReactions, countBySupport, SUPPORT_NAMES } from "./supports.js";
 import { namedParts } from "./distributed.js";
+import { sumsOf, checkSet } from "./rigid-body-sets.js";
 
 const numM = (v) => `(${sigFig(Math.abs(v), 3)}\\,\\text{m})`;
 
@@ -84,43 +87,50 @@ function armSymbol(f) {
 // ---- Equations as data (see core/equations.js) -----------------------------
 
 export function rigidBodyEquations(setup) {
-  const P = momentPoint(setup);
-  const eqs = [
-    { id: "sumFx", lhs: "\\Sigma F_x", form: "zero", terms: [] },
-    { id: "sumFy", lhs: "\\Sigma F_y", form: "zero", terms: [] },
-    { id: "sumM", lhs: `\\Sigma M_{${P.label}}`, form: "zero", terms: [] },
-  ];
-  const [fx, fy, mm] = eqs;
+  // The three equations: ΣF_x, ΣF_y, ΣM_P — or the set a stage chose (setup.sums,
+  // Unit 4.3: e.g. ΣM_A, ΣM_B, ΣF_y; see rigid-body-sets.js).
+  const sums = sumsOf(setup, momentPoint(setup));
+  const eqs = sums.map((q) => ({
+    id: q.id, form: "zero", terms: [], sum: q,
+    lhs: q.kind === "Fx" ? "\\Sigma F_x" : q.kind === "Fy" ? "\\Sigma F_y" : `\\Sigma M_{${q.P.label}}`,
+  }));
+  const fxs = eqs.filter((e) => e.sum.kind === "Fx"), fys = eqs.filter((e) => e.sum.kind === "Fy"), mms = eqs.filter((e) => e.sum.kind === "M");
   // One force's terms. value null = an unknown reaction.
   const addForce = (f, direction, value, unit = "N") => {
     const c = f.kind === "weight" ? { x: null, y: { sign: -1, factor: null } } : componentFactors(direction);
-    if (c.x) fx.terms.push({ id: f.id, sign: c.x.sign, symbol: f.symbol, value, unit, factor: c.x.factor });
-    if (c.y) fy.terms.push({ id: f.id, sign: c.y.sign, symbol: f.symbol, value, unit, factor: c.y.factor });
-    const a = armOf({ about: { at: P.at } }, { kind: f.kind, direction }, f.at);
-    if (a.d < 1e-9) return; // its line of action passes through P: no moment
-    const factor = { tex: armSymbol(f), numTex: numM(a.d), value: a.d };
-    if (Math.abs(a.rLen - a.d) > 1e-6) {
-      factor.alt = { tex: armSymbol(f).replace(/^d/, "r"), numTex: numM(a.rLen), value: a.rLen };
-      factor.swapLabel = "Use the perpendicular distance d";
-      factor.swapReason = `uses the distance to ${P.label} instead of the perpendicular distance to the line of action`;
-      factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
+    if (c.x) for (const fx of fxs) fx.terms.push({ id: f.id, sign: c.x.sign, symbol: f.symbol, value, unit, factor: c.x.factor });
+    if (c.y) for (const fy of fys) fy.terms.push({ id: f.id, sign: c.y.sign, symbol: f.symbol, value, unit, factor: c.y.factor });
+    for (const mm of mms) {
+      const P = mm.sum.P;
+      const a = armOf({ about: { at: P.at } }, { kind: f.kind, direction }, f.at);
+      if (a.d < 1e-9) continue; // its line of action passes through P: no moment
+      const factor = { tex: armSymbol(f), numTex: numM(a.d), value: a.d };
+      if (Math.abs(a.rLen - a.d) > 1e-6) {
+        factor.alt = { tex: armSymbol(f).replace(/^d/, "r"), numTex: numM(a.rLen), value: a.rLen };
+        factor.swapLabel = "Use the perpendicular distance d";
+        factor.swapReason = `uses the distance to ${P.label} instead of the perpendicular distance to the line of action`;
+        factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
+      }
+      mm.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value, unit, factor });
     }
-    mm.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value, unit, factor });
   };
   for (const f of knownForces(setup)) addForce(f, f.direction, magnitudeOf(f));
-  for (const m of setup.moments || []) mm.terms.push({ id: m.id, sign: m.sense, symbol: m.symbol, value: m.magnitude, unit: "N·m" });
+  for (const m of setup.moments || []) for (const mm of mms) mm.terms.push({ id: m.id, sign: m.sense, symbol: m.symbol, value: m.magnitude, unit: "N·m" });
   for (const r of allReactions(setup)) {
-    if (r.moment) mm.terms.push({ id: r.id, sign: r.sense, symbol: r.symbol, value: null });
+    if (r.moment) for (const mm of mms) mm.terms.push({ id: r.id, sign: r.sense, symbol: r.symbol, value: null });
     else addForce(r, r.direction, null);
   }
   // Two arms with the same name (both of a pin's components, about a point off
   // both their lines) get the component's own name: d_{A_x} and d_{A_y}.
-  const names = mm.terms.filter((t) => t.factor).map((t) => t.factor.tex);
-  for (const t of mm.terms) {
-    if (!t.factor || names.filter((n) => n === t.factor.tex).length < 2) continue;
-    const own = `d_{${t.symbol}}`;
-    t.factor = { ...t.factor, tex: own, ...(t.factor.alt ? { alt: { ...t.factor.alt, tex: own.replace(/^d/, "r") } } : {}) };
+  for (const mm of mms) {
+    const names = mm.terms.filter((t) => t.factor).map((t) => t.factor.tex);
+    for (const t of mm.terms) {
+      if (!t.factor || names.filter((n) => n === t.factor.tex).length < 2) continue;
+      const own = `d_{${t.symbol}}`;
+      t.factor = { ...t.factor, tex: own, ...(t.factor.alt ? { alt: { ...t.factor.alt, tex: own.replace(/^d/, "r") } } : {}) };
+    }
   }
+  for (const e of eqs) delete e.sum; // (plain equation data from here on)
   return eqs;
 }
 
@@ -136,8 +146,19 @@ export function solveRigidBody(setup) {
   for (const f of knownForces(setup)) values[f.id] = magnitudeOf(f);
   // The unknowns in ΣM_P: a reaction through P has no moment about it, so a
   // smart choice of P leaves as few as possible (one, and ΣM gives it directly).
-  const momentUnknowns = equations.find((e) => e.id === "sumM").terms.filter((t) => t.value == null).map((t) => t.id);
+  const firstM = equations.find((e) => e.id.startsWith("sumM"));
+  const momentUnknowns = firstM ? firstM.terms.filter((t) => t.value == null).map((t) => t.id) : [];
   values.nM = momentUnknowns.length;
+  // A chosen equation set (Unit 4.3): the unknowns in each equation, and whether
+  // the three can find them all. The answers themselves come from the usual set.
+  const setUnknowns = equations.map((e) => [...new Set(e.terms.filter((t) => t.value == null).map((t) => t.id))]);
+  let setCheck = null;
+  if (setup.sums) {
+    setCheck = checkSet(sumsOf(setup, momentPoint(setup)));
+    values.setOk = setCheck.ok ? 1 : 0;
+    values.setMax = Math.max(...setUnknowns.map((u) => u.length));
+  }
+  const solveWith = setup.sums ? rigidBodyEquations({ ...setup, sums: null }) : equations;
   const names = ids.map((id) => `$${reactions.find((r) => r.id === id).symbol}$`);
   const list = names.length ? names.join(", ") : "none";
 
@@ -151,7 +172,7 @@ export function solveRigidBody(setup) {
     message = `${ids.length} unknown reactions (${list}) but only 3 equations ($\\Sigma F_x = 0$, $\\Sigma F_y = 0$, $\\Sigma M = 0$). ` +
       "Equilibrium alone can't find them all: the structure is statically indeterminate.";
   } else {
-    const sol = solveEquations(equations, ids);
+    const sol = solveEquations(solveWith, ids);
     if (sol.status !== "unique") {
       status = "unstable";
       message = improperMessage(reactions);
@@ -174,7 +195,9 @@ export function solveRigidBody(setup) {
     if (status === "determinate") message = `${ids.length} unknowns (${list}) and 3 equations: the reactions can all be found — the beam is statically determinate.`;
     status = "resultant";
   }
-  return { status, message, values, equations, unknowns: ids, reactions, momentUnknowns };
+  // A set that can't do the job says so (once the body itself is fine).
+  if (setCheck && !setCheck.ok && status === "determinate") message = setCheck.message;
+  return { status, message, values, equations, unknowns: ids, reactions, momentUnknowns, setUnknowns, setCheck };
 }
 
 // Three reactions that still can't hold the body: all parallel, or all through one point.

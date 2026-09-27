@@ -16,6 +16,7 @@ import { magnitudeOf, directionOf } from "./particle.js";
 import { placeArrow } from "../../render/fbd.js";
 import { allReactions } from "./supports.js";
 import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt, momentPoint } from "./rigid-body.js";
+import { pointNamed } from "./rigid-body-sets.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
 import { concurrency } from "./rigid-body-count.js";
@@ -112,10 +113,13 @@ export function rigidBodyScene(setup, result, opts = {}) {
   }
   // setup.showMomentPoint: mark the point moments are taken about (a ring; named
   // unless it's a support, which has its own letter).
+  // With a chosen equation set (setup.sums, Unit 4.3), every moment point in it.
   if (setup.showMomentPoint) {
-    const P = momentPoint(setup);
-    const isSupport = (setup.supports || []).some((q) => q.id === P.label);
-    shapes.push({ type: "point", at: P.at, label: isSupport ? "" : P.label, style: "ring" });
+    const Ps = setup.sums ? setup.sums.filter((q) => q.M).map((q) => pointNamed(setup, q.M)) : [momentPoint(setup)];
+    for (const P of Ps) {
+      const isSupport = (setup.supports || []).some((q) => q.id === P.label);
+      shapes.push({ type: "point", at: P.at, label: isSupport ? "" : P.label, style: "ring" });
+    }
   }
   return shapes;
 }

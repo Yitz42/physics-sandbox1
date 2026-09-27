@@ -41,7 +41,7 @@ const chapters = [
     id: "rigid-bodies", title: "Equilibrium of a rigid body",
     units: [
       "supports", "rigid-body-equilibrium",
-      soon("Alternative equation sets", "Two moment equations plus one force equation — and when that works."),
+      "equation-sets",
       "stability",
       "two-force-members",
       soon("Rigid body equilibrium in 3D", "Six equations, supports in space, and solving for their reactions."),

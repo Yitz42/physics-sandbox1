@@ -16,8 +16,7 @@
 // triangle, wheels, hatching, a link's bar — is reported as a box, so labels
 // keep clear of it (render/labels.js keeps a gap around every box).
 
-import { barBoxes, overlapArea, CLEAR } from "./labels.js";
-import { measureLabel, labelBox } from "./arrows.js";
+import { barBoxes } from "./labels.js";
 
 // A pin's size, the same for every pin (a support's or a link's anchor), in pixels.
 const PIN = { half: 14, depth: 24, ground: 22, ring: 4.5 };
@@ -85,51 +84,19 @@ export function drawSupportSymbol(cv, s, env) {
     outline(at, Math.min(along(p1), along(p2)), Math.max(along(p1), along(p2)), Math.min(back(p1), back(p2)), Math.max(back(p1), back(p2)));
   };
   // On a slope (not level ground, not a wall): mark the slope's angle at the
-  // low end of the ground line — a short level line and the angle between them.
+  // low end of the ground line, between the level and the slope. It's an angle
+  // mark like any other (render/angles.js), drawn after everything else, so its
+  // number keeps clear of the reaction arrows too: the arc grows outward and the
+  // dashed level line reaches out to meet it.
   const tilt = (Math.atan2(Math.abs(s.normal[0]), s.normal[1]) * 180) / Math.PI;
   const incline = (c, half) => {
     if (!(tilt > 1 && tilt < 89)) return;
     const e1 = [c[0] - t[0] * half, c[1] - t[1] * half], e2 = [c[0] + t[0] * half, c[1] + t[1] * half];
     const [Q, R] = e1[1] > e2[1] ? [e1, e2] : [e2, e1]; // Q: the low end (screen y is down)
-    const v = [R[0] - Q[0], R[1] - Q[1]], vl = Math.hypot(v[0], v[1]) || 1;
-    const h = [Math.sign(v[0]) || 1, 0]; // level, toward the same side
-    const a0 = Math.atan2(h[1], h[0]), a1 = Math.atan2(v[1] / vl, v[0] / vl);
-    // The number goes between the two sides, clear of the symbol's own outline
-    // (its hatching sits right along the slope): the first clear spot, trying
-    // further out along the arc and nearer the level side. The level line and
-    // the arc reach out to meet it, like the other angle marks (angles.js).
-    const text = `${Math.round(tilt)}°`;
-    const w = measureLabel(ctx, text, 13, 600);
-    const clearOf = (pos) => {
-      const bx = labelBox(pos[0], pos[1], w, 13, "center");
-      const pad = { x0: bx.x0 - CLEAR, y0: bx.y0 - CLEAR, x1: bx.x1 + CLEAR, y1: bx.y1 + CLEAR };
-      return !out.boxes.some((q) => overlapArea(pad, q) > 0);
-    };
-    let rad = 36, pos = null;
-    for (let r = 36; r <= 96 && !pos; r += 6) {
-      for (const f of [0.5, 0.35, 0.25]) {
-        const m = a0 + (a1 - a0) * f;
-        const at2 = [Q[0] + Math.cos(m) * r, Q[1] + Math.sin(m) * r + 4];
-        if (clearOf(at2)) {
-          rad = r;
-          pos = at2;
-          break;
-        }
-      }
-    }
-    if (!pos) pos = [Q[0] + Math.cos((a0 + a1) / 2) * 36, Q[1] + Math.sin((a0 + a1) / 2) * 36 + 4];
-    ctx.save();
-    ctx.strokeStyle = env.faint;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(Q[0], Q[1]);
-    ctx.lineTo(Q[0] + h[0] * Math.max(34, rad + w / 2 + 4), Q[1]);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(Q[0], Q[1], rad - 14, a0, a1, a1 < a0);
-    ctx.stroke();
-    ctx.restore();
-    out.labels.push({ text, pos, align: "center", size: 13, weight: 600, color: env.ink, plain: true, maxMove: 14 });
+    const v = [R[0] - Q[0], -(R[1] - Q[1])]; // up the slope, in world directions (y up)
+    const level = v[0] >= 0 ? 0 : 180; // the level side, toward the slope
+    const slope = (Math.atan2(v[1], v[0]) * 180) / Math.PI;
+    (out.arcs ||= []).push({ type: "arc", center: cv.toWorld(Q), r: 22 / cv.view.scale, start: level, end: slope, label: `${Math.round(tilt)}°` });
   };
   switch (s.kind) {
     case "pin": {
