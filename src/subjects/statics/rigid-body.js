@@ -17,15 +17,18 @@
 //   loads:    distributed loads (see distributed-loads.js) — each piece becomes its resultant
 //   moments:  applied couple moments [{ id, symbol, magnitude, sense: ±1, at }]
 //   about:    "A" (a support id) or { at, label } — the moment point (default: the
-//             support with the most reactions)
+//             support with the most reactions). Any point works, on the body or off it.
 //   analysis: "equilibrium" (default) or "count" (just count the unknowns; status "resultant")
 //   fbdEdits: a deliberately wrong FBD (debug stages, see supports.js)
-//   Drawing only: grounds, dims, texts, showReactions ("always" | "reveal"), weightLabel
+//   Drawing only: grounds, dims, texts, showReactions ("always" | "reveal"), weightLabel,
+//             showMomentPoint (mark the moment point), showMomentUnknowns (a line under
+//             the equations: which unknowns ΣM contains — Unit 4.2's "smart point")
 // }
 //
 // result.values: every reaction by id (signed, in its assumed direction: +x, +y,
 // counterclockwise, or push/pull for rollers and cables), "n_<supportId>" (its
-// number of unknowns), "n" (total unknowns).
+// number of unknowns), "n" (total unknowns), "nM" (how many unknowns the moment
+// equation contains: reactions whose line of action misses the moment point).
 
 import { add, sub, scale, mag, unit, cross2 } from "../../core/vector.js";
 import { sigFig } from "../../core/units.js";
@@ -97,6 +100,7 @@ export function rigidBodyEquations(setup) {
       factor.alt = { tex: armSymbol(f).replace(/^d/, "r"), numTex: numM(a.rLen), value: a.rLen };
       factor.swapLabel = "Use the perpendicular distance d";
       factor.swapReason = `uses the distance to ${P.label} instead of the perpendicular distance to the line of action`;
+      factor.swapKind = "momentArm"; // the kind of mistake (core/diagnosis.js)
     }
     mm.terms.push({ id: f.id, sign: Math.sign(a.perNewton), symbol: f.symbol, value, unit, factor });
   };
@@ -105,6 +109,14 @@ export function rigidBodyEquations(setup) {
   for (const r of allReactions(setup)) {
     if (r.moment) mm.terms.push({ id: r.id, sign: r.sense, symbol: r.symbol, value: null });
     else addForce(r, r.direction, null);
+  }
+  // Two arms with the same name (both of a pin's components, about a point off
+  // both their lines) get the component's own name: d_{A_x} and d_{A_y}.
+  const names = mm.terms.filter((t) => t.factor).map((t) => t.factor.tex);
+  for (const t of mm.terms) {
+    if (!t.factor || names.filter((n) => n === t.factor.tex).length < 2) continue;
+    const own = `d_{${t.symbol}}`;
+    t.factor = { ...t.factor, tex: own, ...(t.factor.alt ? { alt: { ...t.factor.alt, tex: own.replace(/^d/, "r") } } : {}) };
   }
   return eqs;
 }
@@ -119,6 +131,10 @@ export function solveRigidBody(setup) {
   const counts = countBySupport(setup);
   for (const [id, n] of Object.entries(counts)) values[`n_${id}`] = n;
   for (const f of knownForces(setup)) values[f.id] = magnitudeOf(f);
+  // The unknowns in ΣM_P: a reaction through P has no moment about it, so a
+  // smart choice of P leaves as few as possible (one, and ΣM gives it directly).
+  const momentUnknowns = equations.find((e) => e.id === "sumM").terms.filter((t) => t.value == null).map((t) => t.id);
+  values.nM = momentUnknowns.length;
   const names = ids.map((id) => `$${reactions.find((r) => r.id === id).symbol}$`);
   const list = names.length ? names.join(", ") : "none";
 
@@ -148,7 +164,7 @@ export function solveRigidBody(setup) {
     if (status === "determinate") message = `${ids.length} unknowns (${list}) and 3 equations: the reactions can all be found — the beam is statically determinate.`;
     status = "resultant";
   }
-  return { status, message, values, equations, unknowns: ids, reactions };
+  return { status, message, values, equations, unknowns: ids, reactions, momentUnknowns };
 }
 
 // Three reactions that still can't hold the body: all parallel, or all through one point.
@@ -171,7 +187,7 @@ function liftOff(reactions, values) {
 
 // Names and units for result.values (answer boxes and labels).
 export function rigidBodyQuantities(setup) {
-  const q = { n: { label: "\\text{unknowns}", unit: "" } };
+  const q = { n: { label: "\\text{unknowns}", unit: "" }, nM: { label: "\\text{unknowns in } \\Sigma M", unit: "" } };
   for (const s of setup.supports || []) q[`n_${s.id}`] = { label: `\\text{unknowns at } ${s.id}`, unit: "" };
   for (const r of allReactions(setup)) q[r.id] = { label: r.symbol, unit: r.moment ? "N·m" : "N" };
   for (const f of knownForces(setup)) q[f.id] = { label: f.symbol, unit: "N" };

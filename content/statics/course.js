@@ -40,8 +40,7 @@ const chapters = [
   {
     id: "rigid-bodies", title: "Equilibrium of a rigid body",
     units: [
-      "supports",
-      soon("Equilibrium of a rigid body", "$\\Sigma F_x = 0$, $\\Sigma F_y = 0$ and $\\Sigma M = 0$, and how to choose a smart point for moments."),
+      "supports", "rigid-body-equilibrium",
       soon("Alternative equation sets", "Two moment equations plus one force equation — and when that works."),
       soon("Stability and determinacy", "Too few supports and it moves; too many and equilibrium can't find the forces."),
       soon("Two-force and three-force members", "A two-force member pulls or pushes along its own line; three forces must meet at a point."),

@@ -15,7 +15,7 @@ import { format } from "../../core/units.js";
 import { magnitudeOf, directionOf } from "./particle.js";
 import { placeArrow } from "../../render/fbd.js";
 import { allReactions } from "./supports.js";
-import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt } from "./rigid-body.js";
+import { solveRigidBody, weightOf, knownForces, bodySize, outwardAt, momentPoint } from "./rigid-body.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
 import { rigidBodyShadow } from "./rigid-body-tools.js";
 
@@ -88,6 +88,13 @@ export function rigidBodyScene(setup, result, opts = {}) {
     }
   }
   if (opts.guesses) shapes.push(...rigidBodyShadow(setup, res, opts.guesses, { k, size }));
+  // setup.showMomentPoint: mark the point moments are taken about (a ring; named
+  // unless it's a support, which has its own letter).
+  if (setup.showMomentPoint) {
+    const P = momentPoint(setup);
+    const isSupport = (setup.supports || []).some((q) => q.id === P.label);
+    shapes.push({ type: "point", at: P.at, label: isSupport ? "" : P.label, style: "ring" });
+  }
   return shapes;
 }
 

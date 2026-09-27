@@ -105,10 +105,13 @@ Claude builds from it.
   supports (stable, determinate, free to expand); debug a boom's FBD; draw a beam's FBD
   and find its reactions.
 
-**Unit 4.2: Equilibrium of a rigid body**
+**Unit 4.2: Equilibrium of a rigid body** ✅
 - Concept: ΣFx = 0, ΣFy = 0, ΣM = 0; choosing a smart moment point.
-- Test ideas: simply supported beam, cantilever, L-shaped bracket; predict reactions;
-  compare the effort of taking moments about different points.
+- Built: pick the moment point and watch the unknowns in ΣM (and move a load onto the
+  overhang); predict the reactions of an overhanging beam and a cantilever with
+  distributed loads; place a diving board's fulcrum within three limits; debug a
+  student's equations (perpendicular arm, sign, missing weight); concept check on
+  smart points; solve an L-shaped jib crane from FBD to reactions.
 
 **Unit 4.3: Alternative equation sets** ⭐
 - Concept: two moment equations plus one force equation (and when that works).

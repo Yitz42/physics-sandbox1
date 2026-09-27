@@ -292,7 +292,11 @@ different situation (all are seen before any repeats), then new numbers from its
   push, cables must pull, weight points down. Some beams have mass, so the student
   must remember the weight W at the centre.
 - Unit 4.1's solve stage goes all the way to the reactions (FBD → equations → answers);
-  Unit 4.2 then goes deeper (choosing a smart moment point, harder shapes).
+  Unit 4.2 then goes deeper (choosing a smart moment point, harder shapes): built as
+  rigid-body-equilibrium/ — the explore shows which unknowns stay in ΣM about the
+  point chosen (setup.showMomentUnknowns / showMomentPoint), then an overhanging
+  beam and a cantilever, a diving-board fulcrum, a debug of the equations, and an
+  L-shaped jib crane.
 
 ## Physics conventions
 - SI units by default: m, kg, N, N·m, g = 9.81 m/s².

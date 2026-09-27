@@ -8,7 +8,7 @@ import { clone } from "../../core/paths.js";
 import { fixedTex, format } from "../../core/units.js";
 import { placeArrow } from "../../render/fbd.js";
 import { allReactions, SUPPORT_NAMES } from "./supports.js";
-import { solveRigidBody, weightOf, bodySize, outwardAt, bodyCentre } from "./rigid-body.js";
+import { solveRigidBody, weightOf, bodySize, outwardAt, bodyCentre, momentPoint } from "./rigid-body.js";
 import { swapTrig } from "./directions.js";
 
 // ---- Drawing the FBD (solve challenge) -----------------------------------------
@@ -118,6 +118,12 @@ export function rigidBodySummary(setup, result, { mode = "symbolic", reveal = tr
   const lines = [];
   const names = reactions.map((r) => r.symbol).join(",\\ ") || "\\text{none}";
   lines.push(`\\text{Unknowns: } ${names} \\;(${reactions.length}) \\qquad \\text{Equations: } 3`);
+  // Which unknowns the moment equation contains (the "smart point" lesson, Unit 4.2).
+  if (setup.showMomentUnknowns && result.momentUnknowns) {
+    const P = momentPoint(setup);
+    const inM = result.momentUnknowns.map((id) => reactions.find((r) => r.id === id).symbol).join(",\\ ") || "\\text{none}";
+    lines.push(`\\text{Unknowns in } \\Sigma M_{${P.label}}\\text{: } ${inM} \\;(${result.momentUnknowns.length})`);
+  }
   const W = weightOf(setup);
   if (W && mode === "numeric") lines.push(`W = mg = (${W.mass}\\,\\text{kg})(9.81\\,\\text{m/s}^2) = ${fixedTex(W.mass * 9.81, "N")}`);
   if (reveal && result.status === "determinate" && setup.analysis !== "count") {

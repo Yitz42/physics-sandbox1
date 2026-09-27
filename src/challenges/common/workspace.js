@@ -8,6 +8,8 @@
 import { clone } from "../../core/paths.js";
 import { boundsOf } from "../../render/canvas.js";
 import { drawScene } from "../../render/diagrams.js";
+import { lowerDims } from "../../render/dims.js";
+import { clearSupports } from "../../render/support-clear.js";
 import { arrowAt } from "../../render/fbd.js";
 import { renderEquations, highlightTerms, renderMixed } from "../../render/panel.js";
 import { buildControls, toggle, el, button } from "../../ui/controls.js";
@@ -96,11 +98,29 @@ export function createWorkspace(ctx, opts = {}) {
     const solid = all.filter((s) => !(s.type === "line" && (s.style === "action" || s.style === "reference")));
     const b = boundsOf([...solid, ...ws.extraShapes()], 0);
     const m = 0.1 * Math.max(b.xmax - b.xmin, b.ymax - b.ymin, 1e-6);
-    cv.fit({ xmin: b.xmin - m, xmax: b.xmax + m, ymin: b.ymin - m, ymax: b.ymax + m });
+    const box = { xmin: b.xmin - m, xmax: b.xmax + m, ymin: b.ymin - m, ymax: b.ymax + m };
+    cv.fit(box);
+    ws.autoFit = true;
+    // At draw time some arrows (past a support symbol) and dimension lines (below
+    // the arrows) are moved by a number of pixels. Grow the frame so they stay in
+    // view — a few rounds, since the pixel size changes with the frame.
+    if (!cv.size()) return;
+    for (let i = 0; i < 3; i++) {
+      const moved = lowerDims(clearSupports([...all, ...ws.extraShapes()], cv), cv);
+      const ys = [
+        ...moved.filter((s) => s.type === "dim").flatMap((d) => [d.from[1], d.to[1]]).map((y) => y - cv.pxToWorld(16)), // its value
+        ...moved.filter((s) => s.type === "arrow").flatMap((a) => [a.from[1], a.to[1]]).map((y) => y - cv.pxToWorld(28)), // its label
+      ];
+      const low = Math.min(...ys);
+      if (!(low < box.ymin - 1e-9)) break;
+      box.ymin = low;
+      cv.fit(box);
+    }
   };
 
   // Side-by-side diagrams are laid out for the canvas size, so re-fit when it changes.
-  cv.onResize(() => (ws.framed ? ws.fit() : false));
+  // Auto-fitted pictures too: their pixel-based room (above) depends on the size.
+  cv.onResize(() => (ws.framed || ws.autoFit ? ws.fit() : false));
 
   ws.update = () => {
     ws.result = solver.solve(ws.setup);

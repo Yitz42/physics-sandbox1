@@ -126,3 +126,59 @@ test("a deliberately wrong FBD (debug): an extra B_x at the roller, a missing A_
   const fy = rigidBodyEquations(s).find((e) => e.id === "sumFy");
   close(evaluate(fy, { A_y: 400, B_y: 200 }), 0);
 });
+
+// ---- Unit 4.2: equilibrium of a rigid body, and the smart moment point ----------
+
+test("unknowns in ΣM depend on the moment point: A → 1, B → 1, middle → 2, off the beam → 3", () => {
+  const s = (about) => beam([pin("A", [0, 0]), roller("B", [6, 0])], [down("P", 2, 600)], { about });
+  equal(solveRigidBody(s("A")).momentUnknowns, ["B_y"]);
+  equal(solveRigidBody(s("B")).momentUnknowns, ["A_y"]);
+  equal(solveRigidBody(s({ at: [3, 0], label: "C" })).values.nM, 2);
+  equal(solveRigidBody(s({ at: [3, 1.5], label: "D" })).values.nM, 3, "A_x's line (y = 0) misses D");
+  // The answers don't depend on the point chosen: B_y = 200 N every time.
+  for (const about of ["A", "B", { at: [3, 1.5], label: "D" }]) close(solveRigidBody(s(about)).values.B_y, 200);
+});
+
+test("load on the overhang: the pin pulls down (A_y = −200 N, B_y = 800 N for 600 N at 8 m)", () => {
+  // ΣM_A: 6B_y − 600(8) = 0 → B_y = 800;  ΣF_y: A_y = 600 − 800 = −200
+  const r = solveRigidBody({ body: { points: [[0, 0], [8, 0]] }, supports: [pin("A", [0, 0]), roller("B", [6, 0])], forces: [down("P", 8, 600)] });
+  close(r.values.B_y, 800);
+  close(r.values.A_y, -200);
+});
+
+test("overhanging beam with a uniform load: A_y = 400 N, B_y = 1200 N", () => {
+  // F_w = 300(4) = 1200 N at 2 m; P = 400 N at 6 m.  ΣM_A: 4B_y − 2400 − 2400 = 0 → 1200;  A_y = 1600 − 1200 = 400
+  const r = solveRigidBody({ body: { points: [[0, 0], [6, 0]] }, supports: [pin("A", [0, 0]), roller("B", [4, 0])],
+    forces: [down("P", 6, 400)], loads: [{ id: "w", shape: "uniform", from: 0, to: 4, w: 300 }] });
+  close(r.values.B_y, 1200);
+  close(r.values.A_y, 400);
+});
+
+test("cantilever: A_y = 1700 N, M_A = 3300 N·m (counterclockwise)", () => {
+  // F_w = 400(3) = 1200 N at 1.5 m; P = 500 N at 3 m.  M_A = 1200(1.5) + 500(3) = 3300
+  const r = solveRigidBody({ body: { points: [[0, 0], [3, 0]] }, supports: [{ id: "A", type: "fixed", at: [0, 0], normal: [1, 0] }],
+    forces: [down("P", 3, 500)], loads: [{ id: "w", shape: "uniform", from: 0, to: 3, w: 400 }] });
+  equal(r.status, "determinate");
+  close(r.values.A_y, 1700);
+  close(r.values.M_A, 3300);
+  close(r.values.A_x, 0);
+});
+
+test("diving board: fulcrum at 1.5 m, 750 N diver → B_y = 2392.4 N, A_y = −1348.1 N", () => {
+  // W = 30(9.81) = 294.3 N at 2 m.  ΣM_A: 1.5B_y − 294.3(2) − 750(4) = 0 → B_y = 3588.6/1.5 = 2392.4
+  // ΣF_y: A_y = 294.3 + 750 − 2392.4 = −1348.1 (the bolts pull down)
+  const r = solveRigidBody({ body: { points: [[0, 0], [4, 0]], mass: 30 }, supports: [pin("A", [0, 0]), roller("B", [1.5, 0])], forces: [down("W_d", 4, 750)] });
+  close(r.values.B_y, 2392.4);
+  close(r.values.A_y, -1348.1);
+});
+
+test("L-shaped jib crane: B_x = 1333.3 N, A_x = 1333.3 N, A_y = 800 N", () => {
+  // Roller B at (0, 1.5) pushes left. ΣM_A: 1.5B_x − 2.5(800) = 0 → 1333.3;  ΣF_x: A_x = B_x;  ΣF_y: A_y = 800
+  const r = solveRigidBody({ body: { points: [[0, 0], [0, 3], [2.5, 3]] },
+    supports: [pin("A", [0, 0]), roller("B", [0, 1.5], { normal: [-1, 0] })],
+    forces: [{ id: "P", symbol: "P", magnitude: 800, direction: "down", at: [2.5, 3] }] });
+  equal(r.status, "determinate");
+  close(r.values.B_x, 1333.33);
+  close(r.values.A_x, 1333.33);
+  close(r.values.A_y, 800);
+});
