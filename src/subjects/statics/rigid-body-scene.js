@@ -119,7 +119,7 @@ function overlayScene(setup, result, opts = {}) {
     const pts = setup.body.points;
     const ml = setup.massLabel && setup.body.mass ? setup.massLabel : null;
     const inside = ml && pts.length === 2 && Math.abs(pts[0][1] - pts[1][1]) < 1e-9;
-    shapes.push({ type: "beam", points: pts, width: 20, ...(inside ? { text: { at: [ml.at[0], pts[0][1]], text: `${setup.body.mass} kg ${ml.text || ""}`.trim() } } : {}) });
+    shapes.push({ type: "beam", points: pts, width: 20, ...(setup.body.look ? { look: setup.body.look } : {}), ...(inside ? { text: { at: [ml.at[0], pts[0][1]], text: `${setup.body.mass} kg ${ml.text || ""}`.trim() } } : {}) });
     if (ml && !inside) shapes.push({ type: "text", at: ml.at, text: `${setup.body.mass} kg ${ml.text || ""}`.trim() });
   }
   for (const t of setup.texts || []) shapes.push({ type: "text", at: t.at, text: t.text });

@@ -75,6 +75,7 @@ const COUNT_WHY = {
   pin: "A pin stops the body sliding in x AND in y, but lets it turn: two unknowns, $A_x$ and $A_y$.",
   roller: "A roller rolls along its surface, so it only stops motion into the surface: one unknown, a push perpendicular to the surface.",
   smooth: "A smooth surface can't grip, so there's no force along it: one unknown, a push perpendicular to the surface.",
+  rough: "A rough surface grips: it pushes perpendicular to the surface AND gives friction along it — two unknowns, $N_A$ and $F_A$.",
   cable: "A cable can only pull along its own length: one unknown, its tension.",
   fixed: "A fixed support stops sliding in x and y AND stops turning: three unknowns, $A_x$, $A_y$ and a moment $M_A$.",
   link: "A two-force member (a link pinned at both ends) can only push or pull along its own line: one unknown, its force.",
@@ -114,7 +115,8 @@ export function rigidBodyMistakes(setup, name) {
   if (Math.abs(correct) > 1e-9) {
     add1(-correct, r.moment
       ? `Right size, wrong sign: counterclockwise is positive, so a clockwise ${sym} is negative.`
-      : r.kind === "component" ? `Right size, wrong sign: ${sym} is positive if it points ${r.direction === "right" ? "right (+x)" : "up (+y)"}.` : "Right size, wrong sign: this support can only push (or pull), so its reaction is positive.", "sign");
+      : r.kind === "component" ? `Right size, wrong sign: ${sym} is positive if it points ${r.direction === "right" ? "right (+x)" : "up (+y)"}.`
+        : r.kind === "friction" ? `Right size, wrong sign: ${sym} is positive the way it's drawn on the FBD.` : "Right size, wrong sign: this support can only push (or pull), so its reaction is positive.", "sign");
   }
   const b = setup.body || {};
   if (b.mass) {

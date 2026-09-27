@@ -150,6 +150,30 @@ export function drawShape(cv, s, env) {
       ctx.strokeStyle = lit ? roleColor("known") : ink;
       if (s.dashed) ctx.setLineDash([5, 4]);
       ctx.lineWidth = lit ? 3 : 2;
+      if (s.angle) {
+        // A tilted crate (resting on a ramp): drawn turned by `angle` degrees
+        // (counterclockwise). Its outline for the labels: its four edges, and thin
+        // slices across it — one screen box round a tilted crate would cover the
+        // empty corners where its arrows' labels belong.
+        const a = (s.angle * Math.PI) / 180;
+        const ux = [Math.cos(a), -Math.sin(a)], uy = [Math.sin(a), Math.cos(a)]; // (screen: y down)
+        const corner = (i, j) => [x + ux[0] * (w / 2) * i - uy[0] * (h / 2) * j, y + ux[1] * (w / 2) * i - uy[1] * (h / 2) * j];
+        const cs = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)];
+        ctx.beginPath();
+        cs.forEach((c, i) => (i ? ctx.lineTo(c[0], c[1]) : ctx.moveTo(c[0], c[1])));
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        for (let i = 0; i < 4; i++) out.segments.push([cs[i], cs[(i + 1) % 4]]);
+        const n = Math.max(2, Math.ceil(w / 8));
+        for (let k = 0; k < n; k++) {
+          const i0 = -1 + (2 * k) / n, i1 = -1 + (2 * (k + 1)) / n;
+          const q = [corner(i0, -1), corner(i1, -1), corner(i1, 1), corner(i0, 1)];
+          out.boxes.push({ x0: Math.min(...q.map((c) => c[0])), y0: Math.min(...q.map((c) => c[1])), x1: Math.max(...q.map((c) => c[0])), y1: Math.max(...q.map((c) => c[1])), soft: !!s.passable });
+        }
+        if (s.label) drawLabel(ctx, s.label, x, y, { color: ink, size: 13 });
+        break;
+      }
       ctx.fillRect(x - w / 2, y - h / 2, w, h);
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
       if (s.label) {

@@ -17,6 +17,7 @@ export function wrongDirectionText(f) {
   if (f.kind === "cable" || f.kind === "pull") return "A cable can only **pull**: its arrow points away from the body, along the cable.";
   if (f.kind === "spring") return "A stretched spring **pulls**: its arrow points away from the point, along the spring.";
   if (f.kind === "push") return "A roller or a smooth surface can only **push** on the body, perpendicular to the surface.";
+  if (f.kind === "friction") return "Friction acts **along** the surface, where the body touches it (either way along it is fine on the FBD: a negative answer means the other way).";
   if (f.kind === "component") return "A support's reaction components act along x and y. Point each one along its axis (either way is fine: a negative answer means the other way).";
   if (f.kind === "weight") return "Weight always points **straight down**, toward the Earth.";
   return "One arrow points the wrong way. Compare each arrow's direction with the picture.";
@@ -27,6 +28,7 @@ export function missingText(f) {
   if (f.kind === "weight") return "A force is missing. What does gravity do to the hanging object?";
   if (f.kind === "cable") return "A force is missing. Every cable attached to the point pulls on it.";
   if (f.kind === "spring") return "A force is missing. The spring attached to the point pulls on it too.";
+  if (f.kind === "friction") return "A force is missing. A ROUGH surface grips: besides its push N, it gives a friction force F along the surface.";
   if (["component", "push", "pull", "moment"].includes(f.kind)) return "A reaction is missing. For each support ask: which motions does it stop? It pushes or pulls for each direction it stops, and gives a moment if it stops turning.";
   return "A force is missing. Look at everything touching or pulling on the point.";
 }

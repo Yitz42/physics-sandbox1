@@ -3,6 +3,7 @@
 //   lamp     { at, w, h, label }      a hanging lamp: cord attached at `at` (top), shade w × h metres
 //   eyebolt  { at, dir }              an eyebolt: its eye at `at`, screwed into a surface
 //                                     in direction `dir` (a unit vector, metres) — pixel-sized
+//   ramp     { points: [[x, y] …] }   a wedge of solid ground: a ramp (Unit 9.1), in metres
 //   bracket  { at, dir }              a wall bracket holding the point `at`; the wall is in
 //                                     direction `dir` — pixel-sized
 // drawObject returns { boxes, segments, labels } like the other shapes, or null
@@ -200,6 +201,59 @@ export function drawObject(cv, s, env) {
         ctx.lineWidth = 2.5;
         hatchedLine(ctx, w0[0] + n[0] * 8, w0[1] + n[1] * 8, n, d, 30);
         out.boxes.push({ x0: Math.min(x, w0[0]) - 24, y0: Math.min(y, w0[1]) - 24, x1: Math.max(x, w0[0]) + 24, y1: Math.max(y, w0[1]) + 24 });
+        return out;
+      }
+      case "ramp": {
+        // A wedge of solid ground (a ramp, Unit 9.1): filled grey with light
+        // hatching inside, outlined. Its true outline for the labels: its edges,
+        // and thin upright slices of the (convex) wedge — not one box round it,
+        // which would cover the open space above its slope.
+        const pts = s.points.map(S);
+        const trace = () => {
+          ctx.beginPath();
+          pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+          ctx.closePath();
+        };
+        trace();
+        ctx.fillStyle = grey;
+        ctx.globalAlpha = 0.55;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.save();
+        trace();
+        ctx.clip();
+        ctx.strokeStyle = ink;
+        ctx.globalAlpha = 0.18;
+        ctx.lineWidth = 1;
+        const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+        const [xa, xb, ya, yb] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+        for (let k = xa - (yb - ya); k <= xb; k += 9) {
+          ctx.beginPath();
+          ctx.moveTo(k, yb);
+          ctx.lineTo(k + (yb - ya), ya);
+          ctx.stroke();
+        }
+        ctx.restore();
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2;
+        trace();
+        ctx.stroke();
+        for (let i = 0; i < pts.length; i++) out.segments.push([pts[i], pts[(i + 1) % pts.length]]);
+        // Upright slices 6 px wide: each spans the wedge's top and bottom edges there.
+        const edgeYs = (x) => {
+          const hits = [];
+          for (let i = 0; i < pts.length; i++) {
+            const [a, c] = [pts[i], pts[(i + 1) % pts.length]];
+            if ((x - a[0]) * (x - c[0]) > 0 || a[0] === c[0]) continue;
+            hits.push(a[1] + ((c[1] - a[1]) * (x - a[0])) / (c[0] - a[0]));
+          }
+          return hits;
+        };
+        for (let x0 = xa; x0 < xb; x0 += 6) {
+          const x1 = Math.min(xb, x0 + 6);
+          const h = [...edgeYs(x0 + 0.01), ...edgeYs(x1 - 0.01)];
+          if (h.length) out.boxes.push({ x0, y0: Math.min(...h), x1, y1: Math.max(...h) });
+        }
         return out;
       }
       default:

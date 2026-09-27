@@ -1,7 +1,8 @@
 // shapes-extra.js — shapes added for moments and rigid bodies (Unit 3 on):
-//   beam       { points, width?, flat?, text?, alpha? } a bar, bracket or plank (polyline, metres); flat:
+//   beam       { points, width?, flat?, text?, alpha?, look? } a bar, bracket or plank (polyline, metres); flat:
 //              [start, end] true = a square end (built into a wall, see support-clear.js);
-//              text: { at, text } a caption written inside the bar (e.g. "40 kg beam")
+//              text: { at, text } a caption written inside the bar (e.g. "40 kg beam");
+//              look: "ladder" — drawn as a ladder: two rails and rungs (a straight bar only)
 //   pivot      { at }                          triangle support under a pin (seesaw)
 //   dim        { from, to, label, role?, labelSide?, labelOn?, noExt? }  a dimension / moment-arm
 //              line with end ticks; its label sits in a break in the middle of the line
@@ -55,6 +56,37 @@ export function drawExtraShape(cv, s, env, roleColor) {
       };
       const alpha0 = ctx.globalAlpha;
       if (s.alpha != null) ctx.globalAlpha = s.alpha; // faint: a body the stage isn't working on
+      if (s.look === "ladder" && pts.length === 2) {
+        // A ladder, as it really looks: two rails, with a rung every 16 px or so.
+        const [p, q] = pts;
+        const L = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+        const u = [(q[0] - p[0]) / L, (q[1] - p[1]) / L], n = [-u[1], u[0]];
+        const h = w / 2;
+        const rail = (k) => {
+          ctx.beginPath();
+          ctx.moveTo(p[0] + n[0] * h * k, p[1] + n[1] * h * k);
+          ctx.lineTo(q[0] + n[0] * h * k, q[1] + n[1] * h * k);
+          ctx.stroke();
+        };
+        ctx.strokeStyle = ink;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 1.8;
+        const rungs = Math.max(2, Math.round(L / 16));
+        for (let i = 1; i < rungs; i++) {
+          const c = [p[0] + u[0] * (L * i) / rungs, p[1] + u[1] * (L * i) / rungs];
+          ctx.beginPath();
+          ctx.moveTo(c[0] + n[0] * h, c[1] + n[1] * h);
+          ctx.lineTo(c[0] - n[0] * h, c[1] - n[1] * h);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 3;
+        rail(1);
+        rail(-1);
+        out.segments.push([p, q]);
+        out.boxes.push(...barBoxes(p, q, w + 3));
+        ctx.globalAlpha = alpha0;
+        break;
+      }
       ctx.lineCap = "butt";
       ctx.lineJoin = "round";
       ctx.strokeStyle = ink;

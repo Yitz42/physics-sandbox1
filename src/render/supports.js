@@ -1,11 +1,12 @@
 // supports.js — textbook symbols for supports (Unit 7 on):
-//   supportSymbol { kind: "pin" | "roller" | "smooth" | "fixed" | "cable" | "none",
+//   supportSymbol { kind: "pin" | "roller" | "smooth" | "rough" | "fixed" | "cable" | "none",
 //                   at, normal, anchor?, label?, alpha? }
 // `normal` is a unit vector (metres) from the support INTO the body: the symbol
 // is drawn on the other side. Symbols are pixel-sized, like the other objects.
 //   pin     a triangle on hatched ground, with the pin (a ring) at `at`
 //   roller  a triangle on two small wheels, on hatched ground
 //   smooth  a hatched surface the body rests on
+//   rough   the same, its face drawn with small teeth: it grips (friction, Unit 9.1)
 //   fixed   a hatched block (a wall) the body is built into; the beam's end is square against it
 //   cable   a line to its anchor, fixed to a small hatched ceiling or wall
 //   link    a two-force member: a slim bar to its anchor, pinned at both ends
@@ -139,6 +140,23 @@ export function drawSupportSymbol(cv, s, env) {
     case "smooth": {
       hatch(ctx, at(0, 7), t, b, 26);
       cover([at(-26, 5), at(26, 15)]);
+      incline(at(0, 7), 26);
+      break;
+    }
+    case "rough": {
+      // A hatched surface whose face has small teeth, the textbook's sign for a rough (gripping) surface.
+      hatch(ctx, at(0, 7), t, b, 26);
+      ctx.save();
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let k = -26; k <= 26; k += 4) {
+        const q = at(k, (k / 4) % 2 === 0 ? 7 : 3.5);
+        if (k === -26) ctx.moveTo(q[0], q[1]);
+        else ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+      ctx.restore();
+      cover([at(-26, 2), at(26, 15)]);
       incline(at(0, 7), 26);
       break;
     }

@@ -8,7 +8,8 @@
 //   support  { from, to, normal }            hatched ground/ceiling/wall
 //   point    { at, label, style, labelAway? } style: ring | dot | pin; labelAway: a direction
 //                                            the name prefers (e.g. out from a truss)
-//   box      { id?, at, w, h, label, passable? } a crate or block (at = centre); passable: labels avoid it but may cover it
+//   box      { id?, at, w, h, label, passable?, angle? } a crate or block (at = centre); passable: labels avoid it but may cover it;
+//                                            angle: tilted that many degrees (counterclockwise), e.g. on a ramp
 //   (any shape may set `layer: "<type>"` to be drawn in that type's layer instead of its own)
 //   arc      { center, r, start, end, label }  angle marking (degrees, CCW from +x), see angles.js
 //   triangle { at, dx, dy, labels }          slope triangle, e.g. 3-4-5
@@ -25,6 +26,7 @@
 //   member                                   a truss bar, red/blue for tension/compression, see members.js
 //   region                                   a flat shape filled in (a composite area's parts), see regions.js
 //   wrench, trailer                          see hardware.js
+//   ramp     { points: [[x, y] …] }           a wedge of solid ground (a ramp), see objects.js
 //   note     { lines: [text | {text, role}] } a small key/working box in a free corner
 //   listValues {}                            put every force's value in the corner list
 //   divider  { x, frame? }                   soft grey vertical line between two diagrams (frame: the
@@ -46,7 +48,7 @@ import { findClashes, drawBounds, showBounds } from "./bounds.js";
 export { roleColor };
 
 // Draw in layers so arrows and labels sit on top of lines and boxes.
-const ORDER = ["divider", "zone", "region", "plot", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "leader", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
+const ORDER = ["divider", "zone", "ramp", "region", "plot", "support", "pivot", "wheel", "trailer", "beam", "member", "wrench", "supportSymbol", "distload", "line", "dim", "leader", "rightangle", "box", "arc", "triangle", "axes", "motor", "moment", "point", "arrow", "handle", "text"];
 
 // opts.highlight: id of the force to glow (clicked arrow or equation term)
 // Returns a report of what was drawn — every object's outline, every solid

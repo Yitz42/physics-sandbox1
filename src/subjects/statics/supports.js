@@ -4,6 +4,9 @@
 //   pin     stops sliding in x and y (lets the body turn)   → A_x, A_y
 //   roller  stops motion into its surface only (it rolls)   → one push, ⟂ to the surface
 //   smooth  a smooth surface: no grip, so the same as a roller → one push N, ⟂ to the surface
+//   rough   a rough surface (Unit 9.1, friction): it grips, so it stops sliding along
+//           it too                                          → a push N_A ⟂ to it, and
+//           friction F_A along it (either way on an FBD; the answer's sign tells)
 //   cable   can only pull, along itself                     → one pull T, toward its anchor
 //   fixed   stops sliding AND turning                       → A_x, A_y and a moment M_A
 //   link    a two-force member (a strut or tie, pinned at both ends, nothing
@@ -19,7 +22,9 @@
 //                         form (e.g. { angle: 30, from: "+y", toward: "-x" })
 //     anchor: [x, y]      a cable's or link's other end (a cable pulls toward it;
 //                         a link's force is along it, + meaning tension: toward it)
-//     symbol              name of a one-force reaction (default B_y, N_B, T_C …) }
+//     symbol              name of a one-force reaction (default B_y, N_B, T_C …)
+//     friction            a rough surface's assumed friction direction, a textbook
+//                         word or form (default: along the surface, +x-ish) }
 //
 // Reaction directions are what a free-body diagram ASSUMES: pin and fixed
 // components point +x and +y and moments counterclockwise (a negative answer
@@ -28,10 +33,10 @@
 import { sub, mag, scale } from "../../core/vector.js";
 import { directionVector, reverse } from "./directions.js";
 
-export const SUPPORT_TYPES = ["pin", "roller", "smooth", "cable", "fixed", "link", "none"];
+export const SUPPORT_TYPES = ["pin", "roller", "smooth", "rough", "cable", "fixed", "link", "none"];
 
 // Plain-language names, for messages.
-export const SUPPORT_NAMES = { pin: "pin", roller: "roller", smooth: "smooth surface", cable: "cable", fixed: "fixed support", link: "two-force member (link)", none: "no support" };
+export const SUPPORT_NAMES = { pin: "pin", roller: "roller", smooth: "smooth surface", rough: "rough surface", cable: "cable", fixed: "fixed support", link: "two-force member (link)", none: "no support" };
 
 // A unit vector along an axis, as a textbook word ("up", "left" …), or null if slanted.
 function wordFor(v) {
@@ -89,6 +94,18 @@ export function reactionsOf(s) {
       const symbol = oneForceSymbol(s, direction);
       const kind = { cable: "pull", link: "link" }[s.type] || "push";
       return [{ ...base, id: symbol.replace(/[{}]/g, ""), symbol, direction, dir: directionVector(direction), either: s.type === "link", kind }];
+    }
+    case "rough": {
+      // The push, as on a smooth surface, and friction along the surface: by default
+      // the surface's direction turned a quarter clockwise from the push (level
+      // ground: to the right), or the stage's choice (e.g. toward a wall).
+      const n = normalOf(s);
+      const push = s.direction || wordFor(n) || textbookDirection(n);
+      const along = s.friction || wordFor([n[1], -n[0]]) || textbookDirection([n[1], -n[0]]);
+      return [
+        { ...base, id: `N_${s.id}`, symbol: `N_${s.id}`, direction: push, dir: directionVector(push), either: false, kind: "push" },
+        { ...base, id: `F_${s.id}`, symbol: `F_${s.id}`, direction: along, dir: directionVector(along), either: true, kind: "friction" },
+      ];
     }
     case "none":
       return [];

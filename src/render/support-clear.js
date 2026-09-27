@@ -13,7 +13,7 @@
 import { add, sub, scale, mag, dot } from "../core/vector.js";
 
 // How far each symbol reaches from its point (pixels): the arrow is moved this far.
-const DEPTH = { pin: 34, roller: 36, smooth: 16 };
+const DEPTH = { pin: 34, roller: 36, smooth: 16, rough: 16 };
 const MOMENT_CLEAR = 5; // pixels between a moment's circle and a force arrow
 
 export function clearSupports(shapes, cv) {

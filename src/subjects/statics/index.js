@@ -37,6 +37,9 @@ import { centroidScene, centroidSummary } from "./centroid-scene.js";
 import { solveInternal, internalQuantities } from "./internal.js";
 import { internalScene } from "./internal-scene.js";
 import { internalSummary, internalMistakes, internalChoices, internalSteps } from "./internal-tools.js";
+import { solveFriction, frictionQuantities, isBody, placeAlong } from "./friction.js";
+import { frictionScene } from "./friction-scene.js";
+import { frictionEquations, frictionSummary, frictionMistakes, frictionSteps } from "./friction-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -51,6 +54,7 @@ registerErrorKinds({
   loadArea: { area: "physics", label: "A distributed load's size is its area (½ for a triangle, ∫w dx for a curve)" },
   centroid: { area: "physics", label: "Where a centroid is (a load's resultant, a triangle's ⅓, a half circle's 4r/3π)" },
   supports: { area: "physics", label: "Which reactions each kind of support gives" },
+  friction: { area: "physics", label: "Friction: only as much as equilibrium needs, at most μ_s N, against the motion" },
 });
 
 // Units 1–2: forces through one point.
@@ -176,4 +180,20 @@ registerSolver("statics.internal", {
   mistakes: internalMistakes,
   choices: internalChoices, // a solve stage's V(x), M(x) lines, segment by segment (7.3)
   debugSteps: internalSteps, // a student's working with one wrong line (7.2, 7.3)
+});
+
+// Unit 9.1: dry friction — a crate on a ramp or floor (N, the friction needed, and the
+// limit μ_s N: holds, impending, slides), or a body with rough contacts (a ladder: the
+// rigid-body reactions, each rough contact checked). setup.find: where motion starts.
+registerSolver("statics.friction", {
+  solve: solveFriction,
+  equations: (setup) => frictionEquations(setup),
+  summary: (setup, result, opts) => (isBody(setup)
+    ? [...rigidBodySummary(placeAlong(setup), result, opts), ...frictionSummary(setup, result, opts)]
+    : frictionSummary(setup, result, opts)),
+  scene: frictionScene,
+  quantities: (setup) => frictionQuantities(setup, isBody(setup) ? rigidBodyQuantities(placeAlong(setup)) : {}),
+  mistakes: frictionMistakes,
+  fbd: (setup, sceneOpts) => rigidBodyFbd(placeAlong(setup), sceneOpts), // (a ladder's FBD; a block has none to draw)
+  debugSteps: frictionSteps, // a student's working for a crate, one line wrong
 });
