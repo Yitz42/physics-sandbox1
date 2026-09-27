@@ -143,24 +143,24 @@ export function drawExtraShape(cv, s, env, roleColor) {
       break;
     }
     case "ground": {
-      // A plane seen in perspective (a 3D picture's ground): lightly shaded, with a faint
-      // grid, and no outline — it fades to the background toward its edges, like a
-      // soft round patch lying on the plane. corners: the patch's four corners in order
-      // (as drawn); lines: its grid lines. It's drawn on its own layer, then faded by a
-      // round gradient laid on the plane (the same shape squashed into the view).
-      // Background only: labels may cross it.
+      // A plane seen in perspective (a 3D picture's ground): shaded just off the
+      // background, with a faint grid, and no outline — it fades to the background
+      // toward each of its four sides, keeping its rectangle's shape. corners: the
+      // patch's four corners in order (as drawn); lines: its grid lines. It's drawn on
+      // its own layer, then faded by two gradients laid on the plane (along its x
+      // sides, then its y sides). Background only: labels may cross it.
       const c = s.corners.map(S);
       const off = document.createElement("canvas");
       off.width = ctx.canvas.width;
       off.height = ctx.canvas.height;
       const o = off.getContext("2d");
       o.setTransform(ctx.getTransform());
-      o.fillStyle = cssColor("--c-ground", "rgba(59, 130, 246, 0.16)");
+      o.fillStyle = cssColor("--c-ground", "rgba(110, 122, 140, 0.10)");
       o.beginPath();
       c.forEach((p, i) => (i ? o.lineTo(p[0], p[1]) : o.moveTo(p[0], p[1])));
       o.closePath();
       o.fill();
-      o.strokeStyle = faint;
+      o.strokeStyle = cssColor("--c-ground-line", "rgba(110, 122, 140, 0.30)");
       o.lineWidth = 0.9;
       o.beginPath();
       for (const [a, b] of s.lines) {
@@ -169,18 +169,22 @@ export function drawExtraShape(cv, s, env, roleColor) {
         o.lineTo(q[0], q[1]);
       }
       o.stroke();
-      // The fade: in the plane's own frame the patch is the square −1…1; a round
-      // gradient there is solid in the middle and clear at the edges.
+      // The fade: in the plane's own frame the patch is the square −1…1. Each gradient
+      // is clear at one pair of sides and solid inside them; together they fade every
+      // side the same way, so the patch stays a rectangle.
       const C = [(c[0][0] + c[2][0]) / 2, (c[0][1] + c[2][1]) / 2];
       const E1 = [(c[1][0] - c[0][0]) / 2, (c[1][1] - c[0][1]) / 2], E2 = [(c[3][0] - c[0][0]) / 2, (c[3][1] - c[0][1]) / 2];
       o.globalCompositeOperation = "destination-in";
       o.transform(E1[0], E1[1], E2[0], E2[1], C[0], C[1]);
-      const g = o.createRadialGradient(0, 0, 0, 0, 0, 1);
-      g.addColorStop(0, "rgba(0, 0, 0, 1)");
-      g.addColorStop(0.6, "rgba(0, 0, 0, 1)");
-      g.addColorStop(1, "rgba(0, 0, 0, 0)");
-      o.fillStyle = g;
-      o.fillRect(-1.5, -1.5, 3, 3);
+      for (const [x0, y0, x1, y1] of [[-1, 0, 1, 0], [0, -1, 0, 1]]) {
+        const g = o.createLinearGradient(x0, y0, x1, y1);
+        g.addColorStop(0, "rgba(0, 0, 0, 0)");
+        g.addColorStop(0.22, "rgba(0, 0, 0, 1)");
+        g.addColorStop(0.78, "rgba(0, 0, 0, 1)");
+        g.addColorStop(1, "rgba(0, 0, 0, 0)");
+        o.fillStyle = g;
+        o.fillRect(-1, -1, 2, 2);
+      }
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(off, 0, 0);

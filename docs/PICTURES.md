@@ -129,7 +129,8 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   (axes shape `dirs`), turned the way the picture is; where an angle or a component is
   measured from an axis, a faint dashed line runs along it through the force's point.
   The ground (the x-y plane) is always drawn (agreed with the owner): lightly shaded with a
-  faint grid, no outline, fading to the background toward its edges (the "ground" shape). The
+  faint grid, in a tone just off the background (--c-ground), no outline, fading toward each of
+  its four sides so it keeps its rectangle shape (the "ground" shape). The
   objects are drawn as big as possible (the frame is round them, with a slight cushion); the
   ground then takes the biggest patch that fits inside the picture box (less 10 px), round
   the objects' feet — shifting behind them if that gives it more room. It is background:

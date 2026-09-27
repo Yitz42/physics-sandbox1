@@ -279,6 +279,7 @@ div.debug-line { cursor: default; }
 :root {
   --c-tab-a: #fbfbfc; --c-tab-b: #e2e5ea; --c-edge: #cfd4db;
   --c-figure-a: #f6f7f9; --c-figure-b: #dde1e6;
+  --c-ground: rgba(110, 122, 140, 0.10); --c-ground-line: rgba(110, 122, 140, 0.30); /* a 3D picture's ground: just off the background */
   --c-mission: #b0661f;
   --c-progress: #7aa3d9; --c-progress-track: #dde1e7;
   --c-thumb: #d6e4f6; --c-thumb-rim: #4f7fc0;
@@ -289,6 +290,7 @@ div.debug-line { cursor: default; }
   :root {
     --c-tab-a: #2a3140; --c-tab-b: #1f2530; --c-edge: #394253;
     --c-figure-a: #283040; --c-figure-b: #1b212b;
+    --c-ground: rgba(200, 210, 225, 0.06); --c-ground-line: rgba(200, 210, 225, 0.16);
     --c-mission: #f0a660; --c-progress: #4f7fc0; --c-progress-track: #2c3444;
     --c-thumb: #9dbde8; --c-thumb-rim: #dbe7f7;
     --c-steel: #5b6474; --c-nut: #3c4452;
