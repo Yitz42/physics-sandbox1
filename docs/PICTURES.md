@@ -12,8 +12,10 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   numbers sit just outside the arc, inside the angle next to its reference line,
   which is extended past the number. Dimension values sit IN their line (with a
   break); thin extension lines run from each dimension's ends to just short of
-  the body; a dimension an arrow crosses moves down below the arrow and its
-  label; any faint line under a label breaks around it. Beams on supports with
+  the body; dimension lines stay close to the drawing (replaced 2026-09-27:
+  they no longer move below arrows) and BREAK where an arrow crosses them or
+  where they'd run through a drawn object; any faint line under a label breaks
+  around it. Beams on supports with
   no dimensions of their own are dimensioned automatically (supports, loads,
   overall length). Labels have no background box. A moment label that runs into something becomes its name
   ("M") with the value in the corner list; a stage can list every value there
@@ -79,3 +81,7 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
 - **Boundaries outside the gallery**: the "Show boundaries" switch stays on only for a
   stage opened straight from a gallery card (with a button there to turn it off);
   any other way out of the gallery turns it off.
+- **Dimensions close, with breaks** (agreed with the owner): grey dimension lines sit
+  close to the model; arrows, support symbols and letters break them rather than
+  pushing them away (render/dims.js cuts, the dim drawing's gaps). Text written
+  inside a bar ("40 kg beam") is centred on it. Answer options have room around them.

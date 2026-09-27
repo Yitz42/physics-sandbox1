@@ -1,8 +1,7 @@
 // dims.js — engineering-drawing rules for dimension lines, applied to every
 // picture before it is drawn (see diagrams.js):
-//   lowerDims()   a dimension line that an arrow runs across moves down (with
-//                 every dimension below it), until it clears the arrow and the
-//                 arrow's label, so its value can sit right on the line
+//   lowerDims()   finds where arrows cross each dimension line (`cuts`), so the
+//                 line breaks there — dimensions stay close to the drawing
 //   extendDims()  thin extension lines run from each end of a dimension to
 //                 just short of the body it measures (a beam or a plate)
 // A dimension can opt out: noExt (it has its own guide lines), role "arm"
@@ -10,41 +9,40 @@
 
 import { sub, add, scale, mag } from "../core/vector.js";
 
-const ROOM_PX = 46; // below an arrow's tip: room for its label, then the dimension
-
 // Screen-space helpers.
 const isPlain = (s) => s.type === "dim" && s.role !== "arm" && !s.noExt;
 
 export function lowerDims(shapes, cv) {
-  const dims = shapes.filter((s) => isPlain(s) && Math.abs(s.from[1] - s.to[1]) < 1e-9); // horizontal ones
+  // Dimension lines stay close to the drawing (agreed with the owner): instead of
+  // moving below an arrow that crosses one, the line BREAKS where the arrow
+  // crosses it. Here each dimension gets its crossing points, `cuts` (pixels
+  // along it from its start); the dimension's drawing leaves a gap at each.
+  const dims = shapes.filter(isPlain);
   if (!dims.length) return shapes;
   const arrows = shapes.filter((s) => s.type === "arrow" && s.role !== "shadow" && s.role !== "component");
-  const shift = new Map(); // dim → pixels to move down
-  // Work from the top dimension down, so moving one pushes the ones below it too.
-  const byY = [...dims].sort((a, b) => cv.toScreen(a.from)[1] - cv.toScreen(b.from)[1]);
-  let pushed = 0; // how far the dimensions below have been pushed so far
-  for (const d of byY) {
+  const cutsOf = new Map();
+  for (const d of dims) {
     const a = cv.toScreen(d.from), b = cv.toScreen(d.to);
-    const y = a[1] + pushed;
-    const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]);
-    let need = 0;
+    const cuts = [];
     for (const s of arrows) {
-      const p = cv.toScreen(s.from), q = cv.toScreen(s.to);
-      const top = Math.min(p[1], q[1]), bottom = Math.max(p[1], q[1]);
-      const xs = [p[0], q[0]];
-      const inside = xs.some((x) => x > x0 + 2 && x < x1 - 2);
-      if (inside && top < y && bottom > y - 4) need = Math.max(need, bottom + ROOM_PX - y);
+      const t = crossAt(a, b, cv.toScreen(s.from), cv.toScreen(s.to));
+      if (t != null) cuts.push(t);
     }
-    pushed += need;
-    if (pushed > 0) shift.set(d, pushed);
+    if (cuts.length) cutsOf.set(d, cuts);
   }
-  if (!shift.size) return shapes;
-  return shapes.map((s) => {
-    const px = shift.get(s);
-    if (!px) return s;
-    const dy = cv.pxToWorld(px);
-    return { ...s, from: [s.from[0], s.from[1] - dy], to: [s.to[0], s.to[1] - dy] };
-  });
+  if (!cutsOf.size) return shapes;
+  return shapes.map((s) => (cutsOf.has(s) ? { ...s, cuts: cutsOf.get(s) } : s));
+}
+
+// Where segment p–q crosses segment a–b: the distance along a–b (pixels), or null.
+function crossAt(a, b, p, q) {
+  const r = sub(b, a), e = sub(q, p);
+  const den = r[0] * e[1] - r[1] * e[0];
+  if (Math.abs(den) < 1e-9) return null;
+  const w = sub(p, a);
+  const t = (w[0] * e[1] - w[1] * e[0]) / den; // along a–b, 0…1
+  const u = (w[0] * r[1] - w[1] * r[0]) / den; // along p–q, 0…1
+  return t > 0 && t < 1 && u >= 0 && u <= 1 ? t * mag(r) : null;
 }
 
 // Where a ray from P along u first meets segment a–b (distance t ≥ 0), or null.

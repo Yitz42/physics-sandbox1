@@ -33,10 +33,10 @@ export function bridgeSetup(joint = "C", magnitude = 1200, diagonals = PRATT) {
     supports: [{ id: "A", type: "pin" }, { id: "E", type: "roller" }],
     forces: [{ id: "P", symbol: "P", magnitude, direction: "down", joint, push: ["F", "G", "H"].includes(joint) }],
     showReactions: "reveal",
-    dims: [{ from: [0, -2.1], to: [12, -2.1], label: "4 × 3 m = 12 m" }, { from: [13, 0], to: [13, 3] }], // (low enough for the joint letters above it)
+    dims: [{ from: [0, -2.2], to: [12, -2.2], label: "4 × 3 m = 12 m" }, { from: [12.9, 0], to: [12.9, 3] }], // close to the truss, just under the joint letters (arrows break the line)
   };
 }
-export const BRIDGE_VIEW = { xmin: -1.6, xmax: 14.2, ymin: -4, ymax: 5 };
+export const BRIDGE_VIEW = { xmin: -1.6, xmax: 14, ymin: -3.6, ymax: 5 };
 
 const zeroHints = (last) => [
   "Look at each joint with no load and no support. Two members at an angle, and nothing else? Both are zero.",

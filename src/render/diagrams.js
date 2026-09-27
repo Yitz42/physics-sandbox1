@@ -57,7 +57,7 @@ export function drawScene(cv, shapes, opts = {}) {
   const env = { ink: cssColor("--c-ink", "#1d2330"), faint: cssColor("--c-faint", "#94a3b8"), paper: cssColor("--c-canvas", "#ffffff") };
   cv.clear();
   shapes = touchBeams(clearSupports(shapes, cv)); // arrows clear of support symbols, then of beam surfaces
-  shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines clear of arrows, with extension lines
+  shapes = extendDims(lowerDims(shapes, cv), cv); // dimension lines break where arrows cross them; extension lines
   shapes = separateMoments(shapes, cv); // two moment circles never overlap
 
   // A shape can ask to be drawn in another type's layer (e.g. a plate under everything: layer "zone").

@@ -82,7 +82,8 @@ export function drawExtraShape(cv, s, env, roleColor) {
       }
       if (s.text) {
         const [tx, ty] = S(s.text.at);
-        const box = drawLabel(ctx, s.text.text, tx, ty + 4, { color: ink, size: Math.min(13, w - 6), weight: 600 });
+        // (drawLabel centres the text on ty: the beam's centre line — the middle of the bar)
+        const box = drawLabel(ctx, s.text.text, tx, ty, { color: ink, size: Math.min(13, w - 6), weight: 600 });
         if (box) out.boxes.push({ ...box, heavy: true });
       }
       break;
@@ -136,9 +137,23 @@ export function drawExtraShape(cv, s, env, roleColor) {
       ctx.strokeStyle = color;
       ctx.lineWidth = s.role ? 2 : 1.2;
       if (s.dashed) ctx.setLineDash([5, 4]);
+      // The line breaks where an arrow crosses it (s.cuts, dims.js) and where it
+      // would run through something already drawn (a support, a body …); its value
+      // breaks it too, once placed (diagrams.js).
       ctx.beginPath();
-      ctx.moveTo(a[0], a[1]);
-      ctx.lineTo(b[0], b[1]); // (the line breaks around its value when the value is placed, diagrams.js)
+      const gap = (t) => {
+        if ((s.cuts || []).some((c) => Math.abs(c - t) < 7)) return true;
+        const x = a[0] + u[0] * t, y = a[1] + u[1] * t;
+        return (env.obstacles || []).some((o) => !o.soft && !o.dim && x > o.x0 - 3 && x < o.x1 + 3 && y > o.y0 - 3 && y < o.y1 + 3);
+      };
+      let on = false;
+      for (let t = 0; t <= len; t += 1) {
+        const g = gap(t) && t > 3 && t < len - 3; // (the ends and their ticks always show)
+        const x = a[0] + u[0] * t, y = a[1] + u[1] * t;
+        if (!g && !on) ctx.moveTo(x, y);
+        if (!g) ctx.lineTo(x, y);
+        on = !g;
+      }
       ctx.stroke();
       ctx.setLineDash([]);
       for (const p of [a, b]) {
