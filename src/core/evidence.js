@@ -9,41 +9,81 @@
 // Saved in the browser's localStorage like progress.js (so it stays on this
 // computer), wrapped in try/catch, and capped so it never grows without limit.
 //
-// One event:
-//   { t: time (ms), c: course, u: unit, s: stage id, p: part index, v: situation name,
-//     ch: challenge type, r: round id (one "version" of a stage), q: which question
-//     ("T_AB", "fbd", "debug", "question 3" …), ok: right?, k: [mistake kinds],
-//     shown?: true when the student pressed "Show answer" (q is then "*"),
-//     ms: how long this try took (see activeNow below), chk: which press of a
-//     check button in the round (numbers checked together share it),
-//     a: which try at this question it was (1 = first),
-//     h: how long the page was hidden during this try — another tab or window }
+// One event (short keys, to keep storage small; record-file.js spells them out):
+//   e: event type — "stageStart", "stageLeave", "check", "showAnswer", "hint",
+//      "exploreAction", "complete" or "confidence"
+//   common to every event:
+//     t: time (ms, UTC), tz: the browser's time-zone offset in minutes,
+//     sid: session id (random, new each time the game is opened — never a person),
+//     av / cv: app and content versions (version.js)
+//   where it happened: c: course, u: unit, s: stage id, p: part index,
+//     v: situation name (null when the stage has none), ch: challenge type,
+//     r: round id (one "version" of a stage)
+//   check events: q: which question ("T_AB", "fbd", "debug", "question 3" …),
+//     ok: right?, k: [mistake kinds], a: which try at this question (1 = first),
+//     ms / h: active and hidden milliseconds since the previous check in this
+//     round (or since the round started, for its first check),
+//     chk: which press of a check button in the round (numbers checked together
+//     share it), fg: fast guess (checked within FAST_GUESS_MS of the round
+//     starting), cf: confidence ("sure" / "notSure", or null),
+//     sub / exp / un / tol: the answer as entered, the right value, its units
+//     and the tolerance used; rp: the numbers that generated this round (on the
+//     first check of each round); plus, by challenge: pl / ef (FBD arrows drawn /
+//     expected), fl (debug: what was flagged), pick / ans (concept check: the
+//     choice picked / the right one), dp (build: the design submitted)
+//   showAnswer: q (which question, "*" = the whole round), ms, h, chk
+//   hint: hi (which hint, 1 = first)
+//   exploreAction: ex { changes, params, ms } — a summary, logged when the
+//     student leaves or finishes an explore stage (not every slider move)
+//   stageLeave: ms / h (active and hidden time for the whole visit), fin (finished?)
+
+import { migrateEvent } from "./migrations.js";
+import { APP_VERSION, CONTENT_VERSION } from "./version.js";
 
 const KEY = "ems-evidence-v1";
-export const MAX_EVENTS = 4000; // the oldest are dropped first
+export const MAX_EVENTS = 5000; // beyond this, the oldest explore summaries go first, then the oldest events
 
 function load() {
   try {
     const raw = globalThis.localStorage && localStorage.getItem(KEY);
     const data = raw ? JSON.parse(raw) : null;
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data.map(migrateEvent) : [];
   } catch {
     return [];
   }
 }
 
+// Keep storage bounded: drop the oldest exploreAction events first (they're
+// the least useful), then the oldest of the rest.
+export function compact(events, max = MAX_EVENTS) {
+  if (events.length <= max) return events;
+  let extra = events.length - max;
+  const out = events.filter((e) => {
+    if (extra > 0 && e.e === "exploreAction") {
+      extra--;
+      return false;
+    }
+    return true;
+  });
+  return out.slice(-max);
+}
+
 function save(events) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(events.slice(-MAX_EVENTS)));
+    localStorage.setItem(KEY, JSON.stringify(compact(events)));
   } catch {
     // Storage blocked or full: keep playing without recording.
   }
 }
 
+// A random id for this opening of the game (not tied to a person or device).
+export const SESSION_ID = `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 // Add one event (the runner fills in where it happened; see ctx.record).
+// Every event gets its type (default "check"), time, time zone, session and versions.
 export function recordEvent(event) {
   const events = load();
-  events.push({ t: Date.now(), ...event });
+  events.push({ e: "check", t: Date.now(), tz: -new Date().getTimezoneOffset(), sid: SESSION_ID, av: APP_VERSION, cv: CONTENT_VERSION, ...event });
   save(events);
 }
 
@@ -51,14 +91,24 @@ export function getEvents() {
   return load();
 }
 
+// Only the answers (checks and "Show answer" presses): what comprehension.js
+// and pace.js score. Stage starts, hints, explore summaries … aren't answers.
+export function answerEvents(events = load()) {
+  return events.filter((e) => e.e === "check" || e.e === "showAnswer");
+}
+
 export function clearEvents() {
-  save([]);
+  try {
+    localStorage.setItem(KEY, "[]");
+  } catch {
+    // storage blocked
+  }
 }
 
 // Replace the whole record (loading a learning-record file, see record-file.js).
-// Returns how many events were kept (at most MAX_EVENTS, the newest).
+// Returns how many events were kept (at most MAX_EVENTS; see compact).
 export function setEvents(events) {
-  save(events);
+  save(events.map(migrateEvent));
   return Math.min(events.length, MAX_EVENTS);
 }
 

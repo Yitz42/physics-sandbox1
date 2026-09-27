@@ -2,12 +2,14 @@
 // doesn't understand, survives renamed stages, and merges without doubles.
 import { test, ok, equal, setFile } from "../harness.js";
 import { buildRecordFile, readRecordFile, mergeEvents, mergeProgress, tagEvent, FORMAT, RecordFileError } from "../../src/core/record-file.js";
+import { migrateEvent } from "../../src/core/migrations.js";
 
 setFile("core / learning-record file");
 
+const common = { tz: -240, sid: "s-test", av: "0.6.0", cv: "2026-09-27", c: "statics", u: "cables", s: "cables/2-predict", p: 0, v: null, ch: "predict", r: "r1" };
 const events = [
-  { t: Date.UTC(2026, 8, 20, 10, 0, 0), c: "statics", u: "cables", s: "cables/2-predict", p: 0, ch: "predict", r: "r1", q: "T_AB", ok: false, k: ["trig"], a: 1, ms: 42000, h: 0, chk: 1 },
-  { t: Date.UTC(2026, 8, 20, 10, 1, 0), c: "statics", u: "cables", s: "cables/2-predict", p: 0, ch: "predict", r: "r1", q: "T_AB", ok: true, k: [], a: 2, ms: 30000, h: 0, chk: 2 },
+  { e: "check", t: Date.UTC(2026, 8, 20, 10, 0, 0), ...common, q: "T_AB", ok: false, k: ["weight"], a: 1, ms: 42000, h: 0, chk: 1, fg: false, cf: null, sub: "42.4", exp: 416, un: "N", tol: 0.1, rp: { "forces.#W.mass": 42.4 } },
+  { e: "check", t: Date.UTC(2026, 8, 20, 10, 1, 0), ...common, q: "T_AB", ok: true, k: [], a: 2, ms: 30000, h: 0, chk: 2, fg: false, cf: null, sub: "416", exp: 416, un: "N", tol: 0.1 },
 ];
 const progress = { "statics/cables/2-predict": { status: "complete", updated: "2026-09-20T10:01:00.000Z" } };
 const catalog = [{ id: "statics", title: "Statics", units: [{ id: "cables", title: "Cables", number: "2.1", chapter: "Equilibrium of a particle",
@@ -18,16 +20,21 @@ test("an exported file names its format, is anonymous, and spells out every fiel
   equal(f.format, FORMAT);
   equal(f.encoding, "none");
   equal(f.recordId, "rec-x");
-  equal(Object.keys(f.events[0]).sort(), ["activeMs", "attempt", "challenge", "checkPress", "correct", "course", "hiddenMs", "mistakeKinds", "part", "question", "round", "stage", "time", "unit"].sort());
+  equal(f.formatVersion, 2);
+  equal(Object.keys(f.events[0]).sort(), ["eventType", "time", "tzOffsetMin", "sessionId", "appVersion", "contentVersion", "course", "unit", "stage", "part", "situation", "challenge", "round",
+    "question", "correct", "mistakeKinds", "attempt", "activeMs", "hiddenMs", "checkPress", "fastGuess", "confidence", "submitted", "expected", "units", "tolerance", "roundParams"].sort());
   equal(f.events[0].time, "2026-09-20T10:00:00.000Z");
+  equal([f.events[0].submitted, f.events[0].expected, f.events[0].mistakeKinds], ["42.4", 416, ["weight"]]);
   ok(f.dictionaries.eventFields.every((d) => d.name && d.about), "every field is explained");
+  ok(f.dictionaries.eventTypes.length === 8 && f.dictionaries.eventTypes.every((d) => d.name && d.about), "every event type is explained");
+  ok(/previous check/.test(f.dictionaries.timing), "the timing is defined");
   equal(f.progress, [{ course: "statics", stage: "cables/2-predict", status: "complete", updated: "2026-09-20T10:01:00.000Z" }]);
 });
 
 test("export → JSON text → import gives back exactly the same record", () => {
   const text = JSON.stringify(buildRecordFile({ events, progress, catalog, recordId: "rec-x" }));
   const got = readRecordFile(JSON.parse(text), catalog);
-  equal(got.events, events);
+  equal(got.events, events.map(migrateEvent));
   equal(got.progress, progress);
   equal(got.warnings, []);
 });
@@ -39,9 +46,9 @@ test("fields it doesn't know are kept, both ways", () => {
   // … and a file field from a newer game is kept on the event.
   const f = buildRecordFile({ events, catalog });
   f.formatVersion = 99;
-  f.events[0].confidence = "high";
+  f.events[0].pupilDilation = "high";
   const got = readRecordFile(f, catalog);
-  equal(got.events[0].confidence, "high");
+  equal(got.events[0].pupilDilation, "high");
   ok(/newer version/.test(got.warnings[0]));
 });
 
@@ -71,4 +78,39 @@ test("merging: the same answers aren't added twice; the better stage status wins
   equal(p["statics/a"].partsDone, 2);
   ok(p["statics/b"], "new stages are added");
   equal(mergeProgress({ "statics/a": { status: "complete" } }, { "statics/a": { status: "practice" } })["statics/a"].status, "complete");
+});
+
+test("a format-1 record still loads: old ids migrated, event types inferred, missing fields null", () => {
+  const v1 = {
+    format: FORMAT, formatVersion: 1, encoding: "none", recordId: "rec-old",
+    game: { courses: [] },
+    progress: [
+      { course: "statics", stage: "02-particle-equilibrium/2-predict", status: "practice", updated: "2026-09-20T10:00:00.000Z" },
+      { course: "statics", stage: "cables/2-predict", status: "complete", updated: "2026-09-21T10:00:00.000Z" },
+      { course: "statics", stage: "03-moments/1-explore", status: "complete", partsDone: 0 },
+    ],
+    events: [
+      { time: "2026-09-20T10:00:00.000Z", course: "statics", unit: "02-particle-equilibrium", stage: "02-particle-equilibrium/2-predict", situation: "", challenge: "predict", round: "r0", question: "T_AB", correct: false, mistakeKinds: [] },
+      { time: "2026-09-20T10:02:00.000Z", course: "statics", unit: "02-particle-equilibrium", stage: "02-particle-equilibrium/2-predict", challenge: "predict", round: "r0", question: "*", answerShown: true, activeMs: 5000 },
+    ],
+  };
+  const got = readRecordFile(v1, catalog);
+  equal(got.events.map((e) => [e.e, e.s, e.u, e.v]), [["check", "cables/2-predict", "cables", null], ["showAnswer", "cables/2-predict", "cables", null]]);
+  equal([got.events[0].a, got.events[0].ms, got.events[0].h, got.events[0].chk], [null, null, null, null]);
+  equal(Object.keys(got.progress).sort(), ["statics/cables/2-predict", "statics/moments/1-explore"]);
+  equal(got.progress["statics/cables/2-predict"].status, "complete", "the two entries merged: the better status");
+  equal(got.progress["statics/cables/2-predict"].updated, "2026-09-21T10:00:00.000Z");
+  // Exported again: no old ids, no "" situations, no partsDone on a stage without parts.
+  const file = buildRecordFile({ events: got.events, progress: got.progress, catalog });
+  const again = JSON.stringify(file);
+  ok(!/0\d-[a-z-]+\//.test(again), "no old-style ids");
+  ok(!/"situation":""/.test(again), "no empty situations");
+  ok(file.progress.every((p) => !("partsDone" in p)), "no partsDone");
+  ok(/"submitted":null/.test(again), "missing answer fields are null");
+});
+
+test("partsDone is only exported for stages with parts", () => {
+  const cat = [{ id: "statics", units: [{ id: "u", stages: [{ id: "u/1-a", parts: ["one", "two"] }, { id: "u/2-b", parts: [] }] }] }];
+  const f = buildRecordFile({ progress: { "statics/u/1-a": { status: "started", partsDone: 1 }, "statics/u/2-b": { status: "complete", partsDone: 1 } }, catalog: cat });
+  equal(f.progress.map((p) => p.partsDone), [1, undefined]);
 });

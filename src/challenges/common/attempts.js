@@ -14,7 +14,9 @@ const TRIES_BEFORE_REVEAL = 2;
 
 // holder: element where the button goes
 // onReveal(): show the answer (the challenge decides how)
-export function createAttempts(ctx, holder, onReveal) {
+// question() (optional): which question the answer is shown for, for the
+//   learning record (e.g. "T_AB,T_AC", "fbd", "question 3"); "*" = the whole round
+export function createAttempts(ctx, holder, onReveal, question = () => "*") {
   let wrong = 0;
   let btn = null;
   const a = {
@@ -38,7 +40,7 @@ export function createAttempts(ctx, holder, onReveal) {
     reveal() {
       if (btn) btn.remove();
       btn = null;
-      ctx.markRevealed(); // stage becomes "needs practice" (internal record only)
+      ctx.markRevealed(question()); // stage becomes "needs practice" (internal record only)
       ctx.el.feedback.innerHTML = ""; // the red "Not yet" box no longer applies
       onReveal();
     },

@@ -217,6 +217,25 @@ different situation (all are seen before any repeats), then new numbers from its
   `encoding` field ("none" for now), a snapshot of every course/unit/stage with
   titles (renamed stages are matched by title on import), and unknown fields are
   always kept. Change the format only by adding fields or raising the version.
+- **Learning record, format 2** (owner's spec, 2026-09-27): every event has a type
+  (stageStart, stageLeave, check, showAnswer, hint, exploreAction, complete,
+  confidence), a random session id, app/content versions (src/core/version.js)
+  and the time-zone offset. Checks store what was typed, the right value, units,
+  tolerance and the round's `vary` numbers; FBD checks store the arrows drawn and
+  expected; debug / concept-check / build store what was flagged, picked or
+  designed. activeMs = time since the previous check in the round (or since the
+  round started). Explore logs ONE summary per round, never every slider step.
+  Storage is capped (5,000 events; oldest explore summaries go first).
+  Privacy: no names, emails, account ids, IPs or device fingerprints; the only
+  free text is what students type into answer boxes.
+- **Renaming a unit or stage**: add the old → new id to src/core/migrations.js
+  (and bump CONTENT_VERSION in version.js). Saved progress, stored events and
+  imported files are all translated there; old ids must never reach an export.
+- **Mistake rules** (src/core/classify.js): after a solver's own slips, a wrong
+  number is tested for sign, weight (×/÷ 9.81), sin/cos swap, radians and
+  rounding (within 2%) before it counts as unexplained. The first check within
+  8 s of a round starting is flagged as a fast guess. The "Sure / Not sure"
+  tap (src/ui/confidence.js) is built but off until the owner switches it on.
 - Side-by-side diagrams (space diagram | FBD, a couple | its replacement): every
   drawing and label stays in its own half — each half is sized for the picture
   both before and after the answer is shown, and anything that would still

@@ -23,6 +23,10 @@ import { paceSignals, usualPace } from "./pace.js";
 const RECENT = 20; // questions per unit that count
 const NOT_SCORED = new Set(["design"]);
 
+// Only answer checks and "Show answer" presses are scored (not stage starts,
+// hints, explore summaries …). Events from before event types had none: all answers.
+export const isAnswer = (e) => !e.e || e.e === "check" || e.e === "showAnswer";
+
 const scoreFor = (wrongs) => (wrongs === 0 ? 1 : wrongs === 1 ? 0.6 : 0.3);
 
 // Each finished question: { u, s, v, ch, score, end } (end: its position in the record).
@@ -30,6 +34,7 @@ export function questionScores(events) {
   const shownAt = {}; // round → index of its first "Show answer"
   const groups = new Map(); // round|question → { meta, wrongs, okAt }
   events.forEach((e, i) => {
+    if (!isAnswer(e)) return;
     if (e.shown) {
       if (shownAt[e.r] == null) shownAt[e.r] = i;
       return;
@@ -66,7 +71,7 @@ export function mistakeBreakdown(events) {
   const byArea = { math: 0, object: 0, physics: 0, unknown: 0 };
   const kinds = {};
   for (const e of events) {
-    if (e.ok || e.shown || !e.k) continue;
+    if (e.ok || e.shown || !e.k || !isAnswer(e)) continue;
     for (const k of e.k) {
       const info = errorKind(k);
       byArea[info.area]++;

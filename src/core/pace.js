@@ -44,7 +44,7 @@ export function questionType(q) {
 export function checks(events) {
   const map = new Map();
   for (const e of events) {
-    if (e.shown || e.ms == null) continue;
+    if (e.shown || e.ms == null || (e.e && e.e !== "check")) continue; // answer checks only
     const type = questionType(e.q);
     if (type === "design") continue; // designs are trial and error by nature
     const key = `${e.r}|${e.chk}`;
@@ -98,7 +98,7 @@ export function paceSignals(events, usual = null) {
   // Guessing: several quick wrong retries at one question.
   const retries = {};
   for (const e of events) {
-    if (e.shown || e.ok || !(e.a > 1) || e.ms == null || e.ms >= QUICK_RETRY_MS) continue;
+    if (e.shown || e.ok || !(e.a > 1) || e.ms == null || e.ms >= QUICK_RETRY_MS || (e.e && e.e !== "check")) continue;
     const k = `${e.r}|${e.q}`;
     retries[k] = (retries[k] || 0) + 1;
   }

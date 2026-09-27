@@ -10,8 +10,10 @@
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
+import { anglesIn } from "../core/classify.js";
 import { el, testButton } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
+import { confidencePicker } from "../ui/confidence.js";
 
 export function mount(ctx) {
   const { stage, solver } = ctx;
@@ -21,6 +23,9 @@ export function mount(ctx) {
 
   ctx.el.area.appendChild(el("div", { className: "area-title", textContent: "Your prediction:" }));
   const inputs = answerInputs(ctx.el.area, asks, quantities);
+  // Optional "Sure / Not sure" (off unless ui/confidence.js switches it on).
+  const sure = confidencePicker(ctx);
+  if (sure.element) ctx.el.area.appendChild(sure.element);
   const actions = el("div", { className: "actions" }); // "Show answer" appears here after 2 wrong tries
   ctx.el.area.appendChild(actions);
   // Test sits at the bottom right of the panel; when the stage is done it
@@ -37,7 +42,7 @@ export function mount(ctx) {
     showMessage(ctx.el.feedback, "info", "Here's the answer", "Study the equations (switch to **Numbers** to see the values substituted).");
     ctx.explain();
     ctx.finish();
-  });
+  }, () => inputs.rows.filter((r) => !r.done).map((r) => r.ask.quantity).join(","));
 
   // Enter key = Test, so students can type and go.
   inputs.rows.forEach((r) => r.input.addEventListener("keydown", (e) => e.key === "Enter" && onTest()));
@@ -47,7 +52,8 @@ export function mount(ctx) {
       showMessage(ctx.el.feedback, "info", "Make your prediction first", "Type a number in every box, then press Test.");
       return;
     }
-    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record);
+    const allOk = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record, { angles: anglesIn(ws.setup) });
+    sure.reset(); // each check gets its own answer
     if (allOk) {
       delete ws.sceneOpts.guesses;
       testBtn.disabled = true;

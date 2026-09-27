@@ -25,7 +25,12 @@ async function courseSummary(courseId, events) {
   return { course, summary: courseComprehension(events, course, units) };
 }
 
+// The stage being played (runner.js), so leaving it can be recorded.
+let playing = null;
+
 async function route() {
+  if (playing) playing.leave();
+  playing = null;
   const [courseId, unitId, stageFile] = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   window.scrollTo(0, 0);
   document.querySelector(".center-card-backdrop")?.remove(); // close a "Stage complete" card
@@ -79,7 +84,7 @@ async function route() {
       stages: await loadUnitStages(courseId, unit),
     });
     document.title = `${stage.title} — Mechanics Sandbox`;
-    runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });
+    playing = runStage({ stage, view, key: `${courseId}/${stage.id}`, next, nextLabel });
   } catch (err) {
     // Never leave a blank page: show what went wrong and a way back.
     console.error(err);
@@ -93,4 +98,8 @@ async function route() {
 }
 
 window.addEventListener("hashchange", route);
+// Closing the tab (or the browser putting the page away) also leaves the stage;
+// a page brought back from the browser's cache starts a new visit.
+window.addEventListener("pagehide", () => playing && playing.leave());
+window.addEventListener("pageshow", (e) => e.persisted && playing && playing.resume());
 route();

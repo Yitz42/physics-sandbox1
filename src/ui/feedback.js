@@ -28,7 +28,8 @@ export function clearMessage(container) {
 // Hints are revealed one at a time, so students try before reading them all.
 // The button goes in `container`; opened hints are listed in `listContainer`
 // (the stage page puts the button at the bottom of the panel, the list above it).
-export function buildHints(container, hints = [], listContainer = container) {
+// onShow(n) (optional): called when hint n (1 = first) is shown — the runner records it.
+export function buildHints(container, hints = [], listContainer = container, onShow = null) {
   container.innerHTML = "";
   if (listContainer !== container) listContainer.innerHTML = "";
   if (!hints.length) return;
@@ -42,6 +43,7 @@ export function buildHints(container, hints = [], listContainer = container) {
     renderMixed(li, hints[shown++]);
     list.appendChild(li);
     label(shown < hints.length ? "Another hint" : "No more hints");
+    if (onShow) onShow(shown);
     btn.disabled = shown >= hints.length;
   };
   container.append(btn);

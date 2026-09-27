@@ -22,8 +22,10 @@ import { createFbdTool } from "./common/fbd-tool.js";
 import { createEquationPick } from "./common/equation-pick.js";
 import { createChoicePick } from "./common/choice-pick.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
+import { anglesIn } from "../core/classify.js";
 import { el, button } from "../ui/controls.js";
 import { showMessage } from "../ui/feedback.js";
+import { confidencePicker } from "../ui/confidence.js";
 
 const STEP_NAMES = { fbd: "Draw the FBD", equations: "Write the equations", choices: "Work it out", answer: "Solve" };
 const STEP_INTRO = {
@@ -48,7 +50,7 @@ export function mount(ctx) {
 
   let index = -1;
   let current = null; // the active step's tool (has .reveal())
-  const attempts = createAttempts(ctx, actions, () => current && current.reveal());
+  const attempts = createAttempts(ctx, actions, () => current && current.reveal(), () => steps[index]);
 
   // A term's symbol, for messages: from the setup's forces, else from the
   // equations themselves (support reactions, pieces of a distributed load …).
@@ -64,11 +66,12 @@ export function mount(ctx) {
   };
   // A step's check, for the comprehension record (the answer step records each
   // number itself, in checkRows). kinds: what sort of mistakes (core/diagnosis.js).
-  const stepWrong = (problems, kinds = []) => {
-    ctx.record({ q: steps[index], ok: false, kinds: kinds.length ? kinds : ["unexplained"] });
+  // detail: extra facts for the record (the FBD step gives the arrows drawn and expected).
+  const stepWrong = (problems, kinds = [], detail = {}) => {
+    ctx.record({ q: steps[index], ok: false, kinds: kinds.length ? kinds : ["unexplained"], ...detail });
     wrong(problems);
   };
-  const stepRight = () => ctx.record({ q: steps[index], ok: true, kinds: [] });
+  const stepRight = (detail = {}) => ctx.record({ q: steps[index], ok: true, kinds: [], ...detail });
 
   // After a step is right, let the student read the feedback, then move on
   // when THEY are ready (no automatic jump).
@@ -98,8 +101,8 @@ export function mount(ctx) {
 
     if (step === "fbd") {
       current = createFbdTool(ctx, ws, stage.solve.candidates, {
-        onCorrect: () => {
-          stepRight();
+        onCorrect: (detail) => {
+          stepRight(detail);
           ws.sceneOpts.hide = [];
           ws.extraShapes = () => [];
           ws.onPointer = null;
@@ -136,8 +139,13 @@ export function mount(ctx) {
       body.appendChild(current.element);
     } else if (step === "answer") {
       const inputs = answerInputs(body, [].concat(stage.ask), solver.quantities(ws.setup));
+      // Optional "Sure / Not sure" (off unless ui/confidence.js switches it on).
+      const sure = confidencePicker(ctx);
+      if (sure.element) body.appendChild(sure.element);
       const check = () => {
-        if (checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q), solver.texts && solver.texts.otherwise, ctx.record)) done(false);
+        const solved = checkRows(inputs, ws.result, (q) => solver.mistakes(ws.setup, q), solver.texts && solver.texts.otherwise, ctx.record, { angles: anglesIn(ws.setup) });
+        sure.reset(); // each check gets its own answer
+        if (solved) done(false);
         else {
           ws.sceneOpts.guesses = guessesFrom(inputs); // faint "shadow" of their answer
           ws.redraw();

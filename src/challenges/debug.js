@@ -77,7 +77,7 @@ export function mount(ctx) {
   const attempts = createAttempts(ctx, actions, () => {
     showMessage(ctx.el.feedback, "info", "Here's the mistake", describeMistake());
     fixed();
-  });
+  }, () => "debug");
   // For the comprehension record: not finding (or fixing) this mistake counts
   // as trouble with its kind (see src/core/diagnosis.js).
   const mistakeKind = () => {
@@ -90,6 +90,13 @@ export function mount(ctx) {
     const term = eq && eq.terms.find((t) => t.id === mutation.term);
     return (term && term.factor && term.factor.swapKind) || "trig";
   };
+
+  // For the record: what the student flagged ("missing" = the "…is missing"
+  // button; a term is "equation:term"), and what they should have flagged.
+  let found = null; // what the student flagged, once it's right
+  const flaggedName = (id, eqId) => (id === null ? "missing" : eqId ? `${eqId}:${id}` : id);
+  const wrongItem = () => (mutation.kind === "missing" || mutation.kind === "remove" ? "missing"
+    : mutation.equation && mutation.term ? `${mutation.equation}:${mutation.term}` : mutation.term || mutation.force || null);
 
   // Clicking arrows on the canvas (FBD view).
   if (isFbd) {
@@ -114,10 +121,13 @@ export function mount(ctx) {
       highlightTerms(eqBox, id);
       const note = id && dbg.notes && dbg.notes[id];
       showMessage(ctx.el.feedback, "bad", id ? "That one is correct" : "Nothing is missing", note || (id ? "Look again, checking each term's sign and whether it uses sin or cos." : "All the forces are there — one of them is wrong instead."));
-      ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()] });
+      ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()], st: "find", sub: flaggedName(id, eqId), exp: wrongItem() });
       attempts.wrong();
       return;
     }
+    // (A right find isn't a separate record — the question is only done once
+    // it's fixed — but the fix events carry what was flagged, as fl.)
+    found = flaggedName(id, eqId);
     stepNo = 2;
     ws.setHighlight(id);
     highlightTerms(eqBox, id);
@@ -133,14 +143,16 @@ export function mount(ctx) {
     const box = el("div", { className: "choice-list" });
     for (const o of options) {
       box.appendChild(button(o.label, (e) => {
+        const right = options.find((x) => x.correct);
+        const fix = { st: "fix", sub: o.label, exp: right ? right.label : null, fl: found };
         if (o.correct) {
-          ctx.record({ q: "debug", ok: true, kinds: [] });
+          ctx.record({ q: "debug", ok: true, kinds: [], ...fix });
           showMessage(ctx.el.feedback, "good", "Fixed! ✓", "");
           fixed();
         } else {
           e.target.classList.add("is-wrong");
           showMessage(ctx.el.feedback, "bad", "That wouldn't fix it", o.feedback);
-          ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()] });
+          ctx.record({ q: "debug", ok: false, kinds: [mistakeKind()], ...fix });
           attempts.wrong();
         }
       }, "btn btn-choice"));
@@ -251,7 +263,7 @@ function mountSteps(ctx, mutation) {
   const attempts = createAttempts(ctx, ctx.el.area, () => {
     showMessage(ctx.el.feedback, "info", "Here's the mistake", work.explain);
     fixed();
-  });
+  }, () => "debug");
 
   function pick(id, row) {
     if (stepNo !== 1) return;
@@ -262,25 +274,27 @@ function mountSteps(ctx, mutation) {
         ? "This line is wrong, but only because it builds on an earlier line. Find the line where the mistake STARTS."
         : (dbg.notes && dbg.notes[id]) || "That line is right. Check each line against the rule it uses.";
       showMessage(ctx.el.feedback, "bad", work.follows.includes(id) ? "Earlier than that" : "That one is correct", msg);
-      ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"] });
+      ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"], st: "find", sub: id, exp: work.wrong });
       attempts.wrong();
       return;
     }
-    stepNo = 2;
+    stepNo = 2; // (the fix events below carry the line found, as fl)
     row.classList.add("is-found");
     showMessage(ctx.el.feedback, "good", "Found it!", "Now, how should it be fixed?");
     step.textContent = "Step 2: choose the fix.";
     const choices = el("div", { className: "choice-list" });
     for (const f of work.fixes) {
+      const right = work.fixes.find((x) => x.correct);
+      const fix = { st: "fix", sub: f.label, exp: right ? right.label : null, fl: id };
       choices.appendChild(button(f.label, (e) => {
         if (f.correct) {
-          ctx.record({ q: "debug", ok: true, kinds: [] });
+          ctx.record({ q: "debug", ok: true, kinds: [], ...fix });
           showMessage(ctx.el.feedback, "good", "Fixed! ✓", work.explain);
           fixed();
         } else {
           e.target.classList.add("is-wrong");
           showMessage(ctx.el.feedback, "bad", "That wouldn't fix it", f.feedback || "Look again at what this line does wrong.");
-          ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"] });
+          ctx.record({ q: "debug", ok: false, kinds: [work.kind || "unexplained"], ...fix });
           attempts.wrong();
         }
       }, "btn btn-choice"));

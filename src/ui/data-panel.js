@@ -8,7 +8,7 @@
 import { el, button } from "./controls.js";
 import { showMessage } from "./feedback.js";
 import { loadCourseList, loadCourse, loadUnit, loadUnitStages, unitPlace } from "../core/content.js";
-import { getEvents, setEvents, getRecordId, MAX_EVENTS } from "../core/evidence.js";
+import { getEvents, setEvents, getRecordId, answerEvents, MAX_EVENTS } from "../core/evidence.js";
 import { getAllProgress, setAllProgress } from "../core/progress.js";
 import { allKinds } from "../core/diagnosis.js";
 import { buildRecordFile, readRecordFile, mergeEvents, mergeProgress, RecordFileError } from "../core/record-file.js";
@@ -49,7 +49,9 @@ export function dataPanel(onChange) {
   const status = el("div", { className: "data-status" });
   const events = getEvents();
   const done = Object.values(getAllProgress()).filter((p) => p.status === "complete").length;
-  const summary = el("p", { className: "data-summary", textContent: `This browser has recorded ${events.length} checked answer${events.length === 1 ? "" : "s"} and ${done} finished stage${done === 1 ? "" : "s"}.` });
+  const answers = answerEvents(events).length;
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  const summary = el("p", { className: "data-summary", textContent: `This browser has recorded ${plural(answers, "checked answer")} (${plural(events.length, "event")} in all, counting stage visits and hints) and ${plural(done, "finished stage")}.` });
 
   const exportBtn = button("Export all data", async () => {
     exportBtn.disabled = true;
@@ -57,7 +59,7 @@ export function dataPanel(onChange) {
       const file = buildRecordFile({ events: getEvents(), progress: getAllProgress(), catalog: await gameCatalog(), kinds: allKinds(), recordId: getRecordId() });
       const day = file.exportedAt.slice(0, 10);
       download(`learning-record-${day}.json`, JSON.stringify(file, null, 1));
-      showMessage(status, "good", "Exported", `Saved **${file.events.length}** answers and **${file.progress.length}** stage records in one file (anonymous).`);
+      showMessage(status, "good", "Exported", `Saved **${file.events.length}** events and **${file.progress.length}** stage records in one file (anonymous).`);
     } catch (err) {
       showMessage(status, "bad", "Couldn't export", err.message);
     } finally {
@@ -80,14 +82,14 @@ export function dataPanel(onChange) {
         throw new RecordFileError("That file isn't readable JSON.");
       }
       const got = readRecordFile(json, await gameCatalog());
-      const ok = confirm(`Add ${got.events.length} answers and ${Object.keys(got.progress).length} stage records from "${f.name}" to this browser?\n\nNothing already here is deleted; answers that are already here aren't added twice.`);
+      const ok = confirm(`Add ${got.events.length} events and ${Object.keys(got.progress).length} stage records from "${f.name}" to this browser?\n\nNothing already here is deleted; events that are already here aren't added twice.`);
       if (!ok) return;
       const merged = mergeEvents(getEvents(), got.events);
       const kept = setEvents(merged.events);
       setAllProgress(mergeProgress(getAllProgress(), got.progress));
       const notes = [...got.warnings];
-      if (kept < merged.events.length) notes.push(`This browser keeps the newest ${MAX_EVENTS} answers, so the oldest ${merged.events.length - kept} were left out.`);
-      showMessage(status, "good", "Imported", [`Added **${merged.added}** new answers (${got.events.length - merged.added} were already here) and merged the stage records.`, ...notes].join("\n\n"));
+      if (kept < merged.events.length) notes.push(`This browser keeps at most ${MAX_EVENTS} events, so ${merged.events.length - kept} of the oldest were left out (explore summaries first).`);
+      showMessage(status, "good", "Imported", [`Added **${merged.added}** new events (${got.events.length - merged.added} were already here) and merged the stage records.`, ...notes].join("\n\n"));
       if (onChange) setTimeout(onChange, 1200); // let the message be read, then refresh the numbers
     } catch (err) {
       showMessage(status, "bad", "Couldn't import", err instanceof RecordFileError ? err.message : `Something went wrong reading the file: ${err.message}`);
@@ -96,7 +98,7 @@ export function dataPanel(onChange) {
 
   return el("section", { className: "data-panel" }, [
     el("h2", { textContent: "Learning data" }),
-    el("p", { className: "lead", textContent: "Everything gathered in this browser — finished stages and every checked answer, with timing and the kind of each mistake — in one anonymous file. Import adds a file's data to this browser." }),
+    el("p", { className: "lead", textContent: "Everything gathered in this browser — stages opened and finished, every checked answer (what was typed, with timing and the kind of each mistake), hints, Show answer and explore sessions — in one anonymous file. Import adds a file's data to this browser." }),
     summary,
     el("div", { className: "actions" }, [exportBtn, importBtn, picker]),
     status,

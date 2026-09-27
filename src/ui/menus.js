@@ -7,7 +7,7 @@ import { unitPlace, readingFor } from "../core/content.js";
 import { CHALLENGE_NAMES } from "./stage-view.js";
 import { topNav, progressBar } from "./chrome.js";
 
-// "practice" (answer was shown) is an internal record: students just see "not done yet".
+// "started" and "practice" (answer was shown) are internal records: students just see "not done yet".
 // A block of content text that may contain math like $\\Sigma F_x = 0$.
 // (Plain textContent would show the dollar signs and backslashes.)
 function mixed(text, className = "") {
@@ -16,8 +16,8 @@ function mixed(text, className = "") {
   return div;
 }
 
-const ICON = { none: "○", practice: "○", complete: "●" };
-const ICON_TITLE = { none: "Not done yet", practice: "Not done yet", complete: "Complete" };
+const ICON = { none: "○", started: "○", practice: "○", complete: "●" };
+const ICON_TITLE = { none: "Not done yet", started: "Not done yet", practice: "Not done yet", complete: "Complete" };
 
 export function renderHome(root, courses) {
   root.innerHTML = "";

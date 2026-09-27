@@ -12,6 +12,7 @@ import { createWorkspace } from "./common/workspace.js";
 import { el, button } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
+import { changeTally } from "./common/design.js";
 
 export function mount(ctx) {
   const { stage } = ctx;
@@ -28,6 +29,10 @@ export function mount(ctx) {
 
   let ws = null; // set just below; onChange runs once during creation, before ws exists
   let finished = false;
+  // What the student changes, summed up in ONE record event (exploreAction)
+  // when they finish or leave (see runner.js), instead of one per slider step.
+  const tally = changeTally(stage, ctx.setup);
+  ctx.exploreSummary = () => tally.summary();
   ws = createWorkspace(ctx, {
     editable: stage.editable,
     draggable: stage.draggable,
@@ -35,6 +40,7 @@ export function mount(ctx) {
     reveal: true,
     sceneOpts: stage.sceneOpts,
     onChange: (result) => {
+      if (ws) tally.note(ws.setup);
       // Tick off any task that is now true. Ticks stay, even if later untrue.
       tasks.forEach((t, i) => {
         let ok = false;

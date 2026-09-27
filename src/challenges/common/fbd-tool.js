@@ -23,8 +23,13 @@ import { renderTex } from "../../render/panel.js";
 import { sameWay, wrongDirectionText, missingText } from "./fbd-feedback.js";
 
 // candidates: [{ id, symbol?, feedback?, missing?, wrongDirection?, at?, moment? }]
-// onCorrect(): called when the FBD is right. onWrong(problems, kinds): called after
-// a wrong check; kinds lists each mistake's kind ("extra", "direction", "missing").
+// onCorrect(detail): called when the FBD is right. onWrong(problems, kinds, detail):
+// called after a wrong check; kinds lists each mistake's kind ("extra",
+// "direction", "missing", and more specific ones where they fit: "cablePull" a
+// cable or spring drawn pushing, "pulleyTension" one side of a cable over a
+// pulley left out, "supports" a reaction a support doesn't give, or doesn't
+// give that way). detail: { pl, ef } — the arrows drawn and the arrows
+// expected, for the learning record (see fbdRecord below).
 export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   const info = ctx.solver.fbd(ws.setup, ws.sceneOpts); // same layout as the picture
   const correct = new Map(info.forces.map((f) => [f.id, f]));
@@ -176,37 +181,60 @@ export function createFbdTool(ctx, ws, candidates, { onCorrect, onWrong }) {
   }
 
   // ---- Checking -----------------------------------------------------------------
+  // A support's reaction (or a force the palette places at a support) is about
+  // "which reactions each support gives".
+  const supportIds = new Set((ws.setup.supports || []).map((s) => s.id));
+  const atSupport = (c, right) => !!((right && right.support) || (c.at && supportIds.has(c.at)));
   function check() {
     const problems = [];
     const kinds = []; // what sort of mistakes (see src/core/diagnosis.js), for comprehension
+    const add = (...k) => k.forEach((x) => !kinds.includes(x) && kinds.push(x));
     const matches = sharedMatches();
     for (const [id, v] of placed) {
       const c = candidate(id);
       const right = correct.get(matches.get(id) || id);
       if (!right) {
         problems.push(c.feedback || `${labelOf(c)} doesn't act on this point.`);
-        kinds.push("extra");
+        add("extra", ...(atSupport(c) ? ["supports"] : []));
       } else if (!sameWay(right, v)) {
         problems.push(c.wrongDirection || wrongDirectionText(right));
-        kinds.push("direction");
+        add("direction");
+        if (["cable", "spring", "pull"].includes(right.kind)) add("cablePull"); // cables and springs only pull
+        else if (right.kind === "push" || atSupport(c, right)) add("supports"); // a roller or surface only pushes
       }
     }
     for (const f of info.forces) {
       if (!placed.has(f.id)) {
         const c = candidates.find((x) => x.id === f.id) || {};
         problems.push(c.missing || missingText(f));
-        kinds.push("missing");
+        add("missing");
+        if (f.shared) add("pulleyTension"); // one side of a cable over a pulley left out
+        else if (atSupport(c, f)) add("supports");
       }
     }
+    const detail = fbdRecord();
     if (problems.length === 0) {
       ghost = null;
       palette.querySelectorAll("button").forEach((b) => (b.disabled = true));
       actions.remove();
       hint.remove();
-      onCorrect();
+      onCorrect(detail);
     } else {
-      onWrong(problems.slice(0, 2), kinds);
+      onWrong(problems.slice(0, 2), kinds, detail);
     }
+  }
+
+  // For the learning record: every arrow drawn (pl) and every arrow expected
+  // (ef), each { id, type, deg } — type: the kind of force ("cable", "weight",
+  // "component", "push" …; "notActing" for a palette force that doesn't act
+  // here), deg: its direction in degrees from +x, counterclockwise (a moment:
+  // turn "ccw" / "cw"; either: true where a reaction may be drawn either way).
+  function fbdRecord() {
+    const way = (id, v) => (isMoment(id) ? { turn: v > 0 ? "ccw" : "cw" } : v ? { deg: Math.round(((Math.atan2(v[1], v[0]) * 180) / Math.PI + 360) % 360) } : {});
+    return {
+      pl: [...placed].map(([id, v]) => ({ id, type: (correct.get(id) || {}).kind || (correct.has(id) ? "force" : "notActing"), ...way(id, v) })),
+      ef: info.forces.map((f) => ({ id: f.id, type: f.kind || "force", ...way(f.id, f.moment ? f.sense || 1 : f.dir), ...(f.either ? { either: true } : {}) })),
+    };
   }
 
   // Forces that share one tension (both sides of a cable over a pulley) have the

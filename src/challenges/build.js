@@ -22,6 +22,8 @@
 import { createWorkspace } from "./common/workspace.js";
 import { answerInputs, checkRows, guessesFrom } from "./common/answers.js";
 import { createAttempts } from "./common/attempts.js";
+import { anglesIn } from "../core/classify.js";
+import { designOf } from "./common/design.js";
 import { el, testButton } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
@@ -84,7 +86,7 @@ export function mount(ctx) {
     ws.redraw();
     showMessage(ctx.el.feedback, "info", "Here are the numbers for this design",
       "Switch the equations to **Numbers** to see how they come out. Now press **Test** to load it — and if you change the design, you'll need to work out its numbers again.");
-  });
+  }, () => inputs.rows.filter((r) => !r.done).map((r) => r.ask.quantity).join(","));
 
   // The student's numbers for their own design. Returns true when they're all right.
   function checkPrediction() {
@@ -93,7 +95,7 @@ export function mount(ctx) {
       return false;
     }
     if (inputs.rows.every((r) => r.done || r.input.readOnly)) return true; // checked (or shown) already
-    const ok = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record);
+    const ok = checkRows(inputs, ws.result, (q) => (solver.mistakes ? solver.mistakes(ws.setup, q) : []), solver.texts && solver.texts.otherwise, ctx.record, { angles: anglesIn(ws.setup) });
     if (ok) {
       delete ws.sceneOpts.guesses;
       return true;
@@ -110,7 +112,10 @@ export function mount(ctx) {
     if (inputs && !checkPrediction()) return;
     playing = true;
     const out = goal.check(ws.result, ws.setup);
-    ctx.record({ q: "design", ok: !!out.ok, kinds: [] }); // a design that fails isn't a math/object slip
+    // A design that fails isn't a math/object slip (no kinds). The record keeps
+    // the design itself (dp) and how it did against the goal (gl): met or not,
+    // the parts that failed, and each reason given.
+    ctx.record({ q: "design", ok: !!out.ok, kinds: [], dp: designOf(stage, ws.setup), gl: { met: !!out.ok, flagged: out.flagged || [], notes: out.ok ? [] : String(out.message || "").split(/\n\n+/).filter(Boolean) } });
     ws.sceneOpts.flagged = out.flagged || [];
     ws.setReveal(true);
     playing = false;

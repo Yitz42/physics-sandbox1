@@ -15,12 +15,19 @@
 // stage is complete after the last part. Showing the answer gives a new
 // version of the same part. The part reached is saved, so a student who
 // leaves comes back to it.
+//
+// It also keeps the quiet learning record (core/evidence.js; never shown to
+// the student): the stage opening (stageStart) and being left (stageLeave, via
+// the leave() it returns), every checked answer (check), "Show answer"
+// (showAnswer), hints (hint), an explore summary (exploreAction), the
+// optional confidence tap (confidence) and finishing the stage (complete).
 
 import { getSolver } from "./registry.js";
-import { getStatus, setStatus, getPartsDone, setPartsDone, STATUS } from "./progress.js";
+import { getStatus, setStatus, getPartsDone, setPartsDone, markStarted, STATUS } from "./progress.js";
 import { stageParts, stageSituations, nextSituation } from "./content.js";
-import { makeVariant, clone } from "./paths.js";
+import { makeVariant, clone, getPath } from "./paths.js";
 import { recordEvent, newRoundId, activeNow, hiddenNow } from "./evidence.js";
+import { isFastGuess } from "./classify.js";
 import { createCanvas } from "../render/canvas.js";
 import { showExplanation, buildHints, showMessage, showCenterCard } from "../ui/feedback.js";
 import { button } from "../ui/controls.js";
@@ -33,17 +40,48 @@ import * as solve from "../challenges/solve.js";
 
 const CHALLENGES = { explore, predict, build, debug, "concept-check": conceptCheck, solve };
 
+// The numbers that made this version (round) of a stage: the value at each
+// `vary` path, e.g. { "forces.#W.mass": 20, "forces.#T_AC.direction.angle": 40 }.
+// null for a stage without `vary` (its numbers are always the stage file's own).
+export function roundParams(stage, setup) {
+  if (!setup || !stage.vary || !stage.vary.length) return null;
+  const out = {};
+  for (const rule of stage.vary) {
+    const path = (rule.paths || [rule.path])[0];
+    if (path) out[path] = getPath(setup, path) ?? null;
+  }
+  return out;
+}
+
 // view: the stage page from ui/stage-view.js (it owns the DOM)
 // key:  progress key, e.g. "statics/force-components/2-predict"
 // next: URL of the next stage (or the course page after the last stage)
 // nextLabel: its button text, e.g. "Next stage →"
+// Returns { leave() }: call it when the student leaves the stage (another
+// page, or closing the tab) — it records how long they spent and whether they finished.
 export function runStage({ stage: whole, view, key, next, nextLabel = "Next stage →" }) {
   const challenge = CHALLENGES[whole.challenge];
   const parts = stageParts(whole);
+  const before = getStatus(key);
   // Start where the student left off, unless the stage is already complete
   // (then replaying starts from part 1).
-  let partIndex = getStatus(key) === STATUS.COMPLETE ? 0 : Math.min(getPartsDone(key), parts.length - 1);
+  let partIndex = before === STATUS.COMPLETE ? 0 : Math.min(getPartsDone(key), parts.length - 1);
   let memory, round, lastSetup;
+
+  // This visit to the stage: opened now; "started" in progress unless it's further along.
+  const [courseId, unitId] = key.split("/");
+  let where = { c: courseId, u: unitId, s: whole.id, p: partIndex, v: null, ch: whole.challenge, r: null };
+  const visit = { since: activeNow(), hidden: hiddenNow(), finished: false, left: false };
+  const visitTime = () => ({ ms: Math.round(activeNow() - visit.since), h: Math.round(hiddenNow() - visit.hidden) });
+  markStarted(key);
+  // ps: the stage's status before this visit (a first try, or coming back to it).
+  recordEvent({ e: "stageStart", ...where, ps: before });
+  // Explore stages sum up what was changed once per version (see flushExplore).
+  let exploreFlush = null;
+  const flushExplore = () => {
+    if (exploreFlush) exploreFlush();
+    exploreFlush = null;
+  };
 
   function startPart(i) {
     partIndex = i;
@@ -54,6 +92,7 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
   }
 
   function startRound() {
+    flushExplore(); // the version being replaced gets its summary first
     // A stage with several situations plays a different one each version
     // (see stageSituations in content.js); the rest of this round uses it.
     const situations = stageSituations(parts[partIndex]);
@@ -66,13 +105,23 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
 
     const el = view.resetBody(stage, { index: partIndex, count: parts.length, titles: parts.map((p) => p.partTitle) });
     // Where this version is, for the quiet record of answers (core/evidence.js).
-    const [courseId, unitId] = key.split("/");
-    const where = { c: courseId, u: unitId, s: stage.id, p: partIndex, v: stage.situation ? stage.situation.name : "", ch: stage.challenge, r: newRoundId() };
-    // Timing each try: from the start of the version (or the previous check) to
-    // this check, counting only time the page is visible. Numbers checked with
-    // one press of Test share one time. core/pace.js judges fast and slow.
-    // Time on another tab or window during the try is kept too (h).
+    // v: the situation's name, or null when the stage has only one.
+    where = { c: courseId, u: unitId, s: stage.id, p: partIndex, v: stage.situation ? stage.situation.name : null, ch: stage.challenge, r: newRoundId() };
+    const here = where; // (this version's; `where` moves on with the next one)
+    // Timing each try (ms): from the start of the version (or the previous
+    // check, or "Show answer") to this check, counting only time the page is
+    // visible. Numbers checked with one press of Test share one time.
+    // core/pace.js judges fast and slow. Time on another tab or window during
+    // the try is kept too (h), the same way.
     const clock = { since: activeNow(), hiddenSince: hiddenNow(), lastAt: -Infinity, lastMs: 0, lastHidden: 0, chk: 0, tries: {} };
+    const roundStart = clock.since;
+    // The numbers behind this version go on its first check (or Show answer) only.
+    let params = { rp: roundParams(stage, setup) };
+    const paramsOnce = () => {
+      const out = params;
+      params = {};
+      return out;
+    };
     const timeTry = () => {
       const now = activeNow();
       if (now - clock.lastAt > 80) {
@@ -86,24 +135,34 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
       clock.lastAt = now;
       return { ms: Math.round(clock.lastMs), h: Math.round(clock.lastHidden), chk: clock.chk };
     };
-    if (stage.expectedTime) where.x = stage.expectedTime; // seconds; a stage can say how long its questions should take
+    if (stage.expectedTime) here.x = stage.expectedTime; // seconds; a stage can say how long its questions should take
     const ctx = {
       stage, solver, setup, round, memory, el, key,
       canvas: createCanvas(el.figure),
       revealed: false,
+      confidence: null, // the optional "Sure / Not sure" tap (ui/confidence.js)
       // "Needs practice" is kept as an internal record only (never shown to the
       // student): it makes the stage start with fresh numbers next time, and
       // a future instructor dashboard can use it.
-      markRevealed() {
+      // q: which question the answer was shown for ("*" = the whole round).
+      markRevealed(q = "*") {
         ctx.revealed = true;
         setStatus(key, STATUS.PRACTICE);
-        recordEvent({ ...where, q: "*", shown: true, ...timeTry() });
+        recordEvent({ ...here, e: "showAnswer", q, shown: true, ...timeTry(), ...paramsOnce() });
       },
-      // Challenges call this for every answer they check: { q, ok, kinds }.
+      // Challenges call this for every answer they check: { q, ok, kinds }, plus
+      // what they know about it (sub, exp, un, tol, pl, ef, dp, gl …; see evidence.js).
       // It's never shown to the student; comprehension.js scores it.
-      record({ q, ok, kinds = [] }) {
+      record({ q, ok, kinds = [], ...detail }) {
         const a = (clock.tries[q] = (clock.tries[q] || 0) + 1); // 1 = first try at this question
-        recordEvent({ ...where, q, ok: !!ok, k: ok ? [] : kinds, a, ...timeTry() });
+        const time = timeTry();
+        // A fast guess: the round's first check, within seconds of it starting.
+        const fg = time.chk === 1 && isFastGuess(activeNow() - roundStart);
+        recordEvent({ ...here, e: "check", q, ok: !!ok, k: ok ? [] : kinds, a, ...time, fg, cf: ctx.confidence, ...detail, ...paramsOnce() });
+      },
+      setConfidence(value) {
+        ctx.confidence = value;
+        recordEvent({ ...here, e: "confidence", cf: value });
       },
       // Hints are pointless once a question is answered; challenges hide them
       // after a correct answer and bring them back for the next question.
@@ -112,7 +171,7 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
         el.hintList.innerHTML = "";
       },
       showHints() {
-        buildHints(el.hints, stage.hints, el.hintList);
+        buildHints(el.hints, stage.hints, el.hintList, (n) => recordEvent({ ...here, e: "hint", hi: n }));
       },
       explain() {
         showExplanation(el.explanation, stage.explanation);
@@ -137,9 +196,12 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
           el.actions.scrollIntoView({ behavior: "smooth", block: "nearest" });
           return;
         }
-        setPartsDone(key, 0);
+        if (parts.length > 1) setPartsDone(key, 0); // (only stages with parts keep a part count)
         setStatus(key, STATUS.COMPLETE);
         view.setStatus(STATUS.COMPLETE);
+        flushExplore();
+        visit.finished = true;
+        recordEvent({ ...here, e: "complete", ...visitTime() });
         const goNext = () => (location.hash = next);
         const openCard = () => showCenterCard({
           title: "Stage complete",
@@ -166,6 +228,9 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
     };
     ctx.showHints();
     challenge.mount(ctx);
+    // Explore: one summary of what was changed in this version (logged when
+    // the student finishes, leaves or starts another version).
+    if (ctx.exploreSummary) exploreFlush = () => recordEvent({ ...here, e: "exploreAction", ex: { ...ctx.exploreSummary(), ms: Math.round(activeNow() - roundStart) } });
   }
 
   function newRound() {
@@ -181,4 +246,21 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
 
   view.setStatus(getStatus(key));
   startPart(partIndex);
+
+  return {
+    // The student left (another page, or the tab closed): once per visit.
+    leave() {
+      if (visit.left) return;
+      visit.left = true;
+      flushExplore();
+      recordEvent({ ...where, e: "stageLeave", ...visitTime(), fin: visit.finished });
+    },
+    // Back again without reloading (the browser restored the page from its
+    // cache): a new visit.
+    resume() {
+      if (!visit.left) return;
+      Object.assign(visit, { since: activeNow(), hidden: hiddenNow(), left: false });
+      recordEvent({ e: "stageStart", ...where, ps: getStatus(key) });
+    },
+  };
 }

@@ -60,7 +60,7 @@ export function mount(ctx) {
     const setup = q.setup || ctx.setup;
     ctx.el.figure.hidden = !setup;
     if (setup) createWorkspace({ ...ctx, setup }, { equations: "never", reveal: !!q.reveal, sceneOpts: q.sceneOpts || stage.sceneOpts });
-    attempts = createAttempts(ctx, actions, reveal);
+    attempts = createAttempts(ctx, actions, reveal, () => `question ${mem.order[mem.pos % mem.order.length]}`);
     const opts = q.fixedOrder ? q.options : shuffle(q.options);
     for (const o of opts) {
       const b = el("button", { type: "button", className: "btn btn-choice" });
@@ -79,7 +79,9 @@ export function mount(ctx) {
     // For the comprehension record: which question, and (if wrong) what kind of
     // mistake — "concept" unless the option names its own kind (e.g. "sign").
     const q0 = `question ${mem.order[mem.pos % mem.order.length]}`;
-    ctx.record({ q: q0, ok: !!o.correct, kinds: o.correct ? [] : [o.kind || "concept"] });
+    // sub / exp: the choice picked and the right one (their text, as shown).
+    const right = current().options.find((x) => x.correct);
+    ctx.record({ q: q0, ok: !!o.correct, kinds: o.correct ? [] : [o.kind || "concept"], sub: o.text, exp: right ? right.text : null });
     if (o.correct) {
       const q = current();
       b.classList.add("is-right");
