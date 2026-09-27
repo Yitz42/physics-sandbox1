@@ -24,6 +24,5 @@ export default {
     "internal-forces": { chapter: "Chapter 8: Internal Loadings" },
     friction: { chapter: "Chapter 9: Friction" },
     inertia: { chapter: "Chapter 10: Moments of Inertia" },
-    // "statics-3d": 3D problems are spread through the book's chapters, so no single link.
   },
 };

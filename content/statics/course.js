@@ -14,12 +14,27 @@ import reading from "./reading.js"; // the textbook linked from each chapter
 const soon = (title, concept) => ({ title, concept, comingSoon: true });
 
 const chapters = [
-  { id: "forces", title: "Forces and vectors", units: ["force-components", "cartesian-vectors"] },
-  { id: "particles", title: "Equilibrium of a particle", units: ["cables", "springs", "pulleys"] },
+  // 3D units come at the end of the chapter whose 2D ideas they build on.
+  {
+    id: "forces", title: "Forces and vectors",
+    units: [
+      "force-components", "cartesian-vectors",
+      soon("Forces in 3D", "Forces with x, y and z components: $\\mathbf{F} = F_x\\,\\mathbf{i} + F_y\\,\\mathbf{j} + F_z\\,\\mathbf{k}$, and a force along a line in space."),
+    ],
+  },
+  {
+    id: "particles", title: "Equilibrium of a particle",
+    units: [
+      "cables", "springs", "pulleys",
+      soon("Particle equilibrium in 3D", "$\\Sigma F_x = 0$, $\\Sigma F_y = 0$, $\\Sigma F_z = 0$: three equations for up to three unknown forces."),
+    ],
+  },
   {
     id: "moments", title: "Moments and static equivalence",
     units: [
       "moments", "varignon", "couples", "moving-forces", "equivalent-systems",
+      soon("Moments in 3D", "The moment as a cross product, $\\mathbf{M}_O = \\mathbf{r} \\times \\mathbf{F}$, pointing along the axis it turns about."),
+      soon("Moment about an axis", "How hard a force turns something about a given axis, like a door about its hinges."),
       soon("Distributed loads", "A load spread along a beam is replaced by one force: its area, acting at its centroid."),
     ],
   },
@@ -31,6 +46,7 @@ const chapters = [
       soon("Alternative equation sets", "Two moment equations plus one force equation — and when that works."),
       soon("Stability and determinacy", "Too few supports and it moves; too many and equilibrium can't find the forces."),
       soon("Two-force and three-force members", "A two-force member pulls or pushes along its own line; three forces must meet at a point."),
+      soon("Rigid body equilibrium in 3D", "Six equations, supports in space, and solving for their reactions."),
     ],
   },
   {
@@ -69,14 +85,6 @@ const chapters = [
     id: "inertia", title: "Moments of inertia",
     units: [
       soon("Area moments of inertia", "$I = \\int y^2\\,dA$ and the parallel axis theorem: why I-beams are so stiff."),
-    ],
-  },
-  {
-    id: "statics-3d", title: "Statics in 3D",
-    units: [
-      soon("3D forces and particle equilibrium", "Forces with x, y and z components, and $\\Sigma \\mathbf{F} = 0$ in space."),
-      soon("Moments in 3D", "The moment as a cross product, and the moment about an axis."),
-      soon("3D rigid body equilibrium", "Six equations, supports in space, and solving for their reactions."),
     ],
   },
 ];

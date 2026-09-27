@@ -4,7 +4,8 @@ The course is grouped into **chapters** that follow the textbook's chapters
 (content/statics/reading.js). Each **unit** teaches ONE concept and tests it six
 ways (see challenge types in CLAUDE.md): explore → predict → build → debug →
 concept-check → solve. Units are numbered by chapter: 2.2 is chapter 2, unit 2.
-A new concept gets its own unit in the matching chapter.
+A new concept gets its own unit in the matching chapter. 3D units come at the end
+of the chapter whose 2D ideas they build on (they use three.js).
 
 Items marked ⭐ were agreed with the owner as additions to the textbook plan.
 ✅ = built.
@@ -30,6 +31,9 @@ Claude builds from it.
   force from coordinates; anchor a cable so it pulls with a given force; debug swapped
   fractions; resultant of two cables in Cartesian form.
 
+**Unit 1.3: Forces in 3D**
+- Concept: F = Fx i + Fy j + Fz k; a force along a line in space (r_AB in 3D).
+
 ### Chapter 2: Equilibrium of a particle (textbook ch. 3)
 
 **Unit 2.1: Cables** ✅
@@ -46,6 +50,9 @@ Claude builds from it.
 - Concept: a cable over a frictionless pulley pulls twice with the same tension T.
 - Test ideas: a pulley riding on a cable, held by a rope; set the angles so the rope can
   be cut; debug an FBD with one side of the cable missing.
+
+**Unit 2.4: Particle equilibrium in 3D**
+- Concept: ΣFx = 0, ΣFy = 0, ΣFz = 0: three equations, up to three unknowns.
 
 ### Chapter 3: Moments and static equivalence (textbook ch. 4)
 
@@ -73,7 +80,13 @@ Claude builds from it.
 - Concept: replace several forces with one resultant force plus a moment.
 - Test ideas: find where a single force must act to replace a set of loads.
 
-**Unit 3.6: Distributed loads**
+**Unit 3.6: Moments in 3D**
+- Concept: M_O = r × F (cross product); the moment vector points along the turning axis.
+
+**Unit 3.7: Moment about an axis**
+- Concept: how hard a force turns something about a given axis (a door about its hinges).
+
+**Unit 3.8: Distributed loads**
 - Concept: a distributed load is replaced by its area, acting at its centroid.
 - Test ideas: uniform and triangular loads on a beam; predict the equivalent force and location.
 
@@ -98,6 +111,9 @@ Claude builds from it.
 **Unit 4.5: Two-force and three-force members**
 - Concept: two-force members carry force along their line; three forces must be concurrent or parallel.
 - Test ideas: find a direction without calculating.
+
+**Unit 4.6: Rigid body equilibrium in 3D**
+- Concept: six equations; supports in space (ball-and-socket, journal bearings).
 
 ### Chapter 5: Structures (textbook ch. 6)
 
@@ -160,12 +176,6 @@ Claude builds from it.
 - Concept: I = ∫y² dA; parallel axis theorem.
 - Test ideas: compare I-beam vs. rectangle of the same area.
 - Bridge to later: needed for bending stress.
-
-### Chapter 10: 3D statics (uses three.js)
-
-**Unit 10.1: 3D force vectors and particle equilibrium**
-**Unit 10.2: Moments in 3D (cross product) and moment about an axis**
-**Unit 10.3: 3D rigid body equilibrium**
 
 ---
 
