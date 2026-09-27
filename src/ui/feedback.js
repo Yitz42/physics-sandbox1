@@ -1,6 +1,6 @@
 // feedback.js — messages to the student: right, wrong, hints, explanations.
 //
-// Wrong answers always come with a reason (see CLAUDE.md), so every message
+// Wrong answers always come with a reason (see docs/TEACHING.md), so every message
 // here takes a title AND a body.
 
 import { el } from "./controls.js";

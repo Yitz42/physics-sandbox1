@@ -2,7 +2,7 @@
 //
 // Content files are plain ES modules that `export default` an object, so
 // adding a stage means adding a file and listing it in its unit.js — no
-// engine changes. See CLAUDE.md, "Stage file format".
+// engine changes. See docs/STAGES.md.
 
 const ROOT = "../../content/"; // relative to this file (src/core/)
 
