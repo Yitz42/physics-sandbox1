@@ -1,4 +1,4 @@
-// Unit 5.3, stage 6 — solve: the right part of the bridge carrying two loads, from FBD to
+// Unit 6.3, stage 6 — solve: the right part of the bridge carrying two loads, from FBD to
 // all three cut members. The section and its hand check are in the lesson library
 // (library/trusses.js, rightSection): P = 600 N at B, Q = 1200 N at C → E_y = 750 N;
 //   ΣM_C: 6E_y + 3F_GH = 0 → F_GH = −1500 N;  ΣM_H: 3E_y − 3F_CD = 0 → F_CD = +750 N;

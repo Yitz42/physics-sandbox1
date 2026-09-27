@@ -1,4 +1,4 @@
-// Unit 5.2, stage 5 — concept check: spotting zero-force members, and why they stay.
+// Unit 6.2, stage 5 — concept check: spotting zero-force members, and why they stay.
 
 export default {
   id: "zero-force-members/5-concept-check",

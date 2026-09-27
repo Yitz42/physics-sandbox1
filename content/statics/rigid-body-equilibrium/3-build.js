@@ -1,4 +1,4 @@
-// Unit 4.2, stage 3 — build: place the fulcrum of a diving board.
+// Unit 5.2, stage 3 — build: place the fulcrum of a diving board.
 // The board (4 m, 30 kg → W = 294.3 N at 2 m) is pinned (bolted) at A (x = 0)
 // and rests on a roller, the fulcrum B, at x = b. The diver stands at the tip (4 m).
 //   ΣM_A: b·B_y − 294.3(2) − W_d(4) = 0 → B_y = (588.6 + 4W_d) / b

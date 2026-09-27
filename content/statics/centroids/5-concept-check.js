@@ -1,4 +1,4 @@
-// Unit 6.1, stage 5 — concept check: centroids and centres of gravity.
+// Unit 7.1, stage 5 — concept check: centroids and centres of gravity.
 
 export default {
   id: "centroids/5-concept-check",

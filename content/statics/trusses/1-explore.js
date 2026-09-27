@@ -1,4 +1,4 @@
-// Unit 5.1, stage 1 — explore: a small bridge truss; choose where the load
+// Unit 6.1, stage 1 — explore: a small bridge truss; choose where the load
 // goes and how big it is, and watch which members pull (red) and push (blue).
 // Joints: A (0, 0) pin, C (6, 0), E (12, 0) roller; D (3, 4), F (9, 4).
 // Every slanted member rises 4 for 3 across (length 5 m). m = 7, r = 3, j = 5: 7 + 3 = 2 × 5.

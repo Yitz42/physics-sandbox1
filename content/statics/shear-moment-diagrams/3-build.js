@@ -1,4 +1,4 @@
-// Unit 7.2, stage 3 — build: place the roller so the largest bending moment is as small as
+// Unit 8.2, stage 3 — build: place the roller so the largest bending moment is as small as
 // possible (balance the sag in the span against the overhang's hogging over B).
 // Pin A (0), roller B (b), beam 6 m, w all along: A_y = 6w(b − 3)/b.
 //   In the span: M_max+ = A_y²/(2w);  over B: M_B = −w(6 − b)²/2.

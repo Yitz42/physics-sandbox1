@@ -1,4 +1,4 @@
-// Unit 7.3, stage 1 — explore: slide a section along the beam and read its segment's V(x) and
+// Unit 8.3, stage 1 — explore: slide a section along the beam and read its segment's V(x) and
 // M(x) equations, with their values at x.
 // Pin A (0), roller B (6), w = 400 N/m on the first 3 m, P = 600 N at 4.5 m → A_y = 1050, B_y = 750 N.
 //   Segment 1 (0–3):   V = 1050 − 400x,   M = 1050x − 400x²/2
@@ -36,7 +36,7 @@ export default {
     { text: "Put the section right where the uniform load ends, **x = 3 m** — the two segments' equations agree there.", check: (v, s) => Math.abs(s.cut - 3) < 1e-6 },
   ],
   hints: [
-    "The segment number is above the V diagram; the equations are for the segment the section is in.",
+    "The segment numbers are under the M diagram; the equations are for the segment the section is in.",
     "In segment 1, V = 1050 − 400x. Set it to zero.",
     "Past the hoist, P is on the left piece too: its term $-600(x - 4.5)$ joins M.",
   ],

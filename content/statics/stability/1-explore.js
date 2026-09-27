@@ -1,4 +1,4 @@
-// Unit 4.4, stage 1 — explore: add supports at three places and see whether
+// Unit 5.4, stage 1 — explore: add supports at three places and see whether
 // the beam moves, is determinate, or is indeterminate (and to what degree).
 // Hand check (the load P = 600 N slants down-left, so something must hold
 // the beam sideways): pin A + roller C → 3 unknowns, determinate;

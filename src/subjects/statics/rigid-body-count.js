@@ -1,5 +1,5 @@
-// rigid-body-count.js — stability and determinacy (Unit 4.4), and three-force
-// bodies (Unit 4.5), for the rigid-body solver:
+// rigid-body-count.js — stability and determinacy (Unit 5.4), and three-force
+// bodies (Unit 5.5), for the rigid-body solver:
 //   • classifySteps: a student's working when classifying a structure (count
 //     each support's unknowns, add them, compare with 3, check the
 //     arrangement, conclude), with one deliberate mistake — the debug

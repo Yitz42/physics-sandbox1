@@ -1,4 +1,4 @@
-// Unit 6.2, stage 4 — debug: one mistake in a student's centroid working for a plate with a
+// Unit 7.2, stage 4 — debug: one mistake in a student's centroid working for a plate with a
 // notch and a hole (library/holes.js, notchAndHole).
 // Correct: A = A_1 − A_2 − A_3;  A x̄ = x̃_1 A_1 − x̃_2 A_2 − x̃_3 A_3;  A ȳ = ỹ_1 A_1 − ỹ_2 A_2 − ỹ_3 A_3,
 // with ỹ_2 = 2 − 4r/(3π) (the notch's centroid, below the top edge).

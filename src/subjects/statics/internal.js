@@ -1,4 +1,4 @@
-// internal.js — internal forces in a beam (Units 7.1–7.3).
+// internal.js — internal forces in a beam (Units 8.1–8.3).
 //
 // Cut a beam at a point C: each piece is a rigid body in equilibrium, so the cut
 // face must carry three internal forces that hold it there:
@@ -210,7 +210,7 @@ export function extremes(segments) {
   return { Vmax, xV, Mmax, xM, Mpos, Mneg };
 }
 
-// ---- The kept piece's equations (Unit 7.1) --------------------------------------------------
+// ---- The kept piece's equations (Unit 8.1) --------------------------------------------------
 
 // ΣF_x, ΣF_y and ΣM_C for the piece kept, with the reactions known and N, V, M unknown.
 export function pieceEquations(setup, actions) {

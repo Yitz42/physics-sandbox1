@@ -1,4 +1,4 @@
-// Unit 7.1, stage 6 — solve: the shear and bending moment inside a balcony beam, choosing
+// Unit 8.1, stage 6 — solve: the shear and bending moment inside a balcony beam, choosing
 // the piece first (library/internal.js, balcony).
 // Right piece (cut at 1.5 m): V = P + w(2.5) = 800 + 500 = 1300 N;  M = −(P(2.5) + w(2.5)²/2) = −2625 N·m.
 

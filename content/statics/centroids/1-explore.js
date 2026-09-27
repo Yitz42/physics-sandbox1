@@ -1,4 +1,4 @@
-// Unit 6.1, stage 1 — explore: stretch the two legs of an L-shaped plate and watch
+// Unit 7.1, stage 1 — explore: stretch the two legs of an L-shaped plate and watch
 // each part's centroid and the whole plate's centroid C move.
 // Part 1: w × t1 along the bottom, part 2: t2 × h on its left end (see library/shapes.js, L-plate).
 // Starting sizes (3 × 1 and 1 × 0.5): x̄ = (4.5 + 0.25)/3.5 = 1.357 m, ȳ = (1.5 + 0.625)/3.5 = 0.607 m — inside.

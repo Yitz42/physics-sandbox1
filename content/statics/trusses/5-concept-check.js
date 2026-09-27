@@ -1,4 +1,4 @@
-// Unit 5.1, stage 5 — concept check: tension, compression and the method of joints.
+// Unit 6.1, stage 5 — concept check: tension, compression and the method of joints.
 
 export default {
   id: "trusses/5-concept-check",

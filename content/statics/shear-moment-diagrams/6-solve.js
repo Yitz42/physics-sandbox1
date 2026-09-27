@@ -1,4 +1,4 @@
-// Unit 7.2, stage 6 — solve: sketch a beam's diagrams (by their shapes), then find its
+// Unit 8.2, stage 6 — solve: sketch a beam's diagrams (by their shapes), then find its
 // largest bending moment and where it is.
 // Pin A (0), roller B (6), w on the first 3 m, P at 4.5 m. w = 400, P = 600:
 //   load 1200 N at 1.5 m → B_y = (1800 + 2700)/6 = 750 N, A_y = 1050 N.

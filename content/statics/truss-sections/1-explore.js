@@ -1,4 +1,4 @@
-// Unit 5.3, stage 1 — explore: cut the Pratt bridge, keep one part, and choose the
+// Unit 6.3, stage 1 — explore: cut the Pratt bridge, keep one part, and choose the
 // moment point; watch which cut members each equation holds.
 // The bridge and its hand checks are in the lesson library (library/trusses.js), P at C:
 //   left cut (FG, CF, BC):  about C → only F_FG (= −P);  about F → only F_BC (= +P/2);  about B → F_FG and F_CF

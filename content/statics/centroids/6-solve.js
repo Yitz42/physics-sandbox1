@@ -1,4 +1,4 @@
-// Unit 6.1, stage 6 — solve: a shop sign's centroid, from splitting it up to x̄ and ȳ.
+// Unit 7.1, stage 6 — solve: a shop sign's centroid, from splitting it up to x̄ and ȳ.
 // The sign and its hand check are in the lesson library (library/shapes.js, sign):
 //   board 3 × 2 (6 m², (1.5, 1)), triangle 1.5 × 2 (1.5 m², (3.5, 0.667)), half circle r = 1 (1.571 m², (1.5, 2.424))
 //   ΣA = 9.071 m²,  x̄ = 16.606/9.071 = 1.831 m,  ȳ = 10.808/9.071 = 1.192 m

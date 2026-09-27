@@ -1,4 +1,4 @@
-// library/holes.js — the lesson library's shapes with holes and cut-outs (Unit 6.2;
+// library/holes.js — the lesson library's shapes with holes and cut-outs (Unit 7.2;
 // see src/core/library.js). A hole is a part with hole: true — its area counts NEGATIVE.
 // Questions:
 //   centroid   predict x̄ and/or ȳ

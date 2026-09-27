@@ -53,6 +53,6 @@ export default {
   ],
   explanation:
     "The whole method: (1) isolate the beam and draw every force on it — the reactions each support gives, the loads, and the weight; " +
-    "(2) write $\\Sigma F_x = 0$, $\\Sigma F_y = 0$ and $\\Sigma M_A = 0$; (3) solve. Taking moments about the pin leaves just one unknown — a trick Unit 8 uses all the time. " +
+    "(2) write $\\Sigma F_x = 0$, $\\Sigma F_y = 0$ and $\\Sigma M_A = 0$; (3) solve. Taking moments about the pin leaves just one unknown — a trick Unit 5.2 uses all the time. " +
     "A negative $A_x$ just means it really points left.",
 };

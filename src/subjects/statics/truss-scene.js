@@ -1,4 +1,4 @@
-// truss-scene.js — the picture of a truss (Unit 5.1), and the tools that go
+// truss-scene.js — the picture of a truss (Unit 6.1), and the tools that go
 // with it: the joint free-body diagram (fbd), common mistakes, and the lines
 // under the equations.
 //
@@ -46,7 +46,7 @@ export function trussScene(setup, result, opts = {}) {
   const onKept = (at) => !setup.section || sectionParts(setup).kept.some((J) => mag(sub(setup.joints[J], at)) < 1e-9);
   for (const s of trussSupports(setup)) shapes.push({ type: "supportSymbol", kind: s.type, at: s.at, normal: s.normal || [0, 1], label: "", alpha: shown || hide.length || !onKept(s.at) ? 0.28 : 1 });
   const focus = setup.joint ? membersAt(setup, setup.joint).map(({ m }) => memberId(m)) : [];
-  // A section (Unit 5.3): the part kept is drawn as usual, the part cut away faintly.
+  // A section (Unit 6.3): the part kept is drawn as usual, the part cut away faintly.
   const sec = setup.section ? sectionShapes(setup, solved ? res.values : null, { arrowLength: 0.2 * size, fmt: format, tc, hide }) : null;
   const keptJ = (J) => !sec || sec.kept.has(J);
   const middle = centreOf(setup);
@@ -126,7 +126,7 @@ export function trussFbd(setup) {
   return { forces, directions, points, arrowLength: 0.22 * trussSize(setup), origin: at };
 }
 
-// A section's FBD (Unit 5.3): each cut member's force at the cut (either way: the
+// A section's FBD (Unit 6.3): each cut member's force at the cut (either way: the
 // sign will tell), and the reactions at the kept part's supports.
 function sectionFbd(setup) {
   const parts = sectionParts(setup);

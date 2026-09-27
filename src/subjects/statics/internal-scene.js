@@ -1,4 +1,4 @@
-// internal-scene.js — pictures for internal forces (Units 7.1–7.3).
+// internal-scene.js — pictures for internal forces (Units 8.1–8.3).
 //
 // setup.view:
 //   "cut"       (7.1) the beam cut in two at C, the pieces pulled a little apart, as
@@ -24,6 +24,7 @@ import { allReactions } from "./supports.js";
 import { bodySize, weightOf, outwardAt } from "./rigid-body.js";
 import { rigidBodyScene, lengthPerNewton, overLoad } from "./rigid-body-scene.js";
 import { loadShape, heightPerLoad } from "./distributed-scene.js";
+import { plotLayout } from "./internal-layout.js";
 import { solveInternal, loadPortion, beamY, beamEnds, evalPoly, eventPoints } from "./internal.js";
 
 export function internalScene(setup, result, opts = {}) {
@@ -148,14 +149,13 @@ function diagramScene(setup, res, opts) {
   const y = beamY(setup);
   const segs = res.segments;
   const show = opts.reveal || setup.showDiagrams;
-  const gapV = setup.plotGap ?? 0.6 * size; // beam → V's zero line
-  const gapM = gapV + (setup.plotSpacing ?? 0.46 * size); // beam → M's zero line
-  const hV = 0.16 * size, hM = 0.18 * size; // the tallest value's height
-  const yV = y - gapV, yM = y - gapM;
+  // Where the diagrams go, and how tall they are: laid out for the canvas, so the
+  // labels have room on a phone too (see internal-layout.js).
+  const { yV, yM, hV, hM, bottom, numbersY, frame } = plotLayout(shapes, { x0, x1, size, canvasSize: opts.canvasSize, showSegments: setup.showSegments });
+  shapes.push({ type: "frame", frame });
   const events = eventPoints(setup, res.actions);
 
   // Faint guides from the beam down through both diagrams, at every event point.
-  const bottom = yM - hM - 0.04 * size;
   for (const e of events) shapes.push({ type: "line", from: [e, y - 0.02 * size], to: [e, bottom], style: "reference" });
 
   let kV = null, kM = null; // metres of picture per newton (per N·m) in each diagram
@@ -172,7 +172,7 @@ function diagramScene(setup, res, opts) {
   }
   // Segment numbers below the diagrams, between the guides (clear of the dimensions).
   if (setup.showSegments) {
-    segs.forEach((s, i) => shapes.push({ type: "text", at: [(s.a + s.b) / 2, bottom - 0.03 * size], text: `${i + 1}` }));
+    segs.forEach((s, i) => shapes.push({ type: "text", at: [(s.a + s.b) / 2, numbersY], text: `${i + 1}` }));
   }
   // 7.3's section line at x (in the force colour), with a ring where it meets each curve.
   if (setup.cut != null) {

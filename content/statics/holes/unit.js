@@ -1,4 +1,4 @@
-// Unit 6.2 — Composite shapes with holes: a hole is a part with NEGATIVE area.
+// Unit 7.2 — Composite shapes with holes: a hole is a part with NEGATIVE area.
 export default {
   title: "Composite shapes with holes",
   concept: "A hole (or a cut-out) is material that isn't there, so it counts as a part with **negative area**: $A = \\Sigma A_\\text{solid} - A_\\text{hole}$, and its first moment is subtracted too: $\\bar{x} = \\dfrac{\\Sigma \\tilde{x} A_\\text{solid} - \\tilde{x}_\\text{hole} A_\\text{hole}}{\\Sigma A_\\text{solid} - A_\\text{hole}}$. Taking material away moves the centroid **away from the hole**. The same trick finds odd shapes the easy way: an L is a square minus a square.",

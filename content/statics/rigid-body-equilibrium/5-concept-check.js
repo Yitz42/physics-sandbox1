@@ -1,4 +1,4 @@
-// Unit 4.2, stage 5 — concept check: the three equations and the smart moment point.
+// Unit 5.2, stage 5 — concept check: the three equations and the smart moment point.
 
 export default {
   id: "rigid-body-equilibrium/5-concept-check",

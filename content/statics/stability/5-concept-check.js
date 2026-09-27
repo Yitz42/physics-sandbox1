@@ -1,4 +1,4 @@
-// Unit 4.4, stage 5 — concept check: stability, determinacy and improper supports.
+// Unit 5.4, stage 5 — concept check: stability, determinacy and improper supports.
 
 export default {
   id: "stability/5-concept-check",

@@ -1,4 +1,4 @@
-// Unit 4.2, stage 1 — explore: choose the point to take moments about, and see
+// Unit 5.2, stage 1 — explore: choose the point to take moments about, and see
 // how many unknowns the moment equation keeps.
 // Hand check (pin A at 0, roller B at 6 m, P = 600 N down at x):
 //   ΣM_A: 6B_y − 600x = 0 → B_y = 100x;  ΣM_B: −6A_y + 600(6 − x) = 0 → A_y = 100(6 − x)

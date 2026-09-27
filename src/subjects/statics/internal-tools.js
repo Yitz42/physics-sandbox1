@@ -1,4 +1,4 @@
-// internal-tools.js — the words and working around internal forces (Units 7.1–7.3):
+// internal-tools.js — the words and working around internal forces (Units 8.1–8.3):
 // lines under the equations, likely mistakes, V(x) and M(x) written the textbook
 // way (segment by segment), the multiple-choice lines of a solve stage, and a
 // student's working with one wrong line (debug stages).
@@ -177,7 +177,7 @@ function otherFixes(right) {
   return all.filter((f) => !f.label.startsWith(key)).slice(0, 2);
 }
 
-// Walking along the beam, left to right (Unit 7.2's relationships): V jumps by each point
+// Walking along the beam, left to right (Unit 8.2's relationships): V jumps by each point
 // force, falls by each load's area (dV/dx = −w); M rises by the area under V (dM/dx = V)
 // and jumps by each couple (clockwise couple → M jumps UP).
 function walkSteps(setup, mutation) {

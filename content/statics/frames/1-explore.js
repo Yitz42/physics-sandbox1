@@ -1,4 +1,4 @@
-// Unit 5.4, stage 1 — explore: a stepladder (A-frame). Take it apart, raise the crossbar,
+// Unit 6.4, stage 1 — explore: a stepladder (A-frame). Take it apart, raise the crossbar,
 // move the load, and watch the forces the parts put on each other.
 // The ladder and its hand checks are in the lesson library (library/frames.js):
 //   load at the top: F_DE = P/(4 − h)  (h = 1: P/3; h = 2: P/2; > 800 N for P = 1000 once h > 2.75)

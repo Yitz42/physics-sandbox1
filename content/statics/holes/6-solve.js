@@ -1,4 +1,4 @@
-// Unit 6.2, stage 6 — solve: a link plate's centroid (rectangle + rounded end − pin hole).
+// Unit 7.2, stage 6 — solve: a link plate's centroid (rectangle + rounded end − pin hole).
 // The plate and its hand check are in the lesson library (library/holes.js, linkPlate):
 //   rectangle 3 × 2 (6 m², (1.5, 1)), half circle r = 1 (1.571 m², x̃ = 3.424 m), hole r = 0.5 (0.785 m², (3, 1))
 //   A = 6.785 m²,  x̄ = 12.023/6.785 = 1.772 m,  ȳ = 1 m

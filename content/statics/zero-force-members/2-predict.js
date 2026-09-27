@@ -1,4 +1,4 @@
-// Unit 5.2, stage 2 — predict how many members carry nothing, then one member force.
+// Unit 6.2, stage 2 — predict how many members carry nothing, then one member force.
 // The trusses and their hand checks are in the lesson library (library/trusses.js):
 //   bridge, load below (P at C): 3 zero; F_FC = +0.7071P   (P = 1200: 848.5 N)
 //   bridge, load on top (P at G): 2 zero; F_CG = −P         (−1200 N)

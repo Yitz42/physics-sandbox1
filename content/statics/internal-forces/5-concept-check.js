@@ -1,4 +1,4 @@
-// Unit 7.1, stage 5 — concept check: internal forces and their signs.
+// Unit 8.1, stage 5 — concept check: internal forces and their signs.
 
 export default {
   id: "internal-forces/5-concept-check",

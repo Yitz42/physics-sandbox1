@@ -1,4 +1,4 @@
-// Unit 5.4, stage 3 — build: an A-frame hoist. The load hangs from the top; the crossbar is a
+// Unit 6.4, stage 3 — build: an A-frame hoist. The load hangs from the top; the crossbar is a
 // chain rated 700 N, and it must be at least 2 m up so workers can walk under it.
 //   F_DE = P/(4 − h) ≤ 700 → h ≤ 4 − P/700;  and h ≥ 2.   (hand checks: library/frames.js)
 //   P = 1000: h = 2.0 … 2.5 m;  P = 1300 (the heaviest): h = 2.0 … 2.1 m;  P = 800: h = 2.0 … 2.8 m.

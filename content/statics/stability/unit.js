@@ -1,4 +1,4 @@
-// Unit 4.4 (the old "Unit 9") — Stability and determinacy.
+// Unit 5.4 (the old "Unit 9") — Stability and determinacy.
 export default {
   title: "Stability and determinacy",
   concept: "A rigid body in a plane has 3 equilibrium equations. With fewer than 3 unknown reactions it moves (unstable); with more, equilibrium can't find them all (statically indeterminate, to degree $n - 3$). Even 3 unknowns fail if the reactions are all parallel or all meet at one point: the body is improperly supported.",

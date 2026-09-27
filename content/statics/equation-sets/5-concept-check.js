@@ -1,4 +1,4 @@
-// Unit 4.3, stage 5 — concept check: when does a set of three equations work?
+// Unit 5.3, stage 5 — concept check: when does a set of three equations work?
 
 export default {
   id: "equation-sets/5-concept-check",

@@ -1,4 +1,4 @@
-// Unit 5.1, stage 4 — debug: one mistake in a student's equations for a joint.
+// Unit 6.1, stage 4 — debug: one mistake in a student's equations for a joint.
 // The triangular truss (A (0, 0), B (8, 0), C (4, 3)) with P down and H to the right at C.
 // Correct (tension assumed, members pulling C toward A and toward B):
 //   ΣF_x: H − (4/5)F_AC + (4/5)F_BC = 0

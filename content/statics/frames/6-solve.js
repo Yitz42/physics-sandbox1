@@ -1,4 +1,4 @@
-// Unit 5.4, stage 6 — solve: the ladder with a load hanging from leg AC (library/frames.js,
+// Unit 6.4, stage 6 — solve: the ladder with a load hanging from leg AC (library/frames.js,
 // ladderLeg). B_y is found first from the whole ladder (B_y = 0.375P). Then leg BC:
 //   ΣM_C: 2B_y − 2F_DE = 0 → F_DE = B_y;  ΣF_x: −C_x − F_DE = 0 → C_x = −F_DE;  ΣF_y: B_y − C_y = 0 → C_y = B_y
 //   (P = 800: F_DE = 300 N, C_x = −300 N, C_y = 300 N)

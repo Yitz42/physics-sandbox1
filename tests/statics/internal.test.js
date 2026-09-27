@@ -1,4 +1,4 @@
-// Internal forces in beams (Units 7.1–7.3): N, V, M at a cut; V(x), M(x); the diagrams.
+// Internal forces in beams (Units 8.1–8.3): N, V, M at a cut; V(x), M(x); the diagrams.
 // Sign convention: N + tension; V + down on the left piece's face; M + concave up (a smile).
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveInternal, internalAt, pieceEquations, evalPoly } from "../../src/subjects/statics/internal.js";

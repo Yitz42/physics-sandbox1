@@ -137,17 +137,17 @@ export function rigidBodySummary(setup, result, { mode = "symbolic", reveal = tr
   const lines = [];
   const names = reactions.map((r) => r.symbol).join(",\\ ") || "\\text{none}";
   lines.push(`\\text{Unknowns: } ${names} \\;(${reactions.length}) \\qquad \\text{Equations: } 3`);
-  // The degree of indeterminacy (Unit 4.4): unknowns − 3, when there are too many.
+  // The degree of indeterminacy (Unit 5.4): unknowns − 3, when there are too many.
   if (setup.showDegree && reactions.length > 3) {
     lines.push(`\\text{Degree of indeterminacy: } n - 3 = ${reactions.length} - 3 = ${reactions.length - 3}`);
   }
-  // Which unknowns the moment equation contains (the "smart point" lesson, Unit 4.2).
+  // Which unknowns the moment equation contains (the "smart point" lesson, Unit 5.2).
   if (setup.showMomentUnknowns && result.momentUnknowns) {
     const P = momentPoint(setup);
     const inM = result.momentUnknowns.map((id) => reactions.find((r) => r.id === id).symbol).join(",\\ ") || "\\text{none}";
     lines.push(`\\text{Unknowns in } \\Sigma M_{${P.label}}\\text{: } ${inM} \\;(${result.momentUnknowns.length})`);
   }
-  // A chosen equation set (Unit 4.3): the unknowns in each equation, and whether it works.
+  // A chosen equation set (Unit 5.3): the unknowns in each equation, and whether it works.
   if (setup.sums && setup.showSetUnknowns && result.setUnknowns) {
     const sym = (id) => reactions.find((r) => r.id === id).symbol;
     lines.push(result.equations.map((e, i) => `${e.lhs}\\text{: } ${result.setUnknowns[i].map(sym).join(",\\ ") || "\\text{none}"}`).join(" \\qquad "));

@@ -13,7 +13,7 @@ export default {
       prompt: "What does Varignon's theorem say?",
       options: [
         { text: "The moment of a force about a point equals the sum of the moments of its components about that point", correct: true },
-        { text: "The moment of a force is the same about every point", feedback: "That's true for a COUPLE (Unit 4), not for a single force: move O and the moment arm changes." },
+        { text: "The moment of a force is the same about every point", feedback: "That's true for a COUPLE (Unit 4.3), not for a single force: move O and the moment arm changes." },
         { text: "A force can slide along its line of action without changing its moment", feedback: "That's also true — it's the principle of transmissibility — but it isn't Varignon's theorem." },
         { text: "The moments of the components cancel out", feedback: "They add (with their signs) to give the force's moment. They only cancel in special cases." },
       ],

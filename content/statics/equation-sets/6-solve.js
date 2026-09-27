@@ -1,4 +1,4 @@
-// Unit 4.3, stage 6 — solve: a loading ramp, from FBD to reactions, choosing the
+// Unit 5.3, stage 6 — solve: a loading ramp, from FBD to reactions, choosing the
 // three equations first. The ramp and its hand check are in the lesson library
 // (beams.js, loadingRamp): w = 200 N/m, P = 500 N on a 3-4-5 slope → B_y = 1000 N, A_y = 200 N, A_x = −300 N
 // (new versions use other slopes and angles: the formulas are in beams.js),

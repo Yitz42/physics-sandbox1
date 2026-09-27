@@ -1,4 +1,4 @@
-// members.js — truss members (Unit 5.1):
+// members.js — truss members (Unit 6.1):
 //   member { id, from, to, state?, label?, side?, alpha? }
 //     a straight bar between two joints. state colours it once it's solved:
 //     "tension" red, "compression" blue, "zero" grey (a zero-force member);

@@ -1,4 +1,4 @@
-// Unit 7.3 — V(x) and M(x) equations: the shear and bending moment written as equations,
+// Unit 8.3 — V(x) and M(x) equations: the shear and bending moment written as equations,
 // one pair for each segment of the beam.
 export default {
   title: "V(x) and M(x) equations",

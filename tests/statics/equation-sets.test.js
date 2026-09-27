@@ -1,6 +1,6 @@
-// Alternative equation sets (Unit 4.3): two moment equations and a force
+// Alternative equation sets (Unit 5.3): two moment equations and a force
 // equation, or three moment equations — and when a set can't do the job.
-// The jib crane of Unit 4.2: post from A (0, 0) to (0, 3), arm to C (2.5, 3);
+// The jib crane of Unit 5.2: post from A (0, 0) to (0, 3), arm to C (2.5, 3);
 // pin at A, roller B at (0, 1.5) on the wall (pushes left), P = 800 N down at C.
 //   ΣM_A: 1.5B_x − 2.5P = 0 → B_x = 1333.3 N   (only B_x: A's two reactions act at A)
 //   ΣM_B: 1.5A_x − 2.5P = 0 → A_x = 1333.3 N   (only A_x: A_y's line x = 0 runs through B)

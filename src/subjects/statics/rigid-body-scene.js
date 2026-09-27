@@ -37,7 +37,7 @@ export function lengthPerNewton(setup, result, size) {
 // DIAGRAM: the body simplified to a plain thin bar with no details, the supports
 // replaced by their reactions (their letters kept), the loads and the weight.
 // opts.overlay: the old single picture, the FBD drawn over the sketch with the
-// supports faded (the beam above a shear and moment diagram, Unit 7.2, uses it).
+// supports faded (the beam above a shear and moment diagram, Unit 8.2, uses it).
 export function rigidBodyScene(setup, result, opts = {}) {
   if (opts.overlay) return overlayScene(setup, result, opts);
   const res = result || solveRigidBody(setup);
@@ -187,7 +187,7 @@ function overlayScene(setup, result, opts = {}) {
   }
   // setup.showMomentPoint: mark the point moments are taken about (a ring; named
   // unless it's a support, which has its own letter).
-  // With a chosen equation set (setup.sums, Unit 4.3), every moment point in it.
+  // With a chosen equation set (setup.sums, Unit 5.3), every moment point in it.
   if (setup.showMomentPoint) {
     const Ps = setup.sums ? setup.sums.filter((q) => q.M).map((q) => pointNamed(setup, q.M)) : [momentPoint(setup)];
     for (const P of Ps) {

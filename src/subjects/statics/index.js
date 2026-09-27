@@ -125,25 +125,25 @@ registerSolver("statics.rigidBody", {
   mistakes: rigidBodyMistakes,
   fbd: rigidBodyFbd,
   mutate: rigidBodyMutate,
-  debugSteps: classifySteps, // a student's working when classifying a structure (Unit 4.4)
+  debugSteps: classifySteps, // a student's working when classifying a structure (Unit 5.4)
 });
 
-// Unit 5.1 on: plane trusses, joint by joint (tension positive); Unit 5.2 adds
+// Unit 6.1 on: plane trusses, joint by joint (tension positive); Unit 6.2 adds
 // zero-force members found by inspection (values.zeroCount, setup.showZero);
-// Unit 5.3 the method of sections (setup.section: cut, keep one part, three equations).
+// Unit 6.3 the method of sections (setup.section: cut, keep one part, three equations).
 registerSolver("statics.truss", {
   solve: solveTrussZero,
-  // (A section's equations are those of the part kept — Unit 5.3, truss-section.js.)
+  // (A section's equations are those of the part kept — Unit 6.3, truss-section.js.)
   equations: (setup, result) => (setup.section ? (result && result.sectionEquations) || solveTrussZero(setup).sectionEquations : trussEquations(setup, result || solveTruss(setup))),
   summary: trussZeroSummary,
   scene: trussScene,
   quantities: (setup) => ({ ...trussQuantities(setup), zeroCount: { label: "\\text{zero-force members}", unit: "" } }),
   mistakes: (setup, name) => (name === "zeroCount" ? zeroMistakes(setup) : trussMistakes(setup, name)),
   fbd: trussFbd,
-  debugSteps: zeroSteps, // a student's inspection for zero-force members, one line wrong (Unit 5.2)
+  debugSteps: zeroSteps, // a student's inspection for zero-force members, one line wrong (Unit 6.2)
 });
 
-// Unit 5.4: frames and machines — several bodies pinned together, taken apart:
+// Unit 6.4: frames and machines — several bodies pinned together, taken apart:
 // three equations per body, equal and opposite pin forces, two-force links.
 registerSolver("statics.frame", {
   solve: solveFrame,
@@ -155,7 +155,7 @@ registerSolver("statics.frame", {
   fbd: frameFbd,
 });
 
-// Unit 6.1: centroids of composite areas, and centres of gravity of composite bodies.
+// Unit 7.1: centroids of composite areas, and centres of gravity of composite bodies.
 registerSolver("statics.centroid", {
   solve: solveCentroid,
   equations: (setup, result) => (result || solveCentroid(setup)).equations,
@@ -165,7 +165,7 @@ registerSolver("statics.centroid", {
   mistakes: centroidMistakes,
 });
 
-// Units 7.1–7.3: internal forces — cut a beam: N, V, M at the cut (the kept piece's
+// Units 8.1–8.3: internal forces — cut a beam: N, V, M at the cut (the kept piece's
 // three equations); V and M along the beam (diagrams); V(x), M(x) segment by segment.
 registerSolver("statics.internal", {
   solve: solveInternal,

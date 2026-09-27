@@ -42,16 +42,16 @@ src/
       distributed.js       distributed loads: area and centroid (rectangle, triangle, trapezoid, ∫w dx)
       supports.js          support types → reactions (pin, roller, smooth, cable, fixed)
       rigid-body.js        ΣF = 0, ΣM = 0, supports, determinacy check
-      rigid-body-sets.js   other sets of three equations (two moments + a force, three moments), Unit 4.3
+      rigid-body-sets.js   other sets of three equations (two moments + a force, three moments), Unit 5.3
       truss.js             method of joints
-      truss-zero.js        zero-force members by inspection, Unit 5.2
-      truss-section.js     method of sections, Unit 5.3
+      truss-zero.js        zero-force members by inspection, Unit 6.2
+      truss-section.js     method of sections, Unit 6.3
       frame.js             frames and machines, multi-body (frame-scene.js: put together / taken apart)
       internal-forces.js   shear and moment at a cut, V and M diagrams
       friction.js          dry friction, impending motion, wedges, belts
-      centroid.js          centroids of composite areas (holes: negative area), centres of gravity (centroid-scene.js), Units 6.1–6.2
+      centroid.js          centroids of composite areas (holes: negative area), centres of gravity (centroid-scene.js), Units 7.1–7.2
       internal.js          internal forces N, V, M at a cut; V(x), M(x) by segment; diagrams (internal-scene.js,
-                           internal-tools.js), Units 7.1–7.3
+                           internal-tools.js), Units 8.1–8.3
       geometry.js          later: area moments of inertia
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js

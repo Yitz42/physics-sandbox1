@@ -1,4 +1,4 @@
-// Frames (Unit 5.4): each body's three equations, equal and opposite pin forces,
+// Frames (Unit 6.4): each body's three equations, equal and opposite pin forces,
 // two-force links. The A-frame of content/statics/library/frames.js (hand checks there):
 //   load P at the top, crossbar at h: B_y = P/2, F_DE = P/(4 − h), C_x = −F_DE, C_y = P/2
 //   load P on leg AC at (1.5, 3), h = 2: B_y = F_DE = 0.375P, C_x = −0.375P, C_y = 0.375P

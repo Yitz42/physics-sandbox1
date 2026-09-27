@@ -1,4 +1,4 @@
-// Unit 4.2, stage 6 — solve: an L-shaped jib crane.
+// Unit 5.2, stage 6 — solve: an L-shaped jib crane.
 // A vertical post (A at the ground, 3 m tall) carries an arm reaching a (2.5 m) out
 // from its top. The post stands on a pin (thrust bearing) at A and leans against a
 // roller B fixed to a wall 1.5 m up, which can only push it to the left.

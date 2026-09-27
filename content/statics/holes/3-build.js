@@ -1,4 +1,4 @@
-// Unit 6.2, stage 3 — build: drill the hole in the right place so the plate balances on a pin.
+// Unit 7.2, stage 3 — build: drill the hole in the right place so the plate balances on a pin.
 // Plate 4 × 2 (8 m², (2, 1)); hole r = 0.6 m at (x_h, 1): A_h = π(0.36) = 1.131 m², A = 6.869 m².
 //   x̄ = (16 − 1.131 x_h)/6.869.  Balanced when x̄ = p:  x_h = (16 − 6.869 p)/1.131.
 //   p = 1.80 → x_h = 3.215 m;  p = 1.85 → 2.911 m;  p = 1.90 → 2.607 m (all inside the plate: x_h ≤ 3.4).

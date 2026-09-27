@@ -1,4 +1,4 @@
-// Unit 7.2, stage 2 — predict the largest bending moment (and where it is) on five beams.
+// Unit 8.2, stage 2 — predict the largest bending moment (and where it is) on five beams.
 // The beams and their hand checks are in the lesson library (library/internal.js):
 //   shelf M_max = 1600 N·m (at the load);  uniform span wL²/8 = 1250 N·m;  half-loaded 1012.5 N·m at 2.25 m;
 //   overhang −600 N·m (over B, bigger than the +337.5 in the span);  cantilever −1800 N·m (at the wall).

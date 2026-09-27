@@ -127,7 +127,7 @@ test("a deliberately wrong FBD (debug): an extra B_x at the roller, a missing A_
   close(evaluate(fy, { A_y: 400, B_y: 200 }), 0);
 });
 
-// ---- Unit 4.2: equilibrium of a rigid body, and the smart moment point ----------
+// ---- Unit 5.2: equilibrium of a rigid body, and the smart moment point ----------
 
 test("unknowns in ΣM depend on the moment point: A → 1, B → 1, middle → 2, off the beam → 3", () => {
   const s = (about) => beam([pin("A", [0, 0]), roller("B", [6, 0])], [down("P", 2, 600)], { about });
@@ -183,7 +183,7 @@ test("L-shaped jib crane: B_x = 1333.3 N, A_x = 1333.3 N, A_y = 800 N", () => {
   close(r.values.A_y, 800);
 });
 
-// ---- Units 4.4 and 4.5: stability, determinacy, two- and three-force members ------
+// ---- Units 5.4 and 5.5: stability, determinacy, two- and three-force members ------
 
 import { classifySteps, concurrency } from "../../src/subjects/statics/rigid-body-count.js";
 

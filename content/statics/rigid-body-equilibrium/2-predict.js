@@ -1,4 +1,4 @@
-// Unit 4.2, stage 2 — predict the reactions of an overhanging beam (with both
+// Unit 5.2, stage 2 — predict the reactions of an overhanging beam (with both
 // loads, or just the end load) and of a cantilever. The beams come from the
 // lesson library (content/statics/library/beams.js), where their hand checks are.
 // (Same numbers as tests/statics/rigid-body.test.js.)

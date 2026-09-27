@@ -1,4 +1,4 @@
-// truss.js — plane trusses by the method of joints (Unit 5.1).
+// truss.js — plane trusses by the method of joints (Unit 6.1).
 //
 // A truss is made of straight members pinned together at joints, loaded only
 // at the joints. Each member is then a two-force member: it simply pulls on

@@ -1,4 +1,4 @@
-// Unit 4.5, stage 6 — solve: a boom propped by a strut (a two-force member).
+// Unit 5.5, stage 6 — solve: a boom propped by a strut (a two-force member).
 // The boom: pinned to the wall at A, 4 m, 30 kg (W = 294.3 N at 2 m), a load P
 // at its tip; a strut from B (3, 0) down to D (0, −2): L = √13 = 3.606 m.
 // Its force F_BD is positive in tension (pulling B toward D), so a strut pushing is negative.

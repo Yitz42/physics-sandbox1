@@ -1,4 +1,4 @@
-// Unit 7.1, stage 1 — explore: slide a cut along a loaded beam and watch N, V and M at it.
+// Unit 8.1, stage 1 — explore: slide a cut along a loaded beam and watch N, V and M at it.
 // Pin A (0), roller B (6), P = 1200 N at a: A_y = 1200(6 − a)/6.
 //   Left of the load (x < a): V = A_y, M = A_y x.   Right of it: V = A_y − 1200 = −1200a/6, M = A_y x − 1200(x − a).
 // Start: a = 3, cut at 1 → V = 600 N, M = 600 N·m (no task done yet).

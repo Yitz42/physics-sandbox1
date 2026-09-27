@@ -1,10 +1,10 @@
-// Zero-force members by inspection (Unit 5.2), checked against the full solution.
+// Zero-force members by inspection (Unit 6.2), checked against the full solution.
 // The Pratt bridge: bottom A (0, 0) pin, B (3, 0), C (6, 0), D (9, 0), E (12, 0) roller;
 // top F (3, 3), G (6, 3), H (9, 3); diagonals FC and HC slope down to the middle.
 //   P at C: B has AB, BC in line (BF off it) → F_BF = 0; D likewise → F_DH = 0;
 //           G has FG, GH in line and no load → F_CG = 0.   (3 members)
 //   P at G: the load at G acts across FG–GH's line, so CG carries it: F_CG = −P.  (2 members)
-// The wall bracket of Unit 5.1 (roller at A pushing along AC): A has A's push and AC
+// The wall bracket of Unit 6.1 (roller at A pushing along AC): A has A's push and AC
 // in line, AB off it → F_AB = 0.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { zeroByInspection, zeroSteps, zeroMistakes, solveTrussZero } from "../../src/subjects/statics/truss-zero.js";

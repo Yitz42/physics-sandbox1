@@ -1,4 +1,4 @@
-// centroid.js — centroids of composite shapes, and centres of gravity (Unit 6.1).
+// centroid.js — centroids of composite shapes, and centres of gravity (Unit 7.1).
 //
 // Split the shape into simple parts whose area A and centroid (x̃, ỹ) are known,
 // then:   A = ΣA_i,   A x̄ = Σ x̃_i A_i,   A ȳ = Σ ỹ_i A_i.
@@ -16,7 +16,7 @@
 //     { id: "5", shape: "quarter", at: [cx, cy], r, dir }    a quarter circle, its square corner at `at`,
 //                                                            reaching "ne" | "nw" | "se" | "sw"
 //     … mass?: kg (with weigh: true)
-//     … hole: true — a hole cut out of the other parts (Unit 6.2): its area counts NEGATIVE,
+//     … hole: true — a hole cut out of the other parts (Unit 7.2): its area counts NEGATIVE,
 //                    A = ΣA_i − A_hole, and so do its first moments
 //   ],
 //   weigh:  true — centre of gravity of parts with masses (W = mg), not the centroid of the area

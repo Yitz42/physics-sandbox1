@@ -1,4 +1,4 @@
-// Unit 5.3, stage 3 — build: plan a section that gives F_GH from ONE equation, then work it out.
+// Unit 6.3, stage 3 — build: plan a section that gives F_GH from ONE equation, then work it out.
 // The bridge with two loads (library/trusses.js): P at B, Q at C; E_y = (3P + 6Q)/12.
 // The only plan that works: cut GH, CH, CD (keep either part) and take moments about C,
 // where CH and CD meet:   right part: ΣM_C: 6E_y + 3F_GH = 0 → F_GH = −2E_y

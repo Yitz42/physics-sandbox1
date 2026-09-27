@@ -8,8 +8,8 @@ Read this before writing or changing stages or challenge types. Changing any of 
   a word (`"down"`), or two points (`{ points: [[1, 2], [5, 5]], names: ["A", "B"] }`,
   a cable from A to B). Students pick sin/cos and signs by looking at the picture.
 - **Chapters and units**: the course is grouped into chapters that follow the
-  textbook's chapters; each unit is ONE concept (e.g. Springs, Pulleys, Varignon's
-  theorem) with all six stages. Units are numbered by chapter: 2.2 = chapter 2, unit 2.
+  textbook's chapters, chapter for chapter (Chapter 5 = the book's Chapter 5); each unit is ONE concept (e.g. Springs, Pulleys, Varignon's
+  theorem) with all six stages. Units are numbered by chapter: 3.2 = chapter 3, unit 2.
   A new concept gets its own unit in the matching chapter. (Parts inside a stage are
   still available, e.g. unit vectors and cables as two parts of one Predict stage.)
 - **Wrong answers**: unlimited tries with specific feedback. After 2 wrong tries a
@@ -40,7 +40,7 @@ Read this before writing or changing stages or challenge types. Changing any of 
   "Challenge objectives" and still tick themselves (no Test button in explore). The
   hint button sits bottom left of the panel and the main button (Test, Continue →)
   bottom right.
-- Units 4.4, 4.5 and 5.1 (the old Units 9, 10, 11): stability (degree of
+- Units 5.4, 5.5 and 6.1 (the old Units 9, 10, 11): stability (degree of
   indeterminacy n − 3, improper supports), two-force members as a `link` support
   (one force along it, tension +) with the three-force lines drawn meeting at O
   (`showConcurrency`), and trusses (`statics.truss`, method of joints). Truss
@@ -79,18 +79,18 @@ Read this before writing or changing stages or challenge types. Changing any of 
   design must be worked out again.
 - **Different pictures each version**: predict, build and solve stages should
   have several `situations`, so a new version is a new picture to read, not the same
-  one with new numbers. Started in Unit 2.1 Cables; roll out unit by unit once the
+  one with new numbers. Started in Unit 3.1 Cables; roll out unit by unit once the
   owner has tried it.
 - Every unit uses all six challenge types: explore → predict → build → debug →
   concept-check → solve.
-- Distributed loads (Unit 3.6) cover rectangles, triangles, trapezoids AND curved
-  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 3.6 takes down as positive.
-- FBD reaction arrows (Unit 4.1 on), textbook rule: pin and fixed-support components
+- Distributed loads (Unit 4.6) cover rectangles, triangles, trapezoids AND curved
+  loads by integration ($F_R = \int w\,dx$). Loads push down, so Unit 4.6 takes down as positive.
+- FBD reaction arrows (Unit 5.1 on), textbook rule: pin and fixed-support components
   (and the fixed-end moment) may point either way; rollers and smooth surfaces must
   push, cables must pull, weight points down. Some beams have mass, so the student
   must remember the weight W at the centre.
-- Unit 4.1's solve stage goes all the way to the reactions (FBD → equations → answers);
-  Unit 4.2 then goes deeper (choosing a smart moment point, harder shapes): built as
+- Unit 5.1's solve stage goes all the way to the reactions (FBD → equations → answers);
+  Unit 5.2 then goes deeper (choosing a smart moment point, harder shapes): built as
   rigid-body-equilibrium/ — the explore shows which unknowns stay in ΣM about the
   point chosen (setup.showMomentUnknowns / showMomentPoint), then an overhanging
   beam and a cantilever, a diving-board fulcrum, a debug of the equations, and an

@@ -1,4 +1,4 @@
-// Unit 7.3, stage 3 — build: place the second load so the middle segment is in "pure bending":
+// Unit 8.3, stage 3 — build: place the second load so the middle segment is in "pure bending":
 // V(x) = 0 there, so M(x) is constant (as in a four-point bending test).
 // Pin A (0), roller B (6), P₁ at a, P₂ at b (> a). Segment 2 (a < x < b): V = A_y − P₁.
 //   V = 0 ⇔ A_y = P₁ ⇔ P₂(6 − b) = P₁ a ⇔ b = 6 − P₁a/P₂  (P₁ = 800, a = 1.5, P₂ = 1200 → b = 5 m).

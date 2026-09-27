@@ -380,12 +380,16 @@ test("every unit is in a chapter; planned units have a title and a description; 
     if (!course.chapters) continue;
     const built = course.chapters.flatMap((ch) => ch.units.filter((u) => typeof u === "string"));
     equal(course.units, built, "course.units must list the chapters' built units in order:");
-    for (const ch of course.chapters) {
+    course.chapters.forEach((ch, c) => {
       for (const u of ch.units.filter((x) => typeof x !== "string")) ok(u.comingSoon && u.title && u.concept, `a planned unit in ${ch.id} needs a title and a concept`);
       const r = course.reading && course.reading.chapters[ch.id];
+      // Chapters match the book chapter for chapter (agreed with the owner): the
+      // course's Chapter 5 is read with the book's Chapter 5.
+      const booksNumber = r && r.chapter && /^Chapter (\d+)\b/.exec(r.chapter);
+      if (booksNumber) equal(Number(booksNumber[1]), c + 1, `${course.id} chapter ${c + 1} (${ch.id}) is read with the book's "${r.chapter}": the numbers must match`);
       if (ch.units.some((u) => typeof u === "string")) ok(r && r.chapter, `chapter ${ch.id} has built units but no textbook chapter in reading.js`);
       if (r && r.url) ok(/^https:\/\//.test(r.url), `chapter ${ch.id}: link must be https`);
-    }
+    });
     // A book is either free online (an https link) or not (url: null: students use their own copy).
     if (course.reading) ok(course.reading.book.url === null || /^https:\/\//.test(course.reading.book.url), "the book's link must be https (or null)");
     if (course.reading && course.reading.book.free) ok(/^https:\/\//.test(course.reading.book.free.url), "the free alternative needs an https link");

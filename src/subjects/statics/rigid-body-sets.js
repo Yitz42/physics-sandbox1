@@ -1,4 +1,4 @@
-// rigid-body-sets.js — which three equations to write (Unit 4.3, alternative
+// rigid-body-sets.js — which three equations to write (Unit 5.3, alternative
 // equation sets).
 //
 // A body in a plane gives three independent equations, but they don't have to

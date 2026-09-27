@@ -14,7 +14,7 @@
 //   P at B (or D): BF (or DH) now carries P; zero: the other vertical and CG (2).
 //   P at F or H: all three verticals are still zero (3).
 //
-// The wall bracket (Unit 5.1's): A (0, 0) on a roller pushing right, B (0, 3) pinned, tip C (4, 0)
+// The wall bracket (Unit 6.1's): A (0, 0) on a roller pushing right, B (0, 3) pinned, tip C (4, 0)
 // with P down. At A the roller pushes along AC, so AB is off the line: F_AB = 0 (1 member).
 //   Joint C: F_BC = 5P/3 (tension), F_AC = −4P/3.   (P = 900: 1500 N, −1200 N)
 
@@ -96,7 +96,7 @@ export const wallBracket = scenario({
   },
 });
 
-// ---- Sections through the bridge (Unit 5.3) ----------------------------------------------
+// ---- Sections through the bridge (Unit 6.3) ----------------------------------------------
 // LEFT cut through FG, CF, BC (keep A, B, F); RIGHT cut through GH, CH, CD (keep D, E, H).
 // Hand checks — P at C (1200 N), keep the left part (A_y = 600 N):
 //   ΣM_C: −6A_y − 3F_FG = 0 → F_FG = −P;   ΣM_F: −3A_y + 3F_BC = 0 → F_BC = +P/2;   ΣF_y → F_CF = +0.7071P

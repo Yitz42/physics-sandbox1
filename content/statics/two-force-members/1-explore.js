@@ -1,4 +1,4 @@
-// Unit 4.5, stage 1 — explore: a shelf pinned to a wall at A and held by a
+// Unit 5.5, stage 1 — explore: a shelf pinned to a wall at A and held by a
 // link (a two-force member) from B to the wall at D. The load, the link and
 // the pin are the only three forces, so their lines meet at one point O.
 // Hand checks (B at 3 m, D at (0, d), P at x):

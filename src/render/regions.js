@@ -1,6 +1,6 @@
-// regions.js — flat shapes filled in (Unit 6.1: the parts of a composite area).
+// regions.js — flat shapes filled in (Unit 7.1: the parts of a composite area).
 //   region { points: [[x, y], …], tint: 0 | 1 | 2 | 3, label?, alpha?, hole? }
-//   hole: true — a hole cut out of the parts drawn before it (Unit 6.2): filled with
+//   hole: true — a hole cut out of the parts drawn before it (Unit 7.2): filled with
 //   the page colour, so it looks cut through, and outlined dashed inside a solid edge.
 // A filled polygon with an outline (a half circle comes as many points). Its
 // edges are solid lines for the labels (they keep clear of them), and its inside

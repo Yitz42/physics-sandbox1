@@ -1,4 +1,4 @@
-// Unit 5.3, stage 5 — concept check: when and how to cut a truss.
+// Unit 6.3, stage 5 — concept check: when and how to cut a truss.
 
 export default {
   id: "truss-sections/5-concept-check",

@@ -1,4 +1,4 @@
-// Unit 5.4, stage 4 — debug: one mistake in a student's equations for leg BC of the ladder.
+// Unit 6.4, stage 4 — debug: one mistake in a student's equations for leg BC of the ladder.
 // The ladder with the load on top (library/frames.js, ladderTop); B_y = P/2 is found first.
 // Leg BC (forces on it: B_y up at B; the pin's −C_x, −C_y at C; the crossbar's pull at E, toward D):
 //   ΣF_x: −C_x − F_DE = 0     ΣF_y: B_y − C_y = 0     ΣM_C: 2B_y − 2F_DE = 0   (B_y's arm: 2 m, not 4.47 m)

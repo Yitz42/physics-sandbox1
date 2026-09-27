@@ -1,4 +1,4 @@
-// Unit 6.1 — Centroids and centre of gravity: where a shape's area — or a body's weight — acts.
+// Unit 7.1 — Centroids and centre of gravity: where a shape's area — or a body's weight — acts.
 export default {
   title: "Centroids and center of gravity",
   concept: "A shape's **centroid** is its balance point: the average position of its area. Split a composite shape into simple parts whose area $A_i$ and centroid $(\\tilde{x}_i, \\tilde{y}_i)$ you know — rectangles (the middle), right triangles (⅓ of each leg from the right angle), half circles ($\\tfrac{4r}{3\\pi}$ from the flat edge) — then $\\bar{x} = \\dfrac{\\Sigma \\tilde{x} A}{\\Sigma A}$ and $\\bar{y} = \\dfrac{\\Sigma \\tilde{y} A}{\\Sigma A}$. A body's **centre of gravity**, where its weight acts, is the same with weights: $\\bar{x} = \\dfrac{\\Sigma \\tilde{x} W}{\\Sigma W}$.",

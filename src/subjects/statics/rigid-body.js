@@ -19,12 +19,12 @@
 //   about:    "A" (a support id) or { at, label } — the moment point (default: the
 //             support with the most reactions). Any point works, on the body or off it.
 //   sums:     another set of three equations, e.g. [{ M: "A" }, { M: "B" }, { F: "y" }]
-//             (Unit 4.3; see rigid-body-sets.js); points: { C: [x, y] } names extra points
+//             (Unit 5.3; see rigid-body-sets.js); points: { C: [x, y] } names extra points
 //   analysis: "equilibrium" (default) or "count" (just count the unknowns; status "resultant")
 //   fbdEdits: a deliberately wrong FBD (debug stages, see supports.js)
 //   Drawing only: grounds, dims, texts, showReactions ("always" | "reveal"), weightLabel,
 //             showMomentPoint (mark the moment point), showMomentUnknowns (a line under
-//             the equations: which unknowns ΣM contains — Unit 4.2's "smart point")
+//             the equations: which unknowns ΣM contains — Unit 5.2's "smart point")
 // }
 //
 // result.values: every reaction by id (signed, in its assumed direction: +x, +y,
@@ -88,7 +88,7 @@ function armSymbol(f) {
 
 export function rigidBodyEquations(setup) {
   // The three equations: ΣF_x, ΣF_y, ΣM_P — or the set a stage chose (setup.sums,
-  // Unit 4.3: e.g. ΣM_A, ΣM_B, ΣF_y; see rigid-body-sets.js).
+  // Unit 5.3: e.g. ΣM_A, ΣM_B, ΣF_y; see rigid-body-sets.js).
   const sums = sumsOf(setup, momentPoint(setup));
   const eqs = sums.map((q) => ({
     id: q.id, form: "zero", terms: [], sum: q,
@@ -149,7 +149,7 @@ export function solveRigidBody(setup) {
   const firstM = equations.find((e) => e.id.startsWith("sumM"));
   const momentUnknowns = firstM ? firstM.terms.filter((t) => t.value == null).map((t) => t.id) : [];
   values.nM = momentUnknowns.length;
-  // A chosen equation set (Unit 4.3): the unknowns in each equation, and whether
+  // A chosen equation set (Unit 5.3): the unknowns in each equation, and whether
   // the three can find them all. The answers themselves come from the usual set.
   const setUnknowns = equations.map((e) => [...new Set(e.terms.filter((t) => t.value == null).map((t) => t.id))]);
   let setCheck = null;

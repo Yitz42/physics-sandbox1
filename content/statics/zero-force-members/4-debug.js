@@ -1,4 +1,4 @@
-// Unit 5.2, stage 4 — debug: a student's inspection for zero-force members, one line wrong.
+// Unit 6.2, stage 4 — debug: a student's inspection for zero-force members, one line wrong.
 // The bridge with P at G (library/trusses.js): correct working —
 //   Joint B: AB, BC in line ⇒ F_BF = 0;  Joint D: CD, DE in line ⇒ F_DH = 0;  count 2.
 // Mistakes (one per version):

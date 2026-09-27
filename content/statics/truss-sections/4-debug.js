@@ -1,4 +1,4 @@
-// Unit 5.3, stage 4 — debug: one mistake in a student's section equations.
+// Unit 6.3, stage 4 — debug: one mistake in a student's section equations.
 // The left part of the bridge with P at C (library/trusses.js, leftSection), A_y = P/2:
 //   ΣM_C: −6A_y − 3F_FG = 0   ΣM_F: −3A_y + 3F_BC = 0   ΣF_y: A_y − (1/√2)F_CF = 0
 // F_FG acts at the cut (4.5, 3): its arm about C is its height, 3 m — not the 3.35 m straight to it.

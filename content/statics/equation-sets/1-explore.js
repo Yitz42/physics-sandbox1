@@ -1,4 +1,4 @@
-// Unit 4.3, stage 1 — explore: choose which three equations to write for a jib
+// Unit 5.3, stage 1 — explore: choose which three equations to write for a jib
 // crane, and see which unknowns each one holds, and whether the three are enough.
 // The crane is from the lesson library (content/statics/library/beams.js), where
 // its hand checks are. P = 800 N: B_x = 1333.3 N, A_x = 1333.3 N, A_y = 800 N.

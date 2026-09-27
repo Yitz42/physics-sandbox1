@@ -112,5 +112,5 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   it after); until then the model is drawn alone. On the FBD a body built into a wall
   keeps its square end, with the support's letter but no dot. Each shape stays with its
   own diagram (panel: "left" | "right", render/panels.js).
-- **Segment numbers** (Unit 7.3) sit below the moment diagram, between the guides,
+- **Segment numbers** (Unit 8.3) sit below the moment diagram, between the guides,
   clear of the dimension lines.

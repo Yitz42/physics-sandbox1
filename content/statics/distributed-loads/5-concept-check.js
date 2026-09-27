@@ -76,7 +76,7 @@ export default {
         { text: "Yes, if the load is uniform", feedback: "Even then, a cut splits the load: each side carries its own part, with its own resultant." },
         { text: "No — distributed loads can never be replaced", feedback: "They can, for the whole body. At a cut, replace just the part on one side of it." },
       ],
-      explanation: "A resultant has the same EXTERNAL effect as the load. For internal forces (Units 14–15) you cut the beam and replace only the load on one side of the cut.",
+      explanation: "A resultant has the same EXTERNAL effect as the load. For internal forces (Chapter 8) you cut the beam and replace only the load on one side of the cut.",
     },
   ],
   hints: ["Size = area under the load curve. Position = centroid of that area."],

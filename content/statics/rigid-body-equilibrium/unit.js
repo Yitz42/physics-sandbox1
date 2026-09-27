@@ -1,4 +1,4 @@
-// Unit 4.2 (the old "Unit 8") — Equilibrium of a rigid body: ΣF_x = 0,
+// Unit 5.2 (the old "Unit 8") — Equilibrium of a rigid body: ΣF_x = 0,
 // ΣF_y = 0, ΣM = 0, and choosing a smart point for moments.
 export default {
   title: "Equilibrium of a rigid body",

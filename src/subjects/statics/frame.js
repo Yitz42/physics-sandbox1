@@ -1,4 +1,4 @@
-// frame.js — frames and machines (Unit 5.4): structures made of several bodies
+// frame.js — frames and machines (Unit 6.4): structures made of several bodies
 // pinned together, at least one of them a multi-force member (not just pulled
 // at two ends, like a truss member).
 //

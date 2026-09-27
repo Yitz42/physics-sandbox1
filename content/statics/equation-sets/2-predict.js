@@ -1,4 +1,4 @@
-// Unit 4.3, stage 2 — predict the reactions with two moment equations and one
+// Unit 5.3, stage 2 — predict the reactions with two moment equations and one
 // force equation, one unknown each. The bodies and their hand checks are in the
 // lesson library (content/statics/library/beams.js):
 //   jib crane (ΣM_A, ΣM_B, ΣF_y):   B_x = 5P/3, A_x = 5P/3, A_y = P          (P = 800: 1333.3, 1333.3, 800 N)

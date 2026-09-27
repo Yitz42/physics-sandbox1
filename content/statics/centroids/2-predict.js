@@ -1,4 +1,4 @@
-// Unit 6.1, stage 2 — predict centroids (and a centre of gravity) of composite shapes.
+// Unit 7.1, stage 2 — predict centroids (and a centre of gravity) of composite shapes.
 // The shapes and their hand checks are in the lesson library (library/shapes.js):
 //   L-plate x̄ = ȳ = 1.1 m;  tee ȳ = 2.643 m;  ramp block x̄ = 1.857, ȳ = 0.857 m;
 //   arch ȳ = 1.899 m;  bracket (by weight) x̄ = 0.8125, ȳ = 0.5 m.

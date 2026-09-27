@@ -1,4 +1,4 @@
-// Unit 6.1, stage 3 — build: size a sign so it balances on a pin.
+// Unit 7.1, stage 3 — build: size a sign so it balances on a pin.
 // The sign: a board 1 m tall and L long from O (part 1), with a triangular point on its
 // left (part 2: right angle at O, legs 1 m to the LEFT and 1 m up → centroid (−1/3, 1/3)).
 //   A = L + 0.5;  Σx̃A = L²/2 − 1/6;  x̄ = (L²/2 − 1/6)/(L + 0.5)

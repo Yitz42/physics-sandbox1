@@ -1,4 +1,4 @@
-// Unit 4.4, stage 4 — debug: a student's working when classifying a structure,
+// Unit 5.4, stage 4 — debug: a student's working when classifying a structure,
 // with one wrong line (see src/subjects/statics/rigid-body-count.js).
 // Situations (hand-checked):
 //   propped cantilever: fixed A (3) + roller B (1) = 4 → degree 1. Mistake: fixed counted as 2.

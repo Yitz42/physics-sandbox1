@@ -1,4 +1,4 @@
-// Unit 4.5, stage 3 — build: prop a shelf with a strut (a two-force member).
+// Unit 5.5, stage 3 — build: prop a shelf with a strut (a two-force member).
 // The shelf is pinned to the wall at A (0, 0) and carries a load P at its tip (2.5 m).
 // A prop runs from B (b, 0) on the shelf down to D (0, −d) on the wall; it pushes
 // along itself (compression, so F_BD < 0 with tension positive).

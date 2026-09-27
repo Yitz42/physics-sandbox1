@@ -1,4 +1,4 @@
-// Unit 7.3, stage 4 — debug: one wrong line in a student's V(x) and M(x) equations.
+// Unit 8.3, stage 4 — debug: one wrong line in a student's V(x) and M(x) equations.
 // Pin A (0), roller B (6), P at 2 m, w from 2 to 6 m. P = 1200, w = 300:
 //   load 1200 N at 4 m → B_y = (2400 + 4800)/6 = 1200, A_y = 1200 N.
 //   Segment 1 (0–2): V = 1200,  M = 1200x

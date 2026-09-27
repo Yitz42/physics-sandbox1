@@ -1,4 +1,4 @@
-// Composite shapes with holes (Unit 6.2): a hole is a part with negative area.
+// Composite shapes with holes (Unit 7.2): a hole is a part with negative area.
 // Hand checks from content/statics/library/holes.js.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveCentroid, partInfo, centroidMistakes, centroidEquations } from "../../src/subjects/statics/centroid.js";

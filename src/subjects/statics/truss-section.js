@@ -1,4 +1,4 @@
-// truss-section.js — the method of sections (Unit 5.3).
+// truss-section.js — the method of sections (Unit 6.3).
 //
 // Cut the truss through (usually) three members, so it falls into two parts.
 // Either part is a rigid body in equilibrium: three equations, ΣF_x, ΣF_y and

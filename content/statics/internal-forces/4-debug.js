@@ -1,4 +1,4 @@
-// Unit 7.1, stage 4 — debug: one mistake in a student's equations for the left piece of the
+// Unit 8.1, stage 4 — debug: one mistake in a student's equations for the left piece of the
 // overhanging beam (library/internal.js, overhangAll), cut at C.
 // Correct (left piece, cut at x): ΣF_x: A_x + N = 0;  ΣF_y: A_y − F_1 − V = 0;  ΣM_C: −A_y x + F_1 (x/2) + M = 0,
 // with F_1 = w x (the load on the piece) at x/2 from C.

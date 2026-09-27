@@ -1,4 +1,4 @@
-// Unit 5.2, stage 3 — build: choose how to brace the bridge. The diagonals are thin
+// Unit 6.2, stage 3 — build: choose how to brace the bridge. The diagonals are thin
 // steel rods (they can only pull, or carry nothing) and the verticals are light posts
 // (at most one may carry force), with the load P hanging at C.
 // Bracings (the bridge from library/trusses.js):

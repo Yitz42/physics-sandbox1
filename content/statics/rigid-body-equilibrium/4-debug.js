@@ -1,4 +1,4 @@
-// Unit 4.2, stage 4 — debug: one mistake in a student's equilibrium equations.
+// Unit 5.2, stage 4 — debug: one mistake in a student's equilibrium equations.
 // The beam: 6 m, 40 kg (W = 392.4 N at 3 m), pin A (0), roller B (4 m), and a
 // slanted push P = 500 N at the end (6 m), on a 3-4-5 slope down and to the right.
 // P's line of action is (6, 0) + t(3, −4): its perpendicular distance from A is

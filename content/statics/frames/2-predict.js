@@ -1,4 +1,4 @@
-// Unit 5.4, stage 2 — predict the floor's push and the crossbar's pull in a stepladder.
+// Unit 6.4, stage 2 — predict the floor's push and the crossbar's pull in a stepladder.
 // The ladders and their hand checks are in the lesson library (library/frames.js):
 //   load at the top:  B_y = P/2,    F_DE = P/2        (P = 1000: 500, 500 N)
 //   load on leg AC:   B_y = 0.375P, F_DE = 0.375P     (P = 800: 300, 300 N)

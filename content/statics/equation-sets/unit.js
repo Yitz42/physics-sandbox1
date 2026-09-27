@@ -1,4 +1,4 @@
-// Unit 4.3 — Alternative equation sets: ΣF_x, ΣF_y, ΣM isn't the only choice.
+// Unit 5.3 — Alternative equation sets: ΣF_x, ΣF_y, ΣM isn't the only choice.
 export default {
   title: "Alternative equation sets",
   concept: "A body in a plane gives exactly three independent equations — but they needn't be $\\Sigma F_x$, $\\Sigma F_y$ and $\\Sigma M$. Two moment equations and one force equation also work, as long as the line between the two moment points isn't perpendicular to the force direction; so do three moment equations about points that aren't on one line. Chosen well, **each equation holds just one unknown**, and nothing has to be solved simultaneously.",

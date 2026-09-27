@@ -1,4 +1,4 @@
-// Unit 5.1, stage 2 — predict member forces in a triangular truss.
+// Unit 6.1, stage 2 — predict member forces in a triangular truss.
 // Joints A (0, 0) pin, B (8, 0) roller, C (4, 3): AC and BC on 4-3-5 slopes (5 m).
 // Hand checks (tension +):
 //   Apex load P: joint C: −(3/5)(F_AC + F_BC) − P = 0 and F_AC = F_BC → F_AC = −5P/6;

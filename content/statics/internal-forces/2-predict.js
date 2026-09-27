@@ -1,4 +1,4 @@
-// Unit 7.1, stage 2 — predict N, V and M at a cut, on four beams.
+// Unit 8.1, stage 2 — predict N, V and M at a cut, on four beams.
 // The beams and their hand checks are in the lesson library (library/internal.js):
 //   shelf (cut at 4 m): V = −400 N, M = 800 N·m;  cantilever (right piece): V = 800 N, M = −800 N·m;
 //   overhang (cut at 2 m): V = −150 N, M = 300 N·m;  slanted load: N = 600 N, V = 320 N, M = 480 N·m.

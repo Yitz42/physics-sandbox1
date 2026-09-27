@@ -1,4 +1,4 @@
-// Unit 4.4, stage 2 — predict: count the unknowns and the degree of indeterminacy.
+// Unit 5.4, stage 2 — predict: count the unknowns and the degree of indeterminacy.
 // Hand checks: propped cantilever (fixed A + roller B): n = 3 + 1 = 4, degree 1;
 // continuous beam (pin A + rollers B, C, D): n = 2 + 1 + 1 + 1 = 5, degree 2;
 // fixed at both ends: n = 3 + 3 = 6, degree 3; fixed A + pin B: n = 5, degree 2.

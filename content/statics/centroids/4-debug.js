@@ -1,4 +1,4 @@
-// Unit 6.1, stage 4 — debug: one mistake in a student's centroid working.
+// Unit 7.1, stage 4 — debug: one mistake in a student's centroid working.
 // The ramp block (library/shapes.js): square 2 × 2 (4 m², (1, 1)) and triangle with its right angle
 // at (2, 0), legs 3 m along x and 2 m up (3 m², (3, 0.667)).
 // Correct: A = 4 + 3 = 7 m²;  A x̄ = 1(4) + 3(3) = 13 m³;  A ȳ = 1(4) + 0.667(3) = 6 m³.

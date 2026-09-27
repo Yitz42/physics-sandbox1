@@ -1,4 +1,4 @@
-// library/shapes.js — the lesson library's composite shapes (Unit 6.1; see src/core/library.js).
+// library/shapes.js — the lesson library's composite shapes (Unit 7.1; see src/core/library.js).
 // Questions:
 //   centroid   predict x̄ and/or ȳ
 // Hand checks (A_i, x̃_i, ỹ_i;  x̄ = Σx̃A/ΣA,  ȳ = Σỹ A/ΣA):

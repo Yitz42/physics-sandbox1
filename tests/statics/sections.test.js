@@ -1,4 +1,4 @@
-// The method of sections (Unit 5.3): the kept part's three equations, checked
+// The method of sections (Unit 6.3): the kept part's three equations, checked
 // against the joint-by-joint solution.
 // The Pratt bridge (library/trusses.js), P = 1200 N at C: A_y = E_y = 600 N.
 //   Cut FG, CF, BC, keep the left part {A, B, F}:

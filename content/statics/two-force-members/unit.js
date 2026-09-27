@@ -1,4 +1,4 @@
-// Unit 4.5 (the old "Unit 10") — Two-force and three-force members.
+// Unit 5.5 (the old "Unit 10") — Two-force and three-force members.
 export default {
   title: "Two-force and three-force members",
   concept: "A member pinned at both ends with no load in between is a **two-force member**: its two forces are equal, opposite and along the line joining the pins — it can only push or pull along itself. A body held by exactly **three** forces is a three-force member: the three lines of action must all meet at one point (or all be parallel). Both facts give a force's direction without any calculation.",

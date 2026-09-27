@@ -1,4 +1,4 @@
-// Unit 4.5, stage 4 — debug: a student's FBD of a propped boom has one mistake.
+// Unit 5.5, stage 4 — debug: a student's FBD of a propped boom has one mistake.
 // The boom: pinned to the wall at A, 4 m long, 30 kg, a load P at its tip, and a
 // prop (a two-force member) from B (3, 0) down to D (0, −2) on the wall.
 // Correct FBD: A_x, A_y (pin), F_BD (along the prop), W (at 2 m), P.

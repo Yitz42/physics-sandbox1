@@ -1,4 +1,4 @@
-// Plane trusses by the method of joints (Unit 5.1), with answers worked by hand.
+// Plane trusses by the method of joints (Unit 6.1), with answers worked by hand.
 // Tension is positive, compression negative.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveTruss, trussEquations } from "../../src/subjects/statics/truss.js";

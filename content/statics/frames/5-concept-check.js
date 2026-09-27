@@ -1,4 +1,4 @@
-// Unit 5.4, stage 5 — concept check: taking frames apart.
+// Unit 6.4, stage 5 — concept check: taking frames apart.
 
 export default {
   id: "frames/5-concept-check",

@@ -1,4 +1,4 @@
-// Unit 4.3, stage 3 — build: choose three equations for a beam on a ramp roller
+// Unit 5.3, stage 3 — build: choose three equations for a beam on a ramp roller
 // so that each holds just ONE unknown, then work out what they give.
 // The beam and its hand checks are in the lesson library (beams.js, rampBeam):
 // pin A (0, 0), roller B (4, 0) pushing 60° from vertical (up-left), P down at x.

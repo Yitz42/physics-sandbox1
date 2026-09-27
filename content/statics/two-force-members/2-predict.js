@@ -1,4 +1,4 @@
-// Unit 4.5, stage 2 — predict the direction of a pin force without solving,
+// Unit 5.5, stage 2 — predict the direction of a pin force without solving,
 // using the three-force rule, and the force in the two-force member.
 // A beam is pinned to the wall at A (0, 0); a tie runs from B (4, 0) to D (0, 3)
 // (a 3-4-5 slope); a load P hangs at x. Three forces → their lines meet at O:

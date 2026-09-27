@@ -1,4 +1,4 @@
-// Unit 6.2, stage 5 — concept check: holes and negative areas.
+// Unit 7.2, stage 5 — concept check: holes and negative areas.
 
 export default {
   id: "holes/5-concept-check",

@@ -1,4 +1,4 @@
-// Centroids and centres of gravity (Unit 6.1), with the hand checks of
+// Centroids and centres of gravity (Unit 7.1), with the hand checks of
 // content/statics/library/shapes.js.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveCentroid, partInfo, centroidMistakes, centroidEquations } from "../../src/subjects/statics/centroid.js";

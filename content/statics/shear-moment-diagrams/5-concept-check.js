@@ -1,4 +1,4 @@
-// Unit 7.2, stage 5 — concept check: reading shear and moment diagrams.
+// Unit 8.2, stage 5 — concept check: reading shear and moment diagrams.
 
 export default {
   id: "shear-moment-diagrams/5-concept-check",

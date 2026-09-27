@@ -1,4 +1,4 @@
-// Unit 7.2, stage 1 — explore: move a point load and change a uniform load, and watch the
+// Unit 8.2, stage 1 — explore: move a point load and change a uniform load, and watch the
 // shear and moment diagrams change.
 // Pin A (0), roller B (6), P = 1500 N at a, w over the whole span:
 //   A_y = 1500(6 − a)/6 + 3w,  B_y = 1500a/6 + 3w.

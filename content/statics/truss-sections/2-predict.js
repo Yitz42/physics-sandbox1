@@ -1,4 +1,4 @@
-// Unit 5.3, stage 2 — predict two member forces with the method of sections,
+// Unit 6.3, stage 2 — predict two member forces with the method of sections,
 // one equation each. The sections and their hand checks are in the lesson library
 // (library/trusses.js):
 //   one load (P at C), left part:     F_FG = −P, F_BC = +P/2              (P = 1200: −1200, 600 N)

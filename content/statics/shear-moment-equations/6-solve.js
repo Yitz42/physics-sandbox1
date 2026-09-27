@@ -1,4 +1,4 @@
-// Unit 7.3, stage 6 — solve: write V(x) and M(x) for both segments of an overhanging beam,
+// Unit 8.3, stage 6 — solve: write V(x) and M(x) for both segments of an overhanging beam,
 // then use them to find V and M at x = 5 m.
 // Pin A (0), roller B (4), w = 300 N/m from A to B, P = 400 N at the end (6 m) → B_y = 1200, A_y = 400 N.
 //   Segment 1 (0–4): V = 400 − 300x,  M = 400x − 300x²/2

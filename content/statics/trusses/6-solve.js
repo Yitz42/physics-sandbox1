@@ -1,4 +1,4 @@
-// Unit 5.1, stage 6 — solve: a wall-mounted truss, at its loaded joint.
+// Unit 6.1, stage 6 — solve: a wall-mounted truss, at its loaded joint.
 // Joints A (0, 0) and B (0, 3) on the wall, C (4, 0) out at the tip; BC on a 4-3-5 slope.
 // A sits on a roller against the wall, B is pinned; the load P hangs at C.
 // Joint C (tension assumed: F_AC pulls C toward A, left; F_BC pulls C toward B, up-left):

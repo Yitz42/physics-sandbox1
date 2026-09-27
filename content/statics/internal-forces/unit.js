@@ -1,4 +1,4 @@
-// Unit 7.1 — Internal forces at a point: cut a beam, and the cut face carries N, V and M.
+// Unit 8.1 — Internal forces at a point: cut a beam, and the cut face carries N, V and M.
 export default {
   title: "Internal forces at a point",
   concept: "Cut a beam at a point C: each piece must still be in equilibrium, so the cut face carries three **internal forces** — the normal force $N$ (along the beam), the shear force $V$ (across it) and the bending moment $M$. Keep one piece and write its three equations: $\\Sigma F_x = 0$ gives N, $\\Sigma F_y = 0$ gives V, $\\Sigma M_C = 0$ gives M. Sign convention: $N$ is positive in **tension**; $V$ is positive **down on a left piece's face** (up on a right piece's); $M$ is positive when it bends the beam into a **smile** (counterclockwise on a left piece's face).",

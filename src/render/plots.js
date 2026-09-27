@@ -1,4 +1,4 @@
-// plots.js — shear and moment diagrams drawn under a beam (Units 7.2–7.3).
+// plots.js — shear and moment diagrams drawn under a beam (Units 8.2–8.3).
 //   plot { points: [[x, y], …], base: y, name: "V", tint: 0 | 1, marks: [{ at: [x, y], text, below?, side? }],
 //          dashed?, alpha? }
 // points: the curve in metres, already scaled (the scene turns newtons into

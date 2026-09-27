@@ -1,4 +1,4 @@
-// Unit 5.2, stage 6 — solve: the bridge with P at C (library/trusses.js). First spot
+// Unit 6.2, stage 6 — solve: the bridge with P at C (library/trusses.js). First spot
 // the zero-force members (BF, CG, DH), then solve joint A, then use B.
 //   A_y = P/2 (found first, shown). Joint A: ΣF_y: A_y + (1/√2)F_AF = 0 → F_AF = −0.7071P;
 //   ΣF_x: A_x + F_AB + (1/√2)F_AF = 0 (A_x = 0) → F_AB = +P/2.

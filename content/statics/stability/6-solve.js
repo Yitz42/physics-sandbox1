@@ -1,4 +1,4 @@
-// Unit 4.4, stage 6 — solve: a beam on a pin and a roller on a 30° incline.
+// Unit 5.4, stage 6 — solve: a beam on a pin and a roller on a 30° incline.
 // Check it's stable (3 unknowns, not parallel, not concurrent), then find the reactions.
 // The roller pushes perpendicular to its incline: 30° from vertical, up and to the LEFT.
 // Hand check (default numbers): 5 m beam, 40 kg → W = 392.4 N at 2.5 m; P = 600 N down at 2 m.

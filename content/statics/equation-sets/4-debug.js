@@ -1,4 +1,4 @@
-// Unit 4.3, stage 4 — debug: one mistake in a student's ΣM_A, ΣM_B, ΣF_x.
+// Unit 5.3, stage 4 — debug: one mistake in a student's ΣM_A, ΣM_B, ΣF_x.
 // The beam with a slanted push (lesson library, beams.js): pin A (0), roller B (5 m),
 // P down and to the right (c_x P right, c_y P down) at C.
 // P's line of action misses A by d = AC × c_y and B by CB × c_y (not AC and CB) — e.g.

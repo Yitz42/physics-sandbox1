@@ -1,4 +1,4 @@
-// Unit 7.3, stage 2 — predict coefficients of V(x) or M(x) on four beams.
+// Unit 8.3, stage 2 — predict coefficients of V(x) or M(x) on four beams.
 // The beams and their hand checks are in the lesson library (library/internal.js):
 //   half-loaded M = 900x − 200x² (c₁ = A_y, c₂ = −w/2);  uniform span V = 1000 − 400x;
 //   shelf, segment 2: M = 1200(2) + (800 − 1200)x → c₀ = Pa = 2400, c₁ = A_y − P = −400;

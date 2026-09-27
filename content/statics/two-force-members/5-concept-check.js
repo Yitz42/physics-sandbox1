@@ -1,4 +1,4 @@
-// Unit 4.5, stage 5 — concept check: two-force and three-force members.
+// Unit 5.5, stage 5 — concept check: two-force and three-force members.
 
 export default {
   id: "two-force-members/5-concept-check",

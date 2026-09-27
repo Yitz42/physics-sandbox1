@@ -1,4 +1,4 @@
-// frame-scene.js — the picture of a frame or machine (Unit 5.4), its free-body
+// frame-scene.js — the picture of a frame or machine (Unit 6.4), its free-body
 // diagram tool, and the lines under the equations.
 //
 // Two ways to look at it (setup.view):

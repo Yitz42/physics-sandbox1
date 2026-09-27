@@ -95,7 +95,7 @@ export const cantilever = scenario({
   },
 });
 
-// ---- Bodies for choosing the three equations (Unit 4.3) ---------------------------------
+// ---- Bodies for choosing the three equations (Unit 5.3) ---------------------------------
 // Slanted pushes, down and to the right, in every textbook form: slope triangles
 // (3-4-5, 4-3-5, 5-12-13, 12-5-13, 1-1) and angles from either axis. A new version
 // may use any of them. With c_x, c_y its right and down fractions (3-4-5: 3/5, 4/5):

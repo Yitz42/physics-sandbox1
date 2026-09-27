@@ -1,4 +1,4 @@
-// Unit 4.4, stage 3 — build: hold a beam with three rollers only.
+// Unit 5.4, stage 3 — build: hold a beam with three rollers only.
 // Each roller sits on the floor (pushes up) or on a 45° ramp (pushes up and
 // right, or up and left). The load P slants down and to the LEFT, so some
 // roller must push to the right. Hand-worked traps:

@@ -1,4 +1,4 @@
-// Unit 7.3, stage 5 — concept check: writing V(x) and M(x).
+// Unit 8.3, stage 5 — concept check: writing V(x) and M(x).
 
 export default {
   id: "shear-moment-equations/5-concept-check",

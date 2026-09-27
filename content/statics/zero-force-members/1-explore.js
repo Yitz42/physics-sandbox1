@@ -1,4 +1,4 @@
-// Unit 5.2, stage 1 — explore: move the load around a Pratt bridge and watch which
+// Unit 6.2, stage 1 — explore: move the load around a Pratt bridge and watch which
 // members carry nothing (grey), with the inspection working under the equations.
 // The bridge and its hand checks are in the lesson library (library/trusses.js):
 //   P at C, F or H: BF, DH and CG are zero (3);  P at B: DH and CG (2);  P at D: BF and CG (2);

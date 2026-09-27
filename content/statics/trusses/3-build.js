@@ -1,4 +1,4 @@
-// Unit 5.1, stage 3 — build: choose the height of a roof truss.
+// Unit 6.1, stage 3 — build: choose the height of a roof truss.
 // Joints A (0, 0) pin, B (8, 0) roller, apex C (4, h); load P at C.
 //   Joint C: F_AC = F_BC = −P·L/(2h), L = √(16 + h²)   (compression)
 //   Joint A: F_AB = −(4/L)·F_AC = 2P/h                 (tension)

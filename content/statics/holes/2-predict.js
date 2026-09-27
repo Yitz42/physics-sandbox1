@@ -1,4 +1,4 @@
-// Unit 6.2, stage 2 — predict the centroid (or net area) of shapes with holes and cut-outs.
+// Unit 7.2, stage 2 — predict the centroid (or net area) of shapes with holes and cut-outs.
 // The shapes and their hand checks are in the lesson library (library/holes.js):
 //   plate with a hole A = 7.215 m², x̄ = 2.109 m;  cut-out bracket x̄ = ȳ = 1.25 m;
 //   notched plate ȳ = 0.905 m;  link plate x̄ = 1.772 m.

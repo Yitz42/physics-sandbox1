@@ -1,4 +1,4 @@
-// truss-zero.js — zero-force members, found by inspection (Unit 5.2).
+// truss-zero.js — zero-force members, found by inspection (Unit 6.2).
 //
 // Before solving, look at each joint. The textbook's two rules:
 //   • two members meet at a joint, not in line, with no load or support
@@ -167,7 +167,7 @@ export function solveTrussZero(setup) {
   const z = zeroByInspection(setup);
   r.values.zeroCount = z.zero.length;
   r.zeroByInspection = z;
-  // A section (Unit 5.3): the kept part's equations, with the reactions found first.
+  // A section (Unit 6.3): the kept part's equations, with the reactions found first.
   if (setup.section) {
     const known = {};
     if (r.status === "determinate") for (const x of trussReactions(setup)) known[x.id] = r.values[x.id];

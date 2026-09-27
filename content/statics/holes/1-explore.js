@@ -1,4 +1,4 @@
-// Unit 6.2, stage 1 — explore: move and resize a hole in a plate and watch the centroid
+// Unit 7.2, stage 1 — explore: move and resize a hole in a plate and watch the centroid
 // run away from it.
 // Plate 4 × 3 (12 m², (2, 1.5)) with a round hole, radius r at (x_h, y_h):
 //   A = 12 − πr²,  x̄ = (24 − πr² x_h)/A,  ȳ = (18 − πr² y_h)/A.

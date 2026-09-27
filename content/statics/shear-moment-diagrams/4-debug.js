@@ -1,4 +1,4 @@
-// Unit 7.2, stage 4 — debug: a student walks along the beam building its diagrams; one step is wrong.
+// Unit 8.2, stage 4 — debug: a student walks along the beam building its diagrams; one step is wrong.
 // Pin A (0), roller B (6), P at 2 m, a triangular load from 2 to 6 m (zero at 2, w₀ at 6).
 // P = 1200, w₀ = 600: load area 1200 N at 4.667 m → B_y = 1333.3 N, A_y = 1066.7 N.
 // The walk: V up 1066.7 at A; M rises by 1066.7 × 2 = 2133.3 to x = 2; V down 1200 → −133.3;

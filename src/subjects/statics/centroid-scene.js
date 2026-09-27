@@ -1,4 +1,4 @@
-// centroid-scene.js — the picture of a composite shape (Unit 6.1), and the
+// centroid-scene.js — the picture of a composite shape (Unit 7.1), and the
 // lines under its equations (the textbook's table, in one line per part).
 //
 // Each part is drawn filled (regions.js) with its number; its own centroid C_1,
@@ -30,7 +30,7 @@ export function centroidScene(setup, result, opts = {}) {
 
   // Each part, with its number (or mass) in the middle — until its centroid C_1, C_2 …
   // is marked there instead.
-  // Holes (Unit 6.2) are drawn after the solid parts, cut out of them.
+  // Holes (Unit 7.2) are drawn after the solid parts, cut out of them.
   const dots = setup.showParts || shown;
   const order = parts.map((p, k) => k).sort((a, b) => (parts[a].hole ? 1 : 0) - (parts[b].hole ? 1 : 0));
   for (const k of order) {

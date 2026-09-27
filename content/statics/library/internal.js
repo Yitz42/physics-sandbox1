@@ -1,4 +1,4 @@
-// library/internal.js — the lesson library's beams for internal forces (Units 7.1–7.3;
+// library/internal.js — the lesson library's beams for internal forces (Units 8.1–8.3;
 // see src/core/library.js). All are straight horizontal beams (solver statics.internal).
 // Sign convention: N + tension; V + down on a left piece's cut face; M + concave up (a smile).
 // Questions:

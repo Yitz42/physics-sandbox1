@@ -1,4 +1,4 @@
-// Unit 7.1, stage 3 — build: place a bolted splice where the bending moment is (almost) zero.
+// Unit 8.1, stage 3 — build: place a bolted splice where the bending moment is (almost) zero.
 // Pin A (0), roller B (b), beam 6 m, w all along: A_y = 6w(b − 3)/b.
 // In the span (x < b): M = A_y x − w x²/2 = 0 at x = 2A_y/w = 12(b − 3)/b — b = 4: 3 m; b = 3.8: 2.53 m; b = 4.2: 3.43 m.
 // |M| ≤ 100 N·m within about ±100/A_y of it (A_y = 316…686 N → ±0.15…0.32 m): a 0.05 m slider always fits.
