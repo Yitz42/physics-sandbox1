@@ -90,8 +90,8 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   (LETTER_CLEAR, labels.js; other labels keep 4 px). A dimension's extension lines
   run out to what it measures — a beam, a plate, a truss bar or a joint straight
   across from it (up to ~420 px) — and break where they'd cross a drawn object.
-- **Sketch | free-body diagram** (agreed with the owner): a rigid body's picture shows
-  the full sketch on the left (the body as it is, supports, loads, dimensions) and its
+- **Model | free-body diagram** (agreed with the owner): a rigid body's picture shows
+  the full model on the left (captioned "Model") (the body as it is, supports, loads, dimensions) and its
   FBD on the right: the body simplified to a plain thin bar with no details, the
   supports replaced by their reactions (their letters kept at their points), the loads
   and the weight (rigid-body-scene.js, fbdLayout; the FBD drawing tool follows it,
@@ -104,3 +104,6 @@ Every picture is checked automatically (tests/content/pictures.test.js) and can 
   surface (touchBeams sets the load's gap to the beam's half-thickness). A point load
   drawn through a distributed load starts above it and is a slightly different shade
   (indigo, role "knownOver"), so it reads as a separate force.
+- **Room round the model**: dimension rows under a rigid body sit at least 0.24 × its
+  size below the body and its supports — the automatic ones and a stage's own, moved
+  down together (rigid-body-scene.js, roomyDims).

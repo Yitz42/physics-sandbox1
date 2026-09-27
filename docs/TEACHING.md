@@ -26,10 +26,11 @@ Read this before writing or changing stages or challenge types. Changing any of 
   for distances (set per ask with `precision`).
 - Page layout ("simulation lab" look, agreed with the owner): a tab at the top centre
   ("STATICS SIMULATION LAB") opens a menu on hover or tap: Home; on the all-chapters
-  page, every course; inside a chapter, unit or stage, every chapter (a stage first
-  lists the way back to its unit and the unit's stages, ticked when done); and a greyed
-  "Account — coming soon" slot. The course page shows each chapter as a square
-  **folder** (its title, progress, and its textbook link inside); a folder opens the
+  page, every course; on a chapter page, every chapter; inside a unit, no chapter
+  list — the way back (to the chapter from the unit's page, to the unit from a stage)
+  and the unit's stages, ticked when done; and a greyed "Account — coming soon" slot.
+  The course page shows each chapter as a square **folder**: "Chapter N" on its tab at
+  the top edge, then its title, progress, and its textbook link inside; a folder opens the
   chapter's page with its units. The
   stage title sits top left with a progress bar top right showing **stages done in
   this unit**. No stage-type tag on the stage page. The panel starts with

@@ -92,6 +92,7 @@ function chapterFolder(course, ch, c, byId) {
     el("span", { textContent: "📖 " }),
     reading.url ? el("a", { href: reading.url, target: "_blank", rel: "noopener", textContent: reading.chapter }) : el("span", { textContent: reading.chapter }),
   ]) : null;
+  // "Chapter 1" sits on the folder's tab, at its top edge; the title just under it.
   const inner = [
     el("span", { className: "folder-num", textContent: `Chapter ${c + 1}` }),
     el("h2", { className: "folder-title", textContent: ch.title }),
