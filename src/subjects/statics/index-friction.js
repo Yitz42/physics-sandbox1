@@ -1,4 +1,4 @@
-// index-friction.js — plugs Chapter 9's solvers (friction) into the core. Split from index.js
+// index-friction.js — plugs Chapter 9's solvers (friction) and Chapter 10's (moments of inertia) into the core. Split from index.js
 // to keep it small; index.js imports this file, so loading the statics subject loads these too.
 
 import { registerSolver } from "../../core/registry.js";
@@ -14,6 +14,9 @@ import { beltScene } from "./belt-scene.js";
 import { beltSteps } from "./belt-steps.js";
 import { solveWedge, wedgeQuantities, wedgeEquations, wedgeSummary, wedgeMistakes } from "./wedge.js";
 import { wedgeScene } from "./wedge-scene.js";
+import { solveInertia, inertiaQuantities } from "./inertia.js";
+import { inertiaEquations, inertiaSummary, inertiaMistakes, inertiaSteps } from "./inertia-tools.js";
+import { inertiaScene } from "./inertia-scene.js";
 
 // Unit 9.1: dry friction — a crate on a ramp or floor (N, the friction needed, and the
 // limit μ_s N: holds, impending, slides), or a body with rough contacts (a ladder: the
@@ -55,4 +58,16 @@ registerSolver("statics.wedge", {
   scene: wedgeScene,
   quantities: wedgeQuantities,
   mistakes: wedgeMistakes,
+});
+
+// Unit 10.1: area moments of inertia of beam sections — Ī of each part, moved to the section's
+// centroid by the parallel-axis theorem, Ī_x = Σ(Ī + A d²); about another axis too (setup.axis).
+registerSolver("statics.inertia", {
+  solve: solveInertia,
+  equations: (setup) => inertiaEquations(setup),
+  summary: inertiaSummary,
+  scene: inertiaScene,
+  quantities: inertiaQuantities,
+  mistakes: inertiaMistakes,
+  debugSteps: inertiaSteps, // a student's working for a two-part section, one line wrong
 });

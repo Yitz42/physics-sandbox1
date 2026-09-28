@@ -94,7 +94,7 @@ const chapters = [
   {
     id: "inertia", title: "Moments of inertia",
     units: [
-      soon("Area moments of inertia", "$I = \\int y^2\\,dA$ and the parallel axis theorem: why I-beams are so stiff."),
+      "inertia",
     ],
   },
 ];

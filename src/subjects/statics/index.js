@@ -196,5 +196,6 @@ registerSolver("statics.internal", {
   debugSteps: internalSteps, // a student's working with one wrong line (7.2, 7.3)
 });
 
-// Chapter 9 (friction: dry friction, tipping, belts, wedges) registers its solvers in its own file.
+// Chapters 9–10 (friction: dry friction, tipping, belts, wedges; moments of inertia) register
+// their solvers in their own file.
 import "./index-friction.js";

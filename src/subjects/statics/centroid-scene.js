@@ -27,6 +27,7 @@ export function centroidScene(setup, result, opts = {}) {
   const size = Math.max(xmax - xmin, ymax - ymin, 1e-6);
   const shapes = [{ type: "axes" }];
   const G = setup.weigh ? "G" : "C";
+  const unit = setup.lengthUnit || "m"; // (beam sections, Unit 10.1, are drawn in mm)
 
   // Each part, with its number (or mass) in the middle — until its centroid C_1, C_2 …
   // is marked there instead.
@@ -43,7 +44,7 @@ export function centroidScene(setup, result, opts = {}) {
 
   // Dimensions: the stage's own, or the parts' corners along the bottom and up the left.
   const dims = setup.dims || autoDims(infos, xmin, xmax, ymin, ymax, size);
-  for (const d of dims) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(Math.hypot(d.to[0] - d.from[0], d.to[1] - d.from[1]), "m") });
+  for (const d of dims) shapes.push({ type: "dim", from: d.from, to: d.to, label: d.label || format(Math.hypot(d.to[0] - d.from[0], d.to[1] - d.from[1]), unit) });
   // A round hole's size: its diameter "⌀1 m", on a leader pointing at its edge,
   // slanting up and toward the shape's middle — so the label lands on the
   // material (which labels may cover), not across its outline.
@@ -53,7 +54,7 @@ export function centroidScene(setup, result, opts = {}) {
     const c = p.at, dx = c[0] - mid[0], dy = c[1] - mid[1];
     const dir = [dx > 1e-6 ? -1 : 1, dy > 0.25 * size ? -1 : 1];
     const at = [c[0] + (dir[0] * p.r) / Math.SQRT2, c[1] + (dir[1] * p.r) / Math.SQRT2];
-    shapes.push({ type: "leader", at, dir, label: `⌀${format(2 * p.r, "m")}` });
+    shapes.push({ type: "leader", at, dir, label: `⌀${format(2 * p.r, unit)}` });
   });
 
   // Each part's centroid.

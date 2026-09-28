@@ -29,6 +29,8 @@ const UNITS = {
   mm: { text: "mm", tex: "\\text{mm}" },
   "mm^2": { text: "mm²", tex: "\\text{mm}^2" },
   "m^2": { text: "m²", tex: "\\text{m}^2" },
+  // (Area moments of inertia of beam sections, in the textbook's usual size.)
+  "10^6 mm^4": { text: "×10⁶ mm⁴", tex: "\\times 10^6\\,\\text{mm}^4" },
   Pa: { text: "Pa", tex: "\\text{Pa}" },
   kPa: { text: "kPa", tex: "\\text{kPa}" },
   MPa: { text: "MPa", tex: "\\text{MPa}" },

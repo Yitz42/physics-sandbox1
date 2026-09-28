@@ -321,9 +321,14 @@ Claude builds from it.
 
 ### Chapter 10: Moments of inertia
 
-**Unit 10.1: Area moments of inertia**
+**Unit 10.1: Area moments of inertia** ✅
 - Concept: I = ∫y² dA; parallel axis theorem.
-- Test ideas: compare I-beam vs. rectangle of the same area.
+- Built (sections in mm, I in 10⁶ mm⁴): resize and move a plank's section and watch Ī = bh³/12 and
+  Ī + A d² about the x axis; predict Ī_x of an I-beam, a T-beam (with ȳ), an unequal I-beam, a hollow
+  box, and a plank about its base; design an I-beam within an area limit that reaches a stiffness
+  (working out its Ī_x); debug a student's T-beam working (no A d², d from the bottom, bh³/3, b and h
+  swapped); concept check (I-beam vs. rectangle of the same area, the centroidal axis is the minimum);
+  solve a T-beam or unequal I-beam: A, A ȳ, then Ī_x = Σ(Ī + A d²).
 - Bridge to later: needed for bending stress.
 
 ---
