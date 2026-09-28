@@ -2,7 +2,7 @@
 // line (debug "steps") and the lines to choose from (solve "choices").
 
 import { fixedTex, sigFig } from "../../core/units.js";
-import { momentOf, pointNameOf, cross } from "./force3d-moment.js";
+import { momentOf, pointNameOf, cross, axisUnit, dot3 } from "./force3d-moment.js";
 import { vecTex } from "./force3d-tools.js";
 
 const AX = ["x", "y", "z"];
@@ -12,7 +12,13 @@ const about = (setup) => setup.about || "O";
 // ---- A student's working, one line wrong (debug "steps") ------------------------------------
 // mutation.slip: "backwards" (r = r_O − r_A), "order" (F × r), "jSign" (no minus on the j term),
 // "pairing" (M_z = r_x F_x − r_y F_y).
+// Moment about an axis (Unit 4.8), mutation.slip: "wholeM" (M_a = |M_O|), "noUnit" (the axis
+// vector not divided by its length), "axisBackwards" (u from the axis's end to its start) or
+// "mSign" (the j term's minus lost in M_O, carried into M_a).
+const AXIS_SLIPS = ["wholeM", "noUnit", "axisBackwards", "mSign"];
+
 export function momentSteps(setup, mutation) {
+  if (AXIS_SLIPS.includes(mutation.slip)) return axisSteps(setup, mutation);
   const f = setup.forces[0];
   const m = momentOf(f, setup);
   const O = about(setup), P = pointNameOf(f), S = f.symbol;
@@ -66,6 +72,45 @@ export function momentSteps(setup, mutation) {
   return { lines, wrong: WHY.wrong, follows, fixes: [{ label: WHY.fix, correct: true }, ...others], explain: WHY.explain, kind: WHY.kind, corrected };
 }
 
+function axisSteps(setup, mutation) {
+  const f = setup.forces[0];
+  const m = momentOf(f, setup);
+  const ax = axisUnit(setup);
+  const O = about(setup), P = pointNameOf(f), S = f.symbol;
+  const [A, C] = [setup.axis.from, setup.axis.to];
+  const slip = mutation.slip;
+  const M = slip === "mSign" ? [m.M[0], -m.M[1], m.M[2]] : m.M;
+  const u = slip === "noUnit" ? ax.v : slip === "axisBackwards" ? ax.u.map((c) => -c) : ax.u;
+  const Ma = slip === "wholeM" ? Math.hypot(...M) : dot3(u, M);
+  const n3 = (c) => (Math.abs(c) < 0.0005 ? 0 : c).toFixed(3);
+  const uLine = (w, how) => `\\mathbf{u}_a = ${how} = ${vecTex(w, "", n3)}`;
+  const lines = [
+    { id: "r", tex: `\\mathbf{r}_{${O}${P}} = ${vecTex(m.r, "m", n4)}, \\quad \\mathbf{${S}} = ${vecTex(m.F, "N")}` },
+    { id: "M", tex: `\\mathbf{M}_{${O}} = \\mathbf{r} \\times \\mathbf{${S}} = ${vecTex(M, "N·m")}` },
+    { id: "u", tex: slip === "noUnit" ? uLine(u, `\\mathbf{r}_{${A}${C}}`) : slip === "axisBackwards" ? uLine(u, `\\mathbf{r}_{${C}${A}}/r_{${C}${A}}`) : uLine(u, `\\mathbf{r}_{${A}${C}}/r_{${A}${C}}`) },
+    { id: "Ma", tex: slip === "wholeM" ? `M_a = |\\mathbf{M}_{${O}}| = ${fixedTex(Ma, "N·m")}` : `M_a = \\mathbf{u}_a \\cdot \\mathbf{M}_{${O}} = ${fixedTex(Ma, "N·m")}` },
+  ];
+  const corrected = [lines[0].tex, `\\mathbf{M}_{${O}} = \\mathbf{r} \\times \\mathbf{${S}} = ${vecTex(m.M, "N·m")}`, uLine(ax.u, `\\mathbf{r}_{${A}${C}}/r_{${A}${C}}`), `M_a = \\mathbf{u}_a \\cdot \\mathbf{M}_{${O}} = ${fixedTex(dot3(ax.u, m.M), "N·m")}`];
+  const WHY = {
+    wholeM: { wrong: "Ma", kind: "concept", fix: "Take only the part of $\\mathbf{M}_O$ along the axis: $\\mathbf{u}_a \\cdot \\mathbf{M}_O$",
+      explain: "The whole moment $\\mathbf{M}_O$ turns the body about ITS direction. About the hinge line, only its part along that line counts: the dot product with $\\mathbf{u}_a$." },
+    noUnit: { wrong: "u", kind: "vector", fix: `Divide by the axis's length, $r_{${A}${C}}$ = ${n4(ax.len)} m`,
+      explain: "$\\mathbf{u}_a$ must have length 1; the position vector along the axis has the axis's length. Without dividing, $M_a$ comes out that many times too big." },
+    axisBackwards: { wrong: "u", kind: "direction", fix: `Point $\\mathbf{u}_a$ from ${A} to ${C}, as the axis is given`,
+      explain: `The axis is given from ${A} to ${C}; $M_a$ is positive for the right-hand turn about that direction. Backwards, the sign flips.` },
+    mSign: { wrong: "M", kind: "sign", fix: "Put the minus back on the j term of $\\mathbf{r} \\times \\mathbf{F}$",
+      explain: "The j part of the cross product is $-(r_x F_z - r_z F_x)$. The slip carries into the dot product." },
+  }[slip];
+  const order = lines.map((l) => l.id);
+  const follows = lines.filter((l, i) => order.indexOf(l.id) > order.indexOf(WHY.wrong) && l.tex !== corrected[i]).map((l) => l.id);
+  const others = [
+    { key: "wholeM", label: "Use the whole moment's size", feedback: "The size of $\\mathbf{M}_O$ isn't the moment about the axis — only its part along it is." },
+    { key: "noUnit", label: "Divide the axis vector by its length", feedback: "$\\mathbf{u}_a$ already has length 1." },
+    { key: "mSign", label: "Change the sign of M_y", feedback: "$\\mathbf{M}_O$ is right. Look further down." },
+  ].filter((o) => o.key !== slip).slice(0, 2).map(({ label, feedback }) => ({ label, feedback }));
+  return { lines, wrong: WHY.wrong, follows, fixes: [{ label: WHY.fix, correct: true }, ...others], explain: WHY.explain, kind: WHY.kind, corrected };
+}
+
 // ---- Lines to choose from (solve, "choices") -------------------------------------------------
 export function momentChoices(setup, result) {
   const O = about(setup);
@@ -115,5 +160,20 @@ export function momentChoices(setup, result) {
       ],
     });
   }
+  // Moment about an axis (Unit 4.8): the dot product with the axis's UNIT vector.
+  const ax = axisUnit(setup);
+  if (ax && all.length) {
+    const M = AX.map((_, i) => all.reduce((acc, { m }) => acc + m.M[i], 0));
+    const [A, C] = [setup.axis.from, setup.axis.to];
+    groups.push({
+      title: `The moment about the axis ${A}${C}, $M_a = \\mathbf{u}_a \\cdot \\mathbf{M}_{${O}}$`,
+      options: [
+        { tex: `M_a = ${fixedTex(dot3(ax.u, M), "N·m")}`, correct: true },
+        { tex: `M_a = ${fixedTex(Math.hypot(...M), "N·m")}`, kind: "concept", feedback: "That's the size of the whole moment. Only its part ALONG the axis turns the body about it: $\\mathbf{u}_a \\cdot \\mathbf{M}_O$." },
+        { tex: `M_a = ${fixedTex(dot3(ax.v, M), "N·m")}`, kind: "vector", feedback: `That dots with $\\mathbf{r}_{${A}${C}}$ itself. Divide by its length first: $\\mathbf{u}_a$ has length 1.` },
+      ],
+    });
+  }
   return groups;
 }
+

@@ -46,7 +46,7 @@ const chapters = [
     units: [
       "moments", "varignon", "couples", "moving-forces", "equivalent-systems", "distributed-loads",
       "moments-3d",
-      soon("Moment about an axis", "How hard a force turns something about a given axis, like a door about its hinges."),
+      "moment-about-axis",
     ],
   },
   {

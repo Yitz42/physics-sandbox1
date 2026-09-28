@@ -151,8 +151,13 @@ Claude builds from it.
   (M_x = M_y = 0) by 60–80 N·m; debug — r backwards, F × r, the j term's lost minus, wrong
   pairing; concept check; solve — a load and a rope on a bracket (r, F, r × F, then ΣM).
 
-**Unit 4.8: Moment about an axis**
+**Unit 4.8: Moment about an axis** ✅
 - Concept: how hard a force turns something about a given axis (a door about its hinges).
+- Built (analysis "moment" with setup.axis: M_a = u_a · (r × F)): explore — push a door's handle
+  in 3D and see only the push across it turns the door; predict — a crank on a slanted shaft, a
+  tilting flagpole about its hinge line; build — aim a 100 N push so the door turns 50–60 N·m;
+  debug — |M_O| for M_a, u not a unit vector, u backwards, the j term's minus; concept check;
+  solve — a rope on a crank: r, T, r × T, then M_a.
 
 ### Chapter 5: Rigid body equilibrium
 

@@ -283,3 +283,47 @@ test("3D moment: a student's r × F working — each slip spoils its own line, l
   ok(force3dSteps(pipe(), { slip: "order" }).follows.includes("Mz"), "M_z follows a swapped determinant");
   equal(force3dSteps(pipe(), { slip: "jSign" }).follows, [], "only M_y is wrong when its minus is lost");
 });
+
+test("moment about an axis: crank on shaft O → A (0.3, 0.4, 0), F = {−80 i + 60 j} N at B (0.3, 0.4, 0.25) → M_O = {−15 i − 20 j + 50 k}, M_a = −25 N·m", () => {
+  const s = { analysis: "moment", about: "O", axis: { from: "O", to: "A" },
+    points: { O: [0, 0, 0], A: [0.3, 0.4, 0], B: [0.3, 0.4, 0.25] },
+    forces: [{ id: "F", symbol: "F", at: "B", dir: { components: [-80, 60, 0] } }] };
+  const v = solveForce3d(s).values;
+  close(v["M.x"], -15, 1e-9);
+  close(v["M.y"], -20, 1e-9);
+  close(v["M.z"], 50, 1e-9);
+  close(v.Ma, -25, 1e-9); // 0.6(−15) + 0.8(−20)
+  const m = force3dMistakes(s, "Ma");
+  ok(m.some((x) => x.kind === "concept" && Math.abs(x.value - Math.sqrt(3125)) < 1e-6), "the whole |M_O| (55.9 N·m)");
+  ok(m.some((x) => x.kind === "vector" && Math.abs(x.value - (-12.5)) < 1e-6), "the axis vector not divided by its 0.5 m length");
+  for (const [slip, line] of [["wholeM", "Ma"], ["noUnit", "u"], ["axisBackwards", "u"], ["mSign", "M"]]) {
+    const w = force3dSteps(s, { slip });
+    equal(w.wrong, line, `${slip}:`);
+    equal(w.corrected.length, 4);
+  }
+  ok(force3dSteps(s, { slip: "noUnit" }).follows.includes("Ma"), "M_a follows a wrong u");
+});
+
+test("moment about an axis: the flagpole cable (700 N, A (0, 0, 6) → B (2, −3, 0)) about the hinge O → C (3, 4, 0): 2040 N·m", () => {
+  const v = solveForce3d({ analysis: "moment", about: "O", axis: { from: "O", to: "C" },
+    points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0], C: [3, 4, 0] },
+    forces: [{ id: "T", symbol: "T", magnitude: 700, dir: { from: "A", to: "B" } }] }).values;
+  close(v.Ma, 0.6 * 1800 + 0.8 * 1200, 1e-9);
+});
+
+test("moment about an axis: a door (hinges along z) — only the push across it counts, M_a = 0.8 F_y; the crank's rope gives −70 N·m", () => {
+  const door = (c) => solveForce3d({ analysis: "moment", about: "O", axis: { from: "O", to: "H" },
+    points: { O: [0, 0, 0], H: [0, 0, 2], P: [0.8, 0, 1] }, forces: [{ id: "F", symbol: "F", at: "P", dir: { components: c } }] }).values.Ma;
+  close(door([0, 100, 0]), 80, 1e-9);
+  close(door([150, 0, 150]), 0, 1e-9); // along the door and up: no turn at all
+  close(door([-40, -50, 90]), -40, 1e-9);
+  const s = { analysis: "moment", about: "O", axis: { from: "O", to: "A" },
+    points: { O: [0, 0, 0], A: [0.3, 0.4, 0], B: [0.3, 0.4, 0.25], D: [-0.1, 0.8, 0.45] },
+    forces: [{ id: "T", symbol: "T", magnitude: 300, dir: { from: "B", to: "D" } }] };
+  const v = solveForce3d(s).values;
+  close(v["M.y"], -80, 1e-9);
+  close(v.Ma, -70, 1e-9);
+  const g = force3dChoices(s);
+  ok(/about the axis/.test(g[g.length - 1].title), "the last solve line is M_a");
+  ok(g.every((x) => x.options.filter((o) => o.correct).length === 1 && x.options.every((o) => o.correct || o.kind)), "one right line per group; wrong ones name their kind");
+});

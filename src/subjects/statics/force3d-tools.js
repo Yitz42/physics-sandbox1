@@ -3,7 +3,7 @@
 // student's working with one wrong line (debug). The lines to choose from (solve) are
 // in force3d-choices.js.
 
-import { fixedTex, sigFig } from "../../core/units.js";
+import { fixedTex, sigFig, unitTex } from "../../core/units.js";
 import { solveForce3d, directionOf3, pointOf, componentSymbol, cosd, acosd, DEG } from "./force3d.js";
 import { balanceEquations } from "./force3d-balance.js";
 import { balanceSummary, balanceMistakes } from "./force3d-balance-tools.js";
@@ -24,7 +24,8 @@ export function vecTex(v, unit = "", fmt = n1) {
     const sign = c < 0 && Number(t) !== 0 ? "-" : "+";
     return `${i === 0 ? (sign === "-" ? "-" : "") : ` ${sign} `}${t}\\,\\mathbf{${["i", "j", "k"][i]}}`;
   });
-  return `\\{${parts.join("")}\\}${unit ? `\\,\\text{${unit}}` : ""}`;
+  // (N·m and other compound units go through unitTex: "·" can't sit inside \text.)
+  return `\\{${parts.join("")}\\}${unit ? (unit.includes("·") ? `\\,${unitTex(unit)}` : `\\,\\text{${unit}}`) : ""}`;
 }
 
 const lineName = (f) => `${f.dir.from}${f.dir.to}`;

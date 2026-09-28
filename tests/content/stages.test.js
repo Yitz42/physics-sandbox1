@@ -283,6 +283,29 @@ test("Predict first: the springs guess — a spring twice as stiff pulls just as
   close(v1["F_AC.s"], v0["F_AC.s"] / 2, 1e-9);
 });
 
+test("Moments in 3D build: F = {140 i} N twists the pipe by 70 N·m (no bending); the start (straight up) only bends it", () => {
+  const st = find("moments-3d/3-build");
+  const solver = getSolver(st.solver);
+  const design = (c) => { const s = clone(st.setup); setPath(s, "forces.0.dir.components", c); return st.goal.check(solver.solve(s), s); };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start should fail");
+  ok(design([140, 0, 0]).ok, "140 N along x: M_z = −70 N·m");
+  ok(design([0, -180, 0]).ok, "180 N along −y: M_z = −72 N·m");
+  ok(/bends/.test(design([140, 0, 20]).message), "any F_z bends it");
+  ok(/wrong way/.test(design([-140, 0, 0]).message), "loosening");
+});
+
+test("Moment about an axis build: a 100 N push at θ = 45°, φ = 0 turns the door by 56.6 N·m; straight across (80 N·m) is too much", () => {
+  const st = find("moment-about-axis/3-build");
+  const solver = getSolver(st.solver);
+  const aim = (t, p) => { const s = clone(st.setup); setPath(s, "forces.0.dir.azimuth", t); setPath(s, "forces.0.dir.elevation", p); const r = solver.solve(s); return { r, out: st.goal.check(r, s) }; };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "the start (along the door) should fail");
+  const a = aim(45, 0);
+  ok(a.out.ok, a.out.message);
+  close(a.r.values.Ma, 80 * Math.SQRT1_2, 1e-9);
+  ok(!aim(90, 0).out.ok, "80 N·m is too much");
+  ok(!aim(135, 0).out.ok || aim(135, 0).r.values.Ma > 0, "θ past 90° still pushes across");
+});
+
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);
