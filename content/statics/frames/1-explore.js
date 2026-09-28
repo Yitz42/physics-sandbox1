@@ -20,6 +20,16 @@ export default {
     "**Take it apart** to see the forces each part puts on the other, raise or lower the crossbar, and move the load.",
   setup: { ...aFrame({ h: 1 }), view: "assembled" },
   view: A_FRAME_VIEW,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If you raise the crossbar higher up the ladder, the force in it…**",
+    options: [
+      { text: "gets bigger", correct: true },
+      { text: "gets smaller", feedback: "Closer to the hinge at the top, the crossbar has less leverage against the legs spreading, so it must pull harder." },
+      { text: "stays the same", feedback: "The load is the same, but the crossbar's lever arm about the top hinge changes." },
+    ],
+    explain: "The legs try to spread at the feet; a crossbar nearer the top hinge has a shorter lever arm, so it pulls harder.",
+  },
   editable: [
     { label: "View", options: [{ label: "Put together", set: { view: "assembled" } }, { label: "Taken apart", set: { view: "apart" } }] },
     { label: "The load", options: [{ label: "Hanging from the top", set: { "forces.0": TOP } }, { label: "Hanging from leg AC", set: { "forces.0": LEG } }] },

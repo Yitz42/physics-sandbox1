@@ -33,6 +33,16 @@ export default {
     showDegree: true,
   },
   view: { xmin: -1.3, xmax: 7.3, ymin: -2.2, ymax: 2.6 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Two rollers hold the beam and the load slants. **Would a third roller (at B) make it stay put?**",
+    options: [
+      { text: "No: it would still slide", correct: true },
+      { text: "Yes: 3 unknowns for 3 equations", feedback: "The count is right but the directions aren't: three rollers all push up, so nothing resists sliding sideways." },
+      { text: "Yes, but only if B is in the middle", feedback: "Where the roller is doesn't matter: no roller can push sideways." },
+    ],
+    explain: "3 unknowns aren't enough if they're badly placed: all parallel (three rollers) is an improper support.",
+  },
   editable: [
     { label: "Support at A", options: slot("A", true, [1, 0]) },
     { label: "Support at B", options: slot("B", false) },

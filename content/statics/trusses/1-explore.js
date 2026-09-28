@@ -27,6 +27,16 @@ export default {
     forces: [{ id: "P", symbol: "P", magnitude: 600, direction: "down", joint: "C", push: false }],
   },
   view: { xmin: -1.6, xmax: 13.6, ymin: -3.5, ymax: 5.2 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "The load hangs from C, in the middle of the bottom. **Is the bottom chord (AC, CE) in tension or compression?**",
+    options: [
+      { text: "Tension", correct: true },
+      { text: "Compression", feedback: "A loaded bridge sags like a hammock: its bottom is stretched, its top squeezed." },
+      { text: "No force", feedback: "The bottom chord holds the bridge's feet from spreading: it's working hard." },
+    ],
+    explain: "Loaded from above, a simple bridge truss has its bottom chord in tension and its top chord in compression.",
+  },
   editable: [
     { label: "Load P at joint", options: [at("C — bottom middle (hanging)", "C", false), at("D — top left", "D", true), at("F — top right", "F", true)] },
     { path: "forces.#P.magnitude", label: "Size of P", min: 200, max: 1500, step: 50, unit: "N" },

@@ -18,11 +18,21 @@ export default {
   setup: {
     forces: [{ id: "F", symbol: "F", dir: { components: [200, 300, 400] } }],
     showComponents: "always",
-    showAngles: { alpha: "given", beta: "given", gamma: "given" },
+    showAngles: { alpha: "ask", beta: "ask", gamma: "ask" }, // ("?" until the guess, then their values)
     axisLength: 3,
     fullScale: 1100, // N to a whole axis: the arrow grows and shrinks with the sliders
     reach: [600, 600, 600], // the sliders' limits: the picture keeps room for all of them
     view3d: { yaw: 30, pitch: 22 },
+  },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "$\\mathbf{F} = \\{200\\,\\mathbf{i} + 300\\,\\mathbf{j} + 400\\,\\mathbf{k}\\}$ N. **Which direction angle is the smallest?**",
+    options: [
+      { text: "γ (from +z)", correct: true },
+      { text: "α (from +x)", feedback: "α goes with the SMALLEST component, 200 N, so it's the biggest angle." },
+      { text: "They're all equal", feedback: "Only when all three components are equal." },
+    ],
+    explain: "$\\cos\\gamma = F_z/F$: the biggest component makes the smallest angle with its axis.",
   },
   editable: [
     { path: "forces.0.dir.components.0", label: "x component", min: -600, max: 600, step: 10, unit: "N" },

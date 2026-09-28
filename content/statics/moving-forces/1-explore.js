@@ -23,6 +23,16 @@ export default {
     dims: [{ from: [0, -0.3], to: [3, -0.3] }],
   },
   view: { xmin: -0.6, xmax: 4.6, ymin: -1.0, ymax: 1.1 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "To move $F$ = 300 N from A to O without changing its effect, you add a couple. **How big?**",
+    options: [
+      { text: "900 N·m", correct: true },
+      { text: "No couple: a force can slide anywhere", feedback: "It can slide only along its own line. O is off that line, so its turning effect must be added back." },
+      { text: "300 N·m", feedback: "Multiply by the distance it moves: $M = Fd$ = 300 × 3." },
+    ],
+    explain: "$M = Fd$ = 300 N × 3 m = 900 N·m, turning the same way $F$ did about O.",
+  },
   editable: [
     { path: "about.at.0", label: "O at x", min: 0, max: 4, step: 0.25, unit: "m" },
     { path: "forces.0.magnitude", label: "Size of F", min: 100, max: 600, step: 50, unit: "N" },

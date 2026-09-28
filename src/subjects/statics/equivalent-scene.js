@@ -31,7 +31,7 @@ export function equivalentScene(setup, result, opts = {}) {
     shapes.push({ type: "point", at: h.at, label: h.label || "", style: "pin" });
   }
 
-  if (result && v.R != null && (opts.reveal || setup.showResultant)) {
+  if (result && v.R != null && (opts.reveal || (setup.showResultant && !opts.preGuess))) {
     const R = [v["R.x"], v["R.y"]];
     const len = Math.max(0.1 * size, v.R * k);
     const u = v.R > 1e-9 ? scale(R, 1 / v.R) : [0, -1];

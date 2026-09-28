@@ -33,6 +33,16 @@ export default {
     "Choose which three to write, and watch which unknowns each one holds (under the equations) and whether the three can find them all. The rings mark the moment points.",
   setup: crane.setup,
   view: crane.view,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "The roller B is straight above the pin A. **How many unknowns does $\\Sigma M_A$ hold?**",
+    options: [
+      { text: "One: $B_x$", correct: true },
+      { text: "Two", feedback: "$A_x$ and $A_y$ both pass through A, so neither has a moment about it." },
+      { text: "All three", feedback: "Reactions AT the moment point drop out of the moment equation." },
+    ],
+    explain: "Choosing the moment point on unknowns' lines of action removes them: one equation, one unknown.",
+  },
   editable: [
     { label: "The three equations", options: sets.map(([label, sums]) => ({ label, set: { sums } })) },
     { path: "forces.#P.magnitude", label: "Load P", min: 400, max: 1600, step: 50, unit: "N" },

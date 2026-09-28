@@ -23,6 +23,16 @@ export default {
     groundCentre: [0, 0], // (the floor stays put while D moves)
     keepInView: [[-6, -6, 9], [6, -6, 9], [6, 6, 9], [-6, 6, 9]], // (everywhere D can go)
   },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If anchor D were straight above ring A, how much would cables AB and AC carry?**",
+    options: [
+      { text: "Nothing: AD holds it all", correct: true },
+      { text: "A third of the weight each", feedback: "AD alone points straight up, so it can hold the crate with no sideways pull to balance." },
+      { text: "Half the weight each", feedback: "AD, straight up, already balances the weight; AB and AC would only add sideways pulls." },
+    ],
+    explain: "With AD vertical, $\\Sigma F_x = 0$ and $\\Sigma F_y = 0$ force the other two tensions to zero.",
+  },
   editable: [
     { path: "points.D.0", label: "Anchor D: x", min: -6, max: 6, step: 0.5, unit: "m" },
     { path: "points.D.1", label: "Anchor D: y", min: -6, max: 6, step: 0.5, unit: "m" },

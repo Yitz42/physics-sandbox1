@@ -22,6 +22,16 @@ export default {
     forces: [{ id: "F", symbol: "F", magnitude: 200, direction: { angle: 30, from: "+x", toward: "+y" } }],
   },
   view: { xmin: -3.5, xmax: 3.5, ymin: -3.3, ymax: 3.3 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "$F$ = 200 N at 30° above +x. **About how big is $F_x$?**",
+    options: [
+      { text: "About 173 N", correct: true },
+      { text: "100 N, half of $F$", feedback: "That's $F\\sin 30^\\circ$ — the part along y. The part along the axis the angle starts from uses cos." },
+      { text: "200 N, all of $F$", feedback: "Only a force pointing straight along x puts all of itself into $F_x$." },
+    ],
+    explain: "$F_x = F\\cos 30^\\circ$ = 173 N: the component along the axis the angle is measured from uses cos.",
+  },
   editable: [
     { path: "forces.0.magnitude", label: "Size F", min: 10, max: 300, step: 10, unit: "N" },
     { path: "forces.0.direction.angle", label: "Angle θ", min: 0, max: 90, step: 1, unit: "deg" },

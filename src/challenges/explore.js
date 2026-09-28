@@ -26,6 +26,8 @@ export function mount(ctx) {
     mountGuess(ctx, stage.guess, () => {
       guessing = false;
       ctx.el.controls.classList.remove("locked");
+      ws.locked = false; // (the arrows can be dragged again)
+      delete ws.sceneOpts.preGuess;
       ws.setReveal(true);
     });
     ctx.el.controls.classList.add("locked");
@@ -50,7 +52,8 @@ export function mount(ctx) {
     draggable: stage.draggable,
     equations: stage.guess ? "hidden" : "live",
     reveal: !stage.guess,
-    sceneOpts: stage.sceneOpts,
+    // (preGuess: pictures that show an answer "all the time" — a resultant, a centroid — hide it until the guess)
+    sceneOpts: { ...(stage.sceneOpts || {}), ...(stage.guess ? { preGuess: true } : {}) },
     onChange: (result) => {
       if (ws) tally.note(ws.setup);
       // Tick off any task that is now true. Ticks stay, even if later untrue.
@@ -80,6 +83,7 @@ export function mount(ctx) {
   }
   // Without tasks, the student decides when they've explored enough.
   if (!tasks.length) ctx.el.area.appendChild(button("I've explored enough ✓", () => !finished && finish(), "btn"));
+  ws.locked = guessing; // no dragging before the guess either
   ws.update(); // re-run the task checks now that ws exists
 }
 

@@ -246,6 +246,20 @@ test("3D particles build: 10 places for D work (e.g. (1, 5, 9)), the same for an
   ok(!works(-2, -3, 50), "outside the triangle: a cable would push");
 });
 
+test("Predict first: every statics explore stage opens with one quick guess — one right answer, a reason for each wrong one", () => {
+  const explores = stages.filter(({ course, stage }) => course.id === "statics" && stage.challenge === "explore");
+  ok(explores.length >= 30, `${explores.length} explore stages`);
+  for (const { stage } of explores) {
+    const g = stage.guess;
+    ok(g && g.prompt && g.explain, `${stage.id}: needs a guess with a prompt and an explanation`);
+    if (!g) continue;
+    equal(g.options.filter((o) => o.correct).length, 1, `${stage.id}:`);
+    ok(g.options.length >= 3 && g.options.length <= 4, `${stage.id}: 3 or 4 choices`);
+    ok(g.options.every((o) => o.correct || o.feedback), `${stage.id}: every wrong choice explains itself`);
+    ok(g.prompt.length <= 140, `${stage.id}: the question stays short (${g.prompt.length} characters)`);
+  }
+});
+
 test("Predict first: the cables guess has one right answer (the steeper cable, 439.8 N vs 359.1 N at 50 kg)", () => {
   const st = find("cables/1-explore");
   equal(st.guess.options.filter((o) => o.correct).length, 1);

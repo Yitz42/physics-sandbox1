@@ -22,6 +22,16 @@ export default {
     "Then choose the point to take moments about, and watch which member forces each equation holds (under the equations). The support reactions are found first, from the whole truss.",
   setup: { ...bridgeSetup("C"), section: { ...LEFT_CUT, about: "B" }, showSectionUnknowns: true, showReactions: "always", knownReactions: true },
   view: BRIDGE_VIEW,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "You cut three members. **Taking moments about the point where two of them meet leaves how many unknowns?**",
+    options: [
+      { text: "One", correct: true },
+      { text: "Two", feedback: "The two members that meet at that point pass through it: no moment about it." },
+      { text: "Three", feedback: "Only the third cut member has a moment about the point where the other two meet." },
+    ],
+    explain: "That's the method of sections' trick: pick the moment point where two unknown forces cross.",
+  },
   editable: [
     { label: "Cut through", options: [cut("FG, CF, BC — keep the left part", LEFT_CUT), cut("GH, CH, CD — keep the right part", RIGHT_CUT), cut("GH, DH, DE — keep the right end", { members: ["GH", "DH", "DE"], keep: "E" })] },
     { label: "Take moments about", options: ["A", "B", "C", "F", "G", "H", "D", "E"].map((J) => about(J)) },

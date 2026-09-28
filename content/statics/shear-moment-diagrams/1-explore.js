@@ -26,6 +26,16 @@ export default {
   },
   view: { xmin: -1.4, xmax: 7.2, ymin: -7.9, ymax: 2.4 },
   tallPicture: true,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Where along the beam is the bending moment M biggest?**",
+    options: [
+      { text: "Where the shear V crosses zero", correct: true },
+      { text: "Where the shear is biggest", feedback: "V is biggest at the supports, where M is zero. M peaks where its slope, V, is zero." },
+      { text: "Always at the middle", feedback: "Only for symmetric loads. Here the point load is off to one side." },
+    ],
+    explain: "V is the slope of M: M stops rising and peaks where V = 0.",
+  },
   editable: [
     { path: "forces.0.at.0", label: "Point load position", min: 0.5, max: 5.5, step: 0.25, unit: "m" },
     { path: "loads.0.w", label: "Uniform load w", min: 0, max: 800, step: 50, unit: "N/m" },

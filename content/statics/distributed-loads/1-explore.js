@@ -23,6 +23,16 @@ export default {
     loads: [{ id: "w", shape: "linear", from: 0, to: 6, w: [200, 600] }],
   },
   view: { xmin: -0.7, xmax: 6.7, ymin: -0.9, ymax: 3.0 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "The sand gets deeper from left (200 N/m) to right (600 N/m). **Where does its single resultant act?**",
+    options: [
+      { text: "Right of the middle", correct: true },
+      { text: "At the middle, 3 m", feedback: "Only for an even load. More sand on the right pulls the resultant right." },
+      { text: "Left of the middle", feedback: "The resultant sits toward where there's MORE load: the right." },
+    ],
+    explain: "It acts at the load's centroid, $\\bar{x}$ = 3.5 m — shifted toward the heavier end.",
+  },
   editable: [
     { path: "loads.#w.w.0", label: "w at the left end", min: 0, max: 1200, step: 100, unit: "N/m" },
     { path: "loads.#w.w.1", label: "w at the right end", min: 0, max: 1200, step: 100, unit: "N/m" },

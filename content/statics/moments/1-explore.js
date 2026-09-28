@@ -21,6 +21,16 @@ export default {
     forces: [{ id: "F", symbol: "F", magnitude: 100, direction: { angle: 60, from: "+x", toward: "+y" }, at: [0.25, 0], pointLabel: "A" }],
   },
   view: { xmin: -0.22, xmax: 0.58, ymin: -0.3, ymax: 0.32 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Same 100 N push at A. **Which direction turns the bolt hardest?**",
+    options: [
+      { text: "At right angles to the wrench", correct: true },
+      { text: "At 60°, as drawn", feedback: "At 60° part of the push runs along the wrench and doesn't turn it: $d$ is less than 0.25 m." },
+      { text: "Along the wrench, toward O", feedback: "Its line passes through O: moment arm zero, no turning at all." },
+    ],
+    explain: "$M_O = Fd$: the moment arm $d$ is biggest when the push is at right angles to the wrench.",
+  },
   editable: [
     { path: "forces.0.magnitude", label: "Size F", min: 10, max: 200, step: 10, unit: "N" },
     { path: "forces.0.direction.angle", label: "Angle θ", min: 0, max: 90, step: 1, unit: "deg" },

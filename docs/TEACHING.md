@@ -109,5 +109,7 @@ Read this before writing or changing stages or challenge types. Changing any of 
   reading). One question (`guess`, challenges/common/predict-first.js) before the numbers show
   and the sliders unlock; once answered, the choices disappear and one short line remains —
   the guess, the answer, and why. Recorded but never scored. (A second style, a one-tap
-  up/down/same before each change, was tried and dropped: too much reading.) Samples:
-  Units 3.1 and 3.2 explore.
+  up/down/same before each change, was tried and dropped: too much reading.) Every statics
+  explore stage has one (a test checks: 3–4 choices, one right, a reason for each wrong one,
+  a short question), aimed at the unit's most common misconception. Pictures that show an
+  answer all the time (a resultant, a centroid) hide it until the guess (sceneOpts.preGuess).

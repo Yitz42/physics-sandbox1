@@ -26,6 +26,16 @@ export default {
       { id: "W", symbol: "W", kind: "weight", mass: 10, object: "lamp" },
     ],
   },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Which direction of P holds the lamp aside with the smallest pull?**",
+    options: [
+      { text: "At right angles to the cable", correct: true },
+      { text: "Level (horizontal)", feedback: "Level works, but part of P then pulls along the cable, which doesn't help: 56.6 N instead of 49.1 N." },
+      { text: "Straight up", feedback: "Then P lifts the whole lamp ($P = W$) and the cable goes slack." },
+    ],
+    explain: "The cable supplies any pull along itself; P only has to supply the part across it.",
+  },
   editable: [
     { path: "forces.#P.direction.angle", label: "Angle of P", min: 0, max: 90, step: 1, unit: "deg" },
     angleOptions("forces.#P", "Angle of P measured", "A"),

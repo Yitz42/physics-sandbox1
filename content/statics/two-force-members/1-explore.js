@@ -30,6 +30,16 @@ export default {
     showConcurrency: true,
   },
   view: { xmin: -1.6, xmax: 5.4, ymin: -3, ymax: 3.1 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Link BD is pinned at both ends with nothing else on it. **Which way does it push or pull on the shelf at B?**",
+    options: [
+      { text: "Along the link, the line from B to D", correct: true },
+      { text: "Straight up", feedback: "A member with forces only at its two pins can only push or pull along the line between them." },
+      { text: "Any direction, like a pin", feedback: "A pin can push any way — but a two-force member balances only if its two forces lie along one line." },
+    ],
+    explain: "Two forces balance only if equal, opposite and on the same line: along BD.",
+  },
   editable: [
     { path: "supports.#B.anchor.1", label: "D's height on the wall", min: -2.5, max: 2.5, step: 0.5, unit: "m" },
     { path: "forces.#P.at.0", label: "P acts at x", min: 0.5, max: 4.5, step: 0.5, unit: "m" },

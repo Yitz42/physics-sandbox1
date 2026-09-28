@@ -31,6 +31,16 @@ export default {
     forces: [{ id: "P", symbol: "P", magnitude: 800, direction: { slope: [3, -4] }, at: [2, 0], push: true }],
   },
   view: { xmin: -1.3, xmax: 7.3, ymin: -1.6, ymax: 2.6 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Right now only a roller at B holds the beam, and the load slants. **What happens?**",
+    options: [
+      { text: "The beam moves", correct: true },
+      { text: "It holds", feedback: "A roller only pushes straight up: nothing stops the beam sliding sideways or turning about B." },
+      { text: "It holds if $P$ is small enough", feedback: "However small, a slanted load pushes sideways, and a roller can't push back sideways." },
+    ],
+    explain: "A beam can move 3 ways (slide, lift, turn). One roller stops only one: it needs 3 well-placed reactions.",
+  },
   editable: [
     { label: "Support at A (left)", options: choices("A", [1, 0]) },
     { label: "Support at B (right)", options: choices("B", [-1, 0]) },

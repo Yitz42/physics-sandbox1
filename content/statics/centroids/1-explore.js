@@ -22,6 +22,16 @@ export default {
     "Stretch the legs and see how C moves.",
   setup: { ...setup, showParts: true },
   view: { xmin: -1.1, xmax: 4, ymin: -1.2, ymax: 4.7 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "The bottom leg is long (3 m²) and the upright short (0.5 m²). **Where is the whole plate's centroid C?**",
+    options: [
+      { text: "In the bottom leg", correct: true },
+      { text: "In the upright leg", feedback: "C is pulled toward the part with more area: here, the bottom leg." },
+      { text: "Outside the plate, in the corner", feedback: "That happens when both legs are long. Here the bottom leg has most of the area." },
+    ],
+    explain: "C is the area-weighted average of the parts' centroids, so it sits close to the bigger part.",
+  },
   editable: [
     { path: "parts.0.w", label: "Bottom leg length", min: 1, max: 3.5, step: 0.1, unit: "m" },
     { path: "parts.1.h", label: "Upright leg height", min: 0.5, max: 3.5, step: 0.1, unit: "m" },

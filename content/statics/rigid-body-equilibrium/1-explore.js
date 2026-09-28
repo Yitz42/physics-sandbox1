@@ -30,6 +30,16 @@ export default {
     showMomentUnknowns: true,
   },
   view: { xmin: -1.3, xmax: 9.3, ymin: -3.9, ymax: 2.6 }, // room below for B_y with the load on the overhang (up to 800 N)
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If you take moments about the pin A, which unknowns are left in $\\Sigma M_A$?**",
+    options: [
+      { text: "Only $B_y$", correct: true },
+      { text: "$A_x$, $A_y$ and $B_y$", feedback: "$A_x$ and $A_y$ act AT A: their moment arm about A is zero." },
+      { text: "None of them", feedback: "$B_y$ acts 6 m from A, so it has a moment about A." },
+    ],
+    explain: "A force through the moment point has no moment about it: about A, one equation holds one unknown.",
+  },
   editable: [
     {
       label: "Take moments about",

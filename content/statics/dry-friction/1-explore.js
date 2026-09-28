@@ -25,6 +25,16 @@ export default {
     forces: [{ id: "P", symbol: "P", magnitude: 0, along: "up" }],
     showFbd: "always",
   },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If you tilt the ramp steeper (but the crate still holds), the friction force…**",
+    options: [
+      { text: "gets bigger", correct: true },
+      { text: "stays at $\\mu_s N$", feedback: "$\\mu_s N$ is only the LIMIT. Until then friction is just what's needed: $W\\sin\\theta$." },
+      { text: "gets smaller", feedback: "The normal force shrinks, but the pull down the slope, $W\\sin\\theta$, grows — and friction must match it." },
+    ],
+    explain: "Friction supplies exactly what equilibrium needs ($W\\sin\\theta$), up to its limit $\\mu_s N$.",
+  },
   editable: [
     { path: "ramp.angle", label: "Ramp angle θ", min: 0, max: 45, step: 1, unit: "deg" },
     { path: "mus", label: "μs", min: 0.1, max: 0.9, step: 0.05, unit: "" },

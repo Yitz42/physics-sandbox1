@@ -22,6 +22,16 @@ export default {
     alwaysShowCentroid: true,
   },
   view: { xmin: -1.2, xmax: 4.6, ymin: -1.4, ymax: 3.6 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "The hole is left of the plate's middle. **Which way does the plate's centroid move?**",
+    options: [
+      { text: "Right, away from the hole", correct: true },
+      { text: "Left, toward the hole", feedback: "Taking material away on the left leaves more on the right: C moves away from the hole." },
+      { text: "It stays in the middle", feedback: "Only a hole right in the middle leaves C there." },
+    ],
+    explain: "A hole is negative area: removing material on one side shifts the centroid to the other.",
+  },
   editable: [
     { path: "parts.1.at.0", label: "Hole across (x)", min: 0.9, max: 3.1, step: 0.1, unit: "m" },
     { path: "parts.1.at.1", label: "Hole up (y)", min: 0.9, max: 2.1, step: 0.1, unit: "m" },

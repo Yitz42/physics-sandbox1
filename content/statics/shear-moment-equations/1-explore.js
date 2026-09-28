@@ -29,6 +29,16 @@ export default {
   },
   view: { xmin: -1.4, xmax: 7.2, ymin: -7.9, ymax: 2.4 },
   tallPicture: true,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Under the uniform load (the first 3 m), the shear V…**",
+    options: [
+      { text: "slopes down steadily", correct: true },
+      { text: "stays constant", feedback: "V is constant only where NO load acts. A uniform load $w$ lowers V by $w$ every metre." },
+      { text: "jumps", feedback: "Jumps happen at point loads; a spread-out load makes a steady slope." },
+    ],
+    explain: "$dV/dx = -w$: under a uniform load V is a straight, sloping line, and M a curve.",
+  },
   editable: [{ path: "cut", label: "Section at x", min: 0.1, max: 5.9, step: 0.025, unit: "m" }],
   tasks: [
     { text: "Move the section to where the hoist's load **P** appears in the equations.", check: (v, s) => s.cut > 4.5 + 1e-9 },

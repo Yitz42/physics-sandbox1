@@ -22,6 +22,16 @@ export default {
     view: "cut",
   },
   view: { xmin: -1.6, xmax: 7.8, ymin: -2.2, ymax: 2.4 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If you slide the cut from left of the load to right of it, the shear V…**",
+    options: [
+      { text: "jumps down by $P$", correct: true },
+      { text: "stays the same", feedback: "Past the load, the left piece carries $P$ too: $V$ drops by 1200 N." },
+      { text: "changes gradually", feedback: "With no load between points, $V$ is constant; it jumps only at a point load." },
+    ],
+    explain: "The shear on a cut is the net vertical force on one piece: crossing a point load changes it by exactly $P$.",
+  },
   editable: [
     { path: "cut", label: "Cut at C (x)", min: 0.25, max: 5.75, step: 0.25, unit: "m" },
     { path: "forces.0.at.0", label: "Load position", min: 0.5, max: 5.5, step: 0.5, unit: "m" },

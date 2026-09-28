@@ -26,6 +26,16 @@ export default {
     ],
   },
   view: { xmin: -0.6, xmax: 6.6, ymin: -1.0, ymax: 1.1 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "$F_1$ = 200 N at 1 m and $F_2$ = 400 N at 5 m. **Where must one 600 N force act to replace them?**",
+    options: [
+      { text: "Nearer $F_2$ (about 3.7 m)", correct: true },
+      { text: "Halfway, at 3 m", feedback: "Halfway would treat both loads alike, but $F_2$ is twice $F_1$." },
+      { text: "Nearer $F_1$", feedback: "It sits nearer the BIGGER load, $F_2$." },
+    ],
+    explain: "$\\bar{x}$ = (200·1 + 400·5)/600 = 3.67 m: the single force sits nearer the bigger load.",
+  },
   editable: [
     { path: "forces.#F1.magnitude", label: "Size of F₁", min: 50, max: 800, step: 50, unit: "N" },
     { path: "forces.#F1.at.0", label: "F₁ at x", min: 0, max: 6, step: 0.25, unit: "m" },

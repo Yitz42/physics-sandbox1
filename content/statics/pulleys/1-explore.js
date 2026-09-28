@@ -12,6 +12,16 @@ export default {
     "Pulley A rides on cable BAC, with a crate hanging from it, and rope AD holds it from the left. The **same cable** runs over the pulley, " +
     "so (with no friction) both sides pull with the **same tension** $T$ — in the equations $T$ appears twice, as one unknown. Move the sliders and watch $T$ and $T_{AD}$.",
   setup: pulleySetup({ angleAB: 60, angleAC: 30, mass: 30 }),
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Side AB of the cable is at 60°, side AC at 30°. **Which side pulls harder on the pulley?**",
+    options: [
+      { text: "Neither: both pull with the same $T$", correct: true },
+      { text: "AB, the steeper side", feedback: "A frictionless pulley can't change a cable's tension: the same $T$ runs all along it." },
+      { text: "AC, the flatter side", feedback: "A frictionless pulley can't change a cable's tension: the same $T$ runs all along it." },
+    ],
+    explain: "One cable, one tension $T$ — rope AD takes up the difference in the two sides' sideways pulls.",
+  },
   editable: [
     { path: "forces.#T_AB.direction.angle", label: "Angle of AB", min: 20, max: 80, step: 1, unit: "deg" },
     { path: "forces.#T_AC.direction.angle", label: "Angle of AC", min: 20, max: 80, step: 1, unit: "deg" },

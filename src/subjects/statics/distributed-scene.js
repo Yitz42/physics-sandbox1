@@ -122,7 +122,7 @@ export function distributedScene(setup, result, opts = {}) {
     reach = last - y + 0.06 * size; // F_R starts above the dimensions
   }
   // The single resultant, where it must act.
-  if ((opts.reveal || setup.showResultant) && v.pos != null) {
+  if ((opts.reveal || (setup.showResultant && !opts.preGuess)) && v.pos != null) {
     const x = O[0] + v.pos;
     shapes.push({ type: "arrow", id: "R", from: [x, y + reach + 0.1 * size], to: [x, y], role: "resultant", label: `F_R = ${format(v.R, "N")}` });
     const off = setup.resultantDimOffset ?? -0.14 * size;

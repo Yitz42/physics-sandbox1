@@ -33,6 +33,16 @@ export default {
     ],
   },
   view: { xmin: -3.4, xmax: 4.6, ymin: -3.2, ymax: 3.6 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "To steer the barge straight along the canal (+x) with the **smallest** pull, tug 2 should pull…",
+    options: [
+      { text: "straight down (−y)", correct: true },
+      { text: "opposite $F_1$", feedback: "That cancels $F_1$ completely — the barge wouldn't move at all." },
+      { text: "along +x", feedback: "A pull along x can't cancel $F_1$'s sideways part." },
+    ],
+    explain: "Only the part of $F_2$ across the canal steers: all of it straight across is the least effort.",
+  },
   editable: [
     { path: "forces.#F2.magnitude", label: "Size F₂", min: 10, max: 800, step: 10, unit: "N" },
     { path: "forces.#F2.direction.angle", label: "Angle of F₂", min: 0, max: 90, step: 1, unit: "deg" },

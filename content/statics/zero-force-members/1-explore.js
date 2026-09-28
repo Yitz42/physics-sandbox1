@@ -19,6 +19,16 @@ export default {
     "Grey members carry **no force**; under the equations, the working shows how each one is spotted by looking at a single joint.",
   setup: { ...bridgeSetup("D"), showZero: true }, // (starts at D: no task done yet)
   view: BRIDGE_VIEW,
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "At an unloaded joint, three members meet: two in a straight line and a third off to the side. **The third one carries…**",
+    options: [
+      { text: "nothing", correct: true },
+      { text: "the same as the other two", feedback: "Across the straight line, the third member is the ONLY force: with nothing to balance it, it must be zero." },
+      { text: "half the load", feedback: "The joint has no load — and across the line, nothing could balance the third member's pull." },
+    ],
+    explain: "Sum the forces across the straight line: only the third member has a part there, so it must be zero.",
+  },
   editable: [
     { label: "Load P at joint", options: [at("B — bottom, left", "B"), at("C — bottom, middle", "C"), at("D — bottom, right", "D"), at("F — top, left", "F"), at("G — top, middle", "G"), at("H — top, right", "H")] },
     { path: "forces.#P.magnitude", label: "Size of P", min: 400, max: 2000, step: 50, unit: "N" },

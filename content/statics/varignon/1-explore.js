@@ -26,6 +26,16 @@ export default {
     dims: [{ force: "F", offset: -0.08 }, { force: "F", axis: "y", offset: 0.62 }],
   },
   view: { xmin: -0.3, xmax: 0.8, ymin: -0.2, ymax: 0.62 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "$F$ pulls up and to the left at A. **Do $F_x$ and $F_y$ turn the bracket the same way about O?**",
+    options: [
+      { text: "Yes, both counterclockwise", correct: true },
+      { text: "No, they turn opposite ways", feedback: "$F_x$ pulls LEFT at A, above O; $F_y$ pulls UP at A, right of O. Both turn it counterclockwise." },
+      { text: "$F_x$ doesn't turn it at all", feedback: "$F_x$ acts 0.3 m above O, so its moment is $y F_x$, not zero." },
+    ],
+    explain: "Each component turns the bracket on its own; their two moments add up to the moment of $F$.",
+  },
   editable: [
     { path: "forces.0.magnitude", label: "Size F", min: 10, max: 200, step: 10, unit: "N" },
     { path: "forces.0.direction.angle", label: "Angle θ", min: 0, max: 90, step: 1, unit: "deg" },

@@ -20,6 +20,16 @@ export default {
     point: { at: [1, 1], label: "A" },
     forces: [{ id: "F", symbol: "F", magnitude: 200, kind: "cable", direction: { points: [[1, 1], [5, 3]], names: ["A", "B"] } }],
   },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "Anchor B is 4 m to the right of A and 2 m above it. **How does $F_x$ compare with $F_y$?**",
+    options: [
+      { text: "$F_x$ is twice $F_y$", correct: true },
+      { text: "They're equal", feedback: "Only if B were as far up as it is across." },
+      { text: "$F_x$ is half of $F_y$", feedback: "That swaps x and y: the x-part goes with the 4 m across." },
+    ],
+    explain: "The force points along A→B, so its parts are in the same ratio as the coordinate changes: 4 : 2.",
+  },
   editable: [
     { path: "forces.0.direction.points.1.0", label: "x of B", min: -3, max: 5, step: 0.5, unit: "m" },
     { path: "forces.0.direction.points.1.1", label: "y of B", min: -3, max: 5, step: 0.5, unit: "m" },

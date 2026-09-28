@@ -28,6 +28,16 @@ export default {
     }],
   },
   view: { xmin: -0.6, xmax: 1.3, ymin: -0.62, ymax: 0.55 },
+  // Predict first (owner, 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**If you move point P far to the left, the couple's moment about P…**",
+    options: [
+      { text: "stays the same", correct: true },
+      { text: "gets bigger", feedback: "One force's arm grows, but so does the other's — and they turn opposite ways. The difference is always $d$." },
+      { text: "gets smaller", feedback: "The two arms change by the same amount, so their effects still differ by exactly $Fd$." },
+    ],
+    explain: "A couple's moment is $M = Fd$ about ANY point: that's what makes it a pure turning effect.",
+  },
   editable: [
     { path: "couples.0.magnitude", label: "Size F", min: 10, max: 200, step: 10, unit: "N" },
     { path: "couples.0.at.0", label: "Distance AB", min: 0.1, max: 0.8, step: 0.05, unit: "m" },

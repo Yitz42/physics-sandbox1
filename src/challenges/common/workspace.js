@@ -75,7 +75,8 @@ export function createWorkspace(ctx, opts = {}) {
   // ---- Picture ---------------------------------------------------------------
   function draw() {
     const scene = solver.scene ? solver.scene(ws.setup, ws.result, { ...ws.sceneOpts, reveal: ws.reveal }) : [];
-    const handles = (solver.handles ? solver.handles(ws.setup, opts.draggable || []) : []).map((h) => ({ type: "handle", at: h.at, id: h.id }));
+    // (ws.locked: nothing can be dragged yet, e.g. until an explore stage's first guess.)
+    const handles = (solver.handles && !ws.locked ? solver.handles(ws.setup, opts.draggable || []) : []).map((h) => ({ type: "handle", at: h.at, id: h.id }));
     ws.shapes = [...scene, ...ws.extraShapes(), ...handles];
     const report = drawScene(cv, ws.shapes, { highlight: ws.highlight });
     if (opts.onDraw) opts.onDraw(report);
@@ -214,14 +215,26 @@ export function createWorkspace(ctx, opts = {}) {
   if (ctx.stage.toggles && ctx.stage.toggles.length) {
     const bar = el("div", { className: "figure-tools" });
     for (const t of ctx.stage.toggles) {
-      const b = button("", () => {
-        ws.sceneOpts[t.key] = !ws.sceneOpts[t.key];
+      if (t.options) {
+        if (ws.sceneOpts[t.key] == null && t.default != null) ws.sceneOpts[t.key] = t.default;
+        const cur = ws.sceneOpts[t.key] || t.options[0].value;
+        const tg = toggle(t.options, cur, (val) => {
+          ws.sceneOpts[t.key] = val;
+          ws.fit();
+          ws.redraw();
+        });
+        bar.appendChild(tg);
+      } else {
+        const b = button("", () => {
+          ws.sceneOpts[t.key] = !ws.sceneOpts[t.key];
+          label();
+          ws.fit();
+          ws.redraw();
+        }, "btn btn-quiet btn-small");
+        const label = () => (b.textContent = t.format ? t.format(ws.sceneOpts[t.key]) : `${ws.sceneOpts[t.key] ? "Hide" : "Show"} ${t.label}`);
         label();
-        ws.redraw();
-      }, "btn btn-quiet btn-small");
-      const label = () => (b.textContent = `${ws.sceneOpts[t.key] ? "Hide" : "Show"} ${t.label}`);
-      label();
-      bar.appendChild(b);
+        bar.appendChild(b);
+      }
     }
     ctx.el.figure.after(bar);
   }

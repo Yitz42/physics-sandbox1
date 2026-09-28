@@ -18,7 +18,7 @@ import { partInfo, solveCentroid, inPolygon } from "./centroid.js";
 export function centroidScene(setup, result, opts = {}) {
   const res = result || solveCentroid(setup);
   const v = res.values;
-  const shown = opts.reveal || setup.alwaysShowCentroid;
+  const shown = opts.reveal || (setup.alwaysShowCentroid && !opts.preGuess); // (opts.preGuess: not before an explore guess)
   const parts = setup.parts || [];
   const infos = parts.map(partInfo);
   const all = infos.flatMap((i) => i.outline);
