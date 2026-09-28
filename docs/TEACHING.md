@@ -100,3 +100,6 @@ Read this before writing or changing stages or challenge types. Changing any of 
   situations, mixing the chapter's units. Still all six stage types. Working backwards
   (a known resultant, two unknown sizes) is written with `setup.target` + `symbol`
   (particle solver; the given resultant is drawn green, named and to scale).
+  Unit 3.5 (owner's request): questions from the chapter's own units AND ones that
+  combine them with earlier chapters. A known size the student must work out (a spring's
+  force from its coordinates, a cable at its rating) is written `hideMagnitude: true`.

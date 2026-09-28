@@ -189,6 +189,44 @@ test("Chapter 2 challenge build: the start fails; C (2, −3) at 700 N and C (4,
   }
 });
 
+test("Chapter 3 challenge build: C at x = 5.5 or 6.0 m keeps both cables under 0.65 W for every crate; 5.0 and 6.5 don't; the start fails", () => {
+  const st = find("particle-challenge/3-build");
+  const solver = getSolver(st.solver);
+  const works = (x, mass) => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#T_AC.direction.points.1.0", x);
+    setPath(s, "forces.#W.mass", mass);
+    return st.goal.check(solver.solve(s), s).ok;
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting design should fail");
+  for (const mass of [20, 50, 80]) {
+    const good = [];
+    for (let x = 3.5; x <= 9.5; x += 0.5) if (works(x, mass)) good.push(x);
+    equal(good, [5.5, 6], `${mass} kg:`);
+  }
+  // At x = 6 (B's mirror image) the tensions are equal: 306.6 N for 50 kg.
+  const s = clone(st.setup);
+  setPath(s, "forces.#T_AC.direction.points.1.0", 6);
+  const v = solver.solve(s).values;
+  close(v.T_AB, 306.56, 1e-4);
+  close(v.T_AC, 306.56, 1e-4);
+});
+
+test("Chapter 3 challenge explore: level 56.6 N; 15° makes T_AB = W; 30° (⟂ the cable) is the smallest pull, 49.05 N", () => {
+  const st = find("particle-challenge/1-explore");
+  const solver = getSolver(st.solver);
+  const at = (angle, toward = "+y") => {
+    const s = clone(st.setup);
+    setPath(s, "forces.#P.direction", { angle, from: "+x", toward });
+    return solver.solve(s).values;
+  };
+  close(at(0).P, 56.638, 1e-4);
+  close(at(15).T_AB, 98.1, 1e-6);
+  close(at(30).P, 49.05, 1e-6);
+  for (let a = 0; a <= 90; a++) ok(at(a).P >= 49.05 - 1e-9, `${a}°`);
+  ok(st.tasks[0].check(at(0)) && st.tasks[1].check(at(15)) && st.tasks[2].check(at(30)) && st.tasks[3].check(at(5, "-y")), "each task can be done");
+});
+
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);

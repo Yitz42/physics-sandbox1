@@ -16,6 +16,8 @@
 //         "spring" (F = k s: stiffness k in N/m, stretch s in m; stretch: 0.2 makes the
 //         force known, magnitude: null leaves it unknown and the stretch is found;
 //         unstretched: 0.8 is its length before stretching, so its length l = l₀ + s)
+//   hideMagnitude: true  a known size the picture shows as "?" until revealed
+//         (the student works it out, e.g. a spring's force from its coordinates)
 //   shared: "T"  forces with the same `shared` name are ONE unknown — e.g. the two
 //         sides of a cable over a pulley, which have the same tension T
 //   direction: see directions.js — an angle, a slope, a word, or two points

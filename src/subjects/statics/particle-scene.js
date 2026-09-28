@@ -60,7 +60,9 @@ function fbdArrows(setup, result, at, opts) {
     const tip = add(at, scale(d, len));
     shapes.push({
       type: "arrow", id: f.id, from: at, to: tip,
-      label: arrowLabel(f, m, known != null || opts.reveal),
+      // (f.hideMagnitude: a known size the student must work out, e.g. a spring's
+      // force from its coordinates, shows "?" until the answer is revealed.)
+      label: arrowLabel(f, m, (known != null && !f.hideMagnitude) || opts.reveal),
       // "wrong" (red) marks an overloaded cable after Test
       role: (opts.flagged || []).includes(f.id) ? "wrong" : known == null ? "unknown" : "known",
     });

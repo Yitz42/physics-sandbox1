@@ -413,3 +413,79 @@ test("working backwards: the given resultant is drawn named, to scale and with i
   equal(t.label, "F = 500 N");
   ok(sc.some((x) => x.type === "arc" && x.label === "40°"), "40° marked on F");
 });
+
+// --- Unit 3.5: equilibrium with directions from coordinates (content/statics/library/mixed-rings.js) ---
+const pts = (A, B, names) => ({ points: [A, B], names });
+
+test("coordinates: 40 kg crate at A (2, 1) on cables to B (−1, 5) and C (7, 3) → T_AB = 377.3 N, T_AC = 243.8 N", () => {
+  // u_AB = (−0.6, 0.8); u_AC = (5, 2)/√29. ΣFx: T_AB = 1.5475 T_AC; ΣFy: 1.6094 T_AC = 392.4.
+  const r = solveParticle({
+    analysis: "equilibrium",
+    point: { at: [2, 1], label: "A" },
+    forces: [
+      force("T_AB", null, pts([2, 1], [-1, 5], ["A", "B"]), { kind: "cable" }),
+      force("T_AC", null, pts([2, 1], [7, 3], ["A", "C"]), { kind: "cable" }),
+      { id: "W", symbol: "W", kind: "weight", mass: 40 },
+    ],
+  });
+  close(r.values.T_AB, 377.308, 1e-5);
+  close(r.values.T_AC, 243.824, 1e-5);
+});
+
+const springLamp = () => ({
+  analysis: "equilibrium",
+  point: { at: [0, 0], label: "A" },
+  forces: [
+    { id: "F_AB", symbol: "F_{AB}", kind: "spring", k: 200, unstretched: 1.5, stretch: 0.5, hideMagnitude: true, direction: pts([0, 0], [-1.2, 1.6], ["A", "B"]) },
+    force("T_AC", null, { angle: 40, from: "+x", toward: "+y" }, { kind: "cable" }),
+    { id: "W", symbol: "W", kind: "weight", mass: null },
+  ],
+});
+
+test("coordinates: a spring 2.0 m between A and B (l₀ 1.5 m, k 200 N/m) pulls 100 N; cable at 40° → T_AC = 78.3 N; the lamp weighs W = 130.3 N", () => {
+  const r = solveParticle(springLamp());
+  equal(r.status, "determinate");
+  close(r.values.F_AB, 100, 1e-9);
+  close(r.values["F_AB.l"], 2.0, 1e-9); // l₀ + s = the distance from A to B
+  close(r.values["F_AB.r"], 2.0, 1e-9);
+  close(r.values.T_AC, 60 / Math.cos(40 * Math.PI / 180), 1e-9); // 78.32 N
+  close(r.values.W, 130.346, 1e-5);
+});
+
+test("coordinates: the spring's whole length used as its stretch is explained; its hidden size shows ? until revealed", () => {
+  // F = 200(2.0) = 400 N instead of 100 N.
+  ok(particleMistakes(springLamp(), "F_AB").some((m) => Math.abs(m.value - 400) < 0.01 && m.kind === "springLength"), "k × whole length");
+  const label = (reveal) => particleScene(springLamp(), solveParticle(springLamp()), { reveal }).find((s) => s.type === "arrow" && s.id === "F_AB").label;
+  equal(label(false), "F_{AB} = ?");
+  equal(label(true), "F_{AB} = 100 N");
+});
+
+test("coordinates: pulley at A (3, 1) on cable to B (0, 5) and C (8, 4), level rope, 30 kg → T = 223.9 N, T_AD = 57.6 N", () => {
+  const r = solveParticle({
+    analysis: "equilibrium",
+    point: { at: [3, 1], label: "A", object: "pulley" },
+    forces: [
+      force("T_AB", null, pts([3, 1], [0, 5], ["A", "B"]), { kind: "cable", symbol: "T", shared: "T" }),
+      force("T_AC", null, pts([3, 1], [8, 4], ["A", "C"]), { kind: "cable", symbol: "T", shared: "T" }),
+      force("T_AD", null, "left", { kind: "cable" }),
+      { id: "W", symbol: "W", kind: "weight", mass: 30 },
+    ],
+  });
+  close(r.values.T, 223.888, 1e-5); // 294.3 / (0.8 + 3/√34)
+  close(r.values.T_AD, 57.650, 1e-4);
+});
+
+test("heaviest crate: cables at 30° and 50°, the steeper at its 500 N rating → T_AB = 371.1 N, W = 568.6 N", () => {
+  const r = solveParticle({
+    analysis: "equilibrium",
+    point: { at: [0, 0], label: "A" },
+    forces: [
+      force("T_AB", null, { angle: 30, from: "-x", toward: "+y" }, { kind: "cable" }),
+      force("T_AC", 500, { angle: 50, from: "+x", toward: "+y" }, { kind: "cable" }),
+      { id: "W", symbol: "W", kind: "weight", mass: null },
+    ],
+  });
+  close(r.values.T_AB, 371.114, 1e-5);
+  ok(r.values.T_AB < 500, "the flatter cable is under its rating");
+  close(r.values.W, 568.579, 1e-5);
+});

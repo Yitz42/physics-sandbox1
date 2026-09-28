@@ -38,6 +38,7 @@ const chapters = [
     units: [
       "cables", "springs", "pulleys",
       soon("Particle equilibrium in 3D", "$\\Sigma F_x = 0$, $\\Sigma F_y = 0$, $\\Sigma F_z = 0$: three equations for up to three unknown forces."),
+      "particle-challenge", // the chapter's challenge unit: harder problems mixing its units with Chapter 2
     ],
   },
   {

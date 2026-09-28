@@ -89,6 +89,19 @@ Claude builds from it.
 **Unit 3.4: Particle equilibrium in 3D**
 - Concept: ΣFx = 0, ΣFy = 0, ΣFz = 0: three equations, up to three unknowns.
 
+**Unit 3.5: Chapter 3 challenge** ⭐ ✅
+- A chapter challenge unit: harder problems from Chapter 3 that also use Chapter 2's skills.
+- Built: explore — choose the direction of a pull holding a lamp aside (the smallest pull is
+  perpendicular to the cable; one direction makes T = W); predict — a crate on cables to
+  coordinates, a lamp on a spring between two points (its length gives its force; the lamp's
+  weight is found), a pulley on a cable to coordinates; build — slide an anchor along the ceiling
+  so neither cable carries over 65% of the crate's weight (same answer for any weight); debug — a
+  pulley's FBD on coordinates; concept check (which cable limits first, spring length from
+  coordinates, three unknowns, smallest pull, pulley angles, nearly level wires, backwards r);
+  solve in two parts — the pulley on coordinates (FBD → equations → answers) and the heaviest crate
+  two 500 N cables can hold (choose the limiting cable first).
+- When Unit 3.4 (3D) is built, add a 3D situation here too.
+
 ### Chapter 4: Moments and static equivalence
 
 **Unit 4.1: Moment of a force** ✅

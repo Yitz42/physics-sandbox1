@@ -86,6 +86,13 @@ function variants(setup) {
     s.target = { ...s.target, direction: reverse(s.target.direction) };
     out.push({ setup: s, kind: "concept", message: "It looks like you put the resultant in with the forces and set ΣF = 0 — that's equilibrium. Here the forces ADD UP TO the resultant: $F_{Rx} = \\Sigma F_x$ and $F_{Ry} = \\Sigma F_y$, with the resultant's components on the other side." });
   }
+  // A spring whose stretch is known (e.g. from its length between two points):
+  // using its whole length as the stretch, F = k l instead of F = k (l − l₀).
+  for (const f of setup.forces.filter((x) => x.kind === "spring" && x.stretch != null && x.unstretched != null)) {
+    const s = clone(setup);
+    s.forces.find((x) => x.id === f.id).stretch = f.unstretched + f.stretch;
+    out.push({ setup: s, kind: "springLength", message: `That uses the spring's whole length as its stretch. The stretch is only the EXTRA length: s = l − l₀, with l₀ = ${+f.unstretched.toFixed(3)} m.` });
+  }
   // A cable over a pulley pulls on it twice (once on each side). Leaving one side out:
   for (const f of setup.forces.filter((x) => x.shared)) {
     const s = clone(setup);
