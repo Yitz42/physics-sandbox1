@@ -86,8 +86,16 @@ Claude builds from it.
 - Test ideas: a pulley riding on a cable, held by a rope; set the angles so the rope can
   be cut; debug an FBD with one side of the cable missing.
 
-**Unit 3.4: Particle equilibrium in 3D**
+**Unit 3.4: Particle equilibrium in 3D** ✅
 - Concept: ΣFx = 0, ΣFy = 0, ΣFz = 0: three equations, up to three unknowns.
+- Built (statics.force3d with analysis "equilibrium", z up like Unit 2.3): explore — move one of three
+  ceiling anchors and watch the tensions (make a cable carry nothing, one hold it all, one have to
+  push); predict — a crate on three cables, on two cables and a spring (its stretch), or pulled
+  aside by a known rope force (azimuth/elevation); build — place the third anchor so all three pull
+  and none carries over 45% of the weight (10 places on the grid, the same for any crate); debug —
+  one slip in the three equations (a sign, W left out, r not divided by its length); concept check;
+  solve — a hall lamp on three cables: choose the equations, then the three tensions.
+- No FBD drawing step in 3D yet (the owner may choose: draw arrows in 3D, or pick forces from a list).
 
 **Unit 3.5: Chapter 3 challenge** ⭐ ✅
 - A chapter challenge unit: harder problems from Chapter 3 that also use Chapter 2's skills.

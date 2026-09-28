@@ -136,3 +136,83 @@ test("three ways in space (Unit 2.4): α 60°, β 135° 400 N + θ 150°, φ 30�
   ok(g.every((x) => x.options.every((o) => o.correct || o.kind)), "every wrong line names its mistake");
   ok(/azimuth/.test(g[1].title), "F_2's group says how it's given");
 });
+
+// --- Unit 3.4: a particle in equilibrium in 3D (force3d-balance.js; hand checks as in
+// content/statics/library/particles3d.js) ---
+const room = (D = [2, 3, 9], mass = 50) => ({
+  analysis: "equilibrium",
+  points: { A: [0, 0, 3], B: [-3, -2, 9], C: [2, -3, 9], D },
+  forces: [
+    { id: "T_AB", symbol: "T_{AB}", kind: "cable", magnitude: null, dir: { from: "A", to: "B" } },
+    { id: "T_AC", symbol: "T_{AC}", kind: "cable", magnitude: null, dir: { from: "A", to: "C" } },
+    { id: "T_AD", symbol: "T_{AD}", kind: "cable", magnitude: null, dir: { from: "A", to: "D" } },
+    { id: "W", symbol: "W", kind: "weight", mass, at: "A" },
+  ],
+});
+
+test("3D equilibrium: 50 kg crate on cables 7 m to B (−3, −2, 9), C (2, −3, 9), D (2, 3, 9) from A (0, 0, 3) → 228.9, 95.4, 248.0 N", () => {
+  // ΣFx: −3T_AB + 2T_AC + 2T_AD = 0; ΣFy: −2T_AB − 3T_AC + 3T_AD = 0 → T_AD = 2.6T_AC, T_AB = 2.4T_AC;
+  // ΣFz: (6/7)(6T_AC) = 490.5 → T_AC = 95.375 N.
+  const r = solveForce3d(room());
+  equal(r.status, "determinate");
+  close(r.values.T_AC, 95.375, 1e-6);
+  close(r.values.T_AB, 228.9, 1e-6);
+  close(r.values.T_AD, 247.975, 1e-6);
+  close(r.values.W, 490.5, 1e-9);
+  const eqs = force3dEquations(room());
+  equal(eqs.map((e) => e.id), ["sumFx", "sumFy", "sumFz"]);
+  ok(!eqs[0].terms.some((t) => t.id === "W") && eqs[2].terms.some((t) => t.id === "W" && t.sign === -1), "W only in ΣFz, negative");
+});
+
+test("3D equilibrium: D straight above A holds it all; D outside the triangle makes a cable push; a 4th unknown is indeterminate", () => {
+  const above = solveForce3d(room([0, 0, 9]));
+  close(above.values.T_AD, 490.5, 1e-9);
+  close(above.values.T_AB, 0, 1e-9);
+  const outside = solveForce3d(room([-2, -3, 9]));
+  equal(outside.status, "unstable");
+  ok(/PUSH/.test(outside.message), outside.message);
+  const four = room();
+  four.points.E = [0, 5, 9];
+  four.forces.push({ id: "T_AE", symbol: "T_{AE}", kind: "cable", magnitude: null, dir: { from: "A", to: "E" } });
+  equal(solveForce3d(four).status, "indeterminate");
+  // All three anchors level with A: nothing holds the crate up.
+  const flat = room();
+  for (const p of ["B", "C", "D"]) flat.points[p] = [flat.points[p][0], flat.points[p][1], 3];
+  equal(solveForce3d(flat).status, "unstable");
+});
+
+test("3D equilibrium: a spring AD (k = 800 N/m) stretches 248.0 / 800 = 0.310 m; a known pull P changes the tensions", () => {
+  const s = room();
+  s.forces[2] = { id: "F_AD", symbol: "F_{AD}", kind: "spring", k: 800, magnitude: null, dir: { from: "A", to: "D" } };
+  const v = solveForce3d(s).values;
+  close(v.F_AD, 247.975, 1e-6);
+  close(v["F_AD.s"], 0.30997, 1e-4);
+  // P = 150 N, θ = 120°, φ = 10°: {−73.86 i + 127.93 j + 26.05 k} N → 113.34, 325.73, 102.79 N.
+  const p = room();
+  p.forces.push({ id: "P", symbol: "P", magnitude: 150, at: "A", dir: { azimuth: 120, elevation: 10 } });
+  const w = solveForce3d(p).values;
+  close(w.T_AB, 113.34, 1e-4);
+  close(w.T_AC, 325.73, 1e-4);
+  close(w.T_AD, 102.79, 1e-4);
+});
+
+test("3D equilibrium: hall lamp, A (1, 1, 3), 60 kg → 114.4, 274.7, 297.6 N; slips are explained", () => {
+  const s = {
+    analysis: "equilibrium",
+    points: { A: [1, 1, 3], B: [-1, -2, 9], C: [4, -1, 9], D: [-1, 4, 9] },
+    forces: [
+      { id: "T_AB", symbol: "T_{AB}", kind: "cable", magnitude: null, dir: { from: "A", to: "B" } },
+      { id: "T_AC", symbol: "T_{AC}", kind: "cable", magnitude: null, dir: { from: "A", to: "C" } },
+      { id: "T_AD", symbol: "T_{AD}", kind: "cable", magnitude: null, dir: { from: "A", to: "D" } },
+      { id: "W", symbol: "W", kind: "weight", mass: 60, at: "A" },
+    ],
+  };
+  const v = solveForce3d(s).values;
+  close(v.T_AB, 114.45, 1e-4);
+  close(v.T_AC, 274.68, 1e-4);
+  close(v.T_AD, 297.57, 1e-4);
+  const m = force3dMistakes(s, "T_AB");
+  ok(m.some((x) => x.kind === "weight" && Math.abs(x.value - 114.45 / 9.81) < 0.01), "mass used as the weight");
+  ok(m.some((x) => x.kind === "vector" && Math.abs(x.value - 114.45 / 7) < 0.01), "forgot to divide by r = 7 m");
+  ok(m.every((x) => x.kind), "every slip names its kind");
+});

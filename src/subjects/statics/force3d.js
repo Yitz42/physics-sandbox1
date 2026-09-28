@@ -19,10 +19,15 @@
 //          { from: "A", to: "B" }
 //          { components: [F_x, F_y, F_z] }  (magnitude is then worked out)
 //   resultant: true                     also the resultant F_R = ΣF (values R, R.x …)
+//   analysis: "equilibrium"             a particle at rest: ΣF = 0 finds up to three unknown sizes
+//                                       (force3d-balance.js; weights, springs, cables that can't push)
 // values, for each force id F: F (size), F.x F.y F.z, F.ux F.uy F.uz, F.alpha F.beta
 //   F.gamma (degrees); along a line also F.rx F.ry F.rz F.r (metres).
 
 import { mag, dot } from "../../core/vector.js";
+import { solveBalance3d } from "./force3d-balance.js";
+
+export const G = 9.81; // m/s²
 
 const DEG = Math.PI / 180;
 const cosd = (a) => Math.cos(a * DEG);
@@ -32,6 +37,7 @@ export const pointOf = (setup, name) => (setup.points || {})[name];
 
 // A force's unit vector (and, along a line, its position vector), or { error }.
 export function directionOf3(f, setup) {
+  if (f.kind === "weight") return { u: [0, 0, -1] }; // straight down (z is up)
   const d = f.dir || {};
   if (d.components) {
     const m = mag(d.components);
@@ -73,7 +79,7 @@ export function vectorOf(f, setup) {
 }
 
 // Size and direction angles of a vector, into values under a name.
-function describe(values, name, v) {
+export function describe(values, name, v) {
   const F = mag(v);
   values[name] = F;
   ["x", "y", "z"].forEach((k, i) => (values[`${name}.${k}`] = v[i]));
@@ -82,6 +88,7 @@ function describe(values, name, v) {
 }
 
 export function solveForce3d(setup) {
+  if (setup.analysis === "equilibrium") return solveBalance3d(setup);
   const values = {};
   for (const f of setup.forces || []) {
     const d = directionOf3(f, setup);
@@ -119,6 +126,11 @@ export function force3dQuantities(setup) {
   };
   for (const f of setup.forces || []) {
     add(f.id, f.symbol);
+    if (f.kind === "spring") {
+      const n = (f.dir && f.dir.from) ? `${f.dir.from}${f.dir.to}` : f.id;
+      q[`${f.id}.s`] = { label: `s_{${n}}`, unit: "m" };
+      q[`${f.id}.l`] = { label: `l_{${n}}`, unit: "m" };
+    }
     const d = f.dir || {};
     if (d.from) {
       const line = `${d.from}${d.to}`;

@@ -227,6 +227,25 @@ test("Chapter 3 challenge explore: level 56.6 N; 15° makes T_AB = W; 30° (⟂ 
   ok(st.tasks[0].check(at(0)) && st.tasks[1].check(at(15)) && st.tasks[2].check(at(30)) && st.tasks[3].check(at(5, "-y")), "each task can be done");
 });
 
+test("3D particles build: 10 places for D work (e.g. (1, 5, 9)), the same for any crate; the start fails", () => {
+  const st = find("particles-3d/3-build");
+  const solver = getSolver(st.solver);
+  const works = (x, y, mass) => {
+    const s = clone(st.setup);
+    setPath(s, "points.D", [x, y, 9]);
+    setPath(s, "forces.#W.mass", mass);
+    return st.goal.check(solver.solve(s), s).ok;
+  };
+  ok(!st.goal.check(solver.solve(st.setup), st.setup).ok, "starting design should fail");
+  for (const mass of [20, 80]) {
+    let n = 0;
+    for (let x = -6; x <= 6; x += 0.5) for (let y = -6; y <= 6; y += 0.5) if (works(x, y, mass)) n++;
+    equal(n, 10, `${mass} kg:`);
+  }
+  ok(works(1, 5, 50) && works(1.5, 5, 50), "the hand-worked places");
+  ok(!works(-2, -3, 50), "outside the triangle: a cable would push");
+});
+
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);

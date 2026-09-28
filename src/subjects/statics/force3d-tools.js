@@ -5,6 +5,10 @@
 
 import { fixedTex, sigFig } from "../../core/units.js";
 import { solveForce3d, directionOf3, pointOf, componentSymbol, cosd, acosd, DEG } from "./force3d.js";
+import { balanceEquations } from "./force3d-balance.js";
+import { balanceSummary, balanceMistakes } from "./force3d-balance-tools.js";
+
+export { componentSymbol };
 
 const n4 = (v) => sigFig(v, 4);
 const AX = ["x", "y", "z"];
@@ -25,7 +29,7 @@ const lineName = (f) => `${f.dir.from}${f.dir.to}`;
 
 // ---- Equations: F_x = F cos α …, each force; F_Rx = ΣF_x … for a resultant ----------------
 
-function factorFor(f, setup, i) {
+export function factorFor(f, setup, i) {
   const d = f.dir || {};
   if (d.angles) {
     const ang = d.angles[i] ?? acosd(directionOf3(f, setup).u[i]);
@@ -48,6 +52,7 @@ function factorFor(f, setup, i) {
 }
 
 export function force3dEquations(setup, result) {
+  if (setup.analysis === "equilibrium") return balanceEquations(setup); // ΣF_x = 0 … (Unit 3.4)
   const res = result || solveForce3d(setup);
   const v = res.values;
   const eqs = [];
@@ -77,6 +82,7 @@ export function force3dEquations(setup, result) {
 // angles — what that step asks for — stay hidden; its components show.
 export function force3dSummary(setup, result, { reveal = true, hideAnswers = false } = {}) {
   const res = result || solveForce3d(setup);
+  if (setup.analysis === "equilibrium") return balanceSummary(setup, res, { reveal, hideAnswers });
   const v = res.values;
   const lines = [];
   if (res.status === "unstable") return lines; // (the message says why)
@@ -114,6 +120,7 @@ export function force3dSummary(setup, result, { reveal = true, hideAnswers = fal
 // ---- Answers that common slips give ------------------------------------------------------
 
 export function force3dMistakes(setup, name) {
+  if (setup.analysis === "equilibrium") return balanceMistakes(setup, name);
   const res = solveForce3d(setup);
   const v = res.values;
   const right = v[name];
