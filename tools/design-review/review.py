@@ -75,7 +75,15 @@ def review(before, after, cwd, dry_run=False):
             t, l = judge.verdicts(path, rules, probs)
             think += t
             look += l
-    return {"think": think, "look": look, "notes": notes, "asked": asked}
+    return {"think": think, "look": look, "notes": _once(notes), "asked": asked}
+
+
+def _once(notes):
+    """The same note once, with a count (a bad key fails every file the same way)."""
+    counts = {}
+    for n in notes:
+        counts[n] = counts.get(n, 0) + 1
+    return [n if c == 1 else f"{n} (×{c} files)" for n, c in counts.items()]
 
 
 def describe(item):

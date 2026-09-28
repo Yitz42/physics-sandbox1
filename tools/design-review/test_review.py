@@ -235,6 +235,16 @@ class TestHooks(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("failed", json.loads(out)["systemMessage"])
 
+    def test_same_failure_is_reported_once(self):
+        self.repo.hook("start")
+        self.repo.write("content/statics/moments/3-build.js", BUILD_STAGE)
+        self.repo.write("content/statics/moments/2-predict.js", BUILD_STAGE)
+        FAKE["status"] = 401
+        _, out, _ = self.repo.hook("stop")
+        msg = json.loads(out)["systemMessage"]
+        self.assertEqual(msg.count("TypeSafe answered 401"), 1)
+        self.assertIn("×2 files", msg)
+
     def test_start_prints_nothing(self):
         # Anything a start hook prints is added to Claude's instructions, so it must stay silent.
         self.assertEqual(self.repo.hook("start"), (0, "", ""))
