@@ -43,7 +43,9 @@ import { solveForce3d, force3dQuantities } from "./force3d.js";
 import { force3dScene } from "./force3d-scene.js";
 import { force3dEquations, force3dSummary, force3dMistakes, force3dSteps } from "./force3d-tools.js";
 import { force3dChoices } from "./force3d-choices.js";
-import { frictionEquations, frictionSummary, frictionMistakes, frictionSteps } from "./friction-tools.js";
+import { frictionEquations, frictionSummary, frictionMistakes } from "./friction-tools.js";
+import { frictionSteps } from "./friction-steps.js";
+import { tipSteps } from "./friction-tip-tools.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:
 // sign, trig, algebra, rounding, calculator, vector, missing, extra, direction, concept).
@@ -202,6 +204,7 @@ registerSolver("statics.internal", {
 // Unit 9.1: dry friction — a crate on a ramp or floor (N, the friction needed, and the
 // limit μ_s N: holds, impending, slides), or a body with rough contacts (a ladder: the
 // rigid-body reactions, each rough contact checked). setup.find: where motion starts.
+// Unit 9.2: setup.tipping — the crate may tip about a corner instead (friction-tip.js).
 registerSolver("statics.friction", {
   solve: solveFriction,
   equations: (setup) => frictionEquations(setup),
@@ -213,5 +216,6 @@ registerSolver("statics.friction", {
   mistakes: frictionMistakes,
   // (A ladder's FBD, drawn by the student; a crate's is drawn for them.)
   fbd: (setup, sceneOpts) => (isBody(setup) ? rigidBodyFbd(bodyPicture(setup), sceneOpts) : { forces: [], directions: [], origin: [0, 0] }),
-  debugSteps: frictionSteps, // a student's working for a crate, one line wrong
+  // A student's working for a crate, one line wrong (tipping or slipping: Unit 9.2).
+  debugSteps: (setup, mutation) => (setup.tipping ? tipSteps(setup, mutation) : frictionSteps(setup, mutation)),
 });

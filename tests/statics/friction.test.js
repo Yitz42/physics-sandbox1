@@ -2,7 +2,8 @@
 // where motion starts. Answers worked by hand in each test's name.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveFriction, criticalValue } from "../../src/subjects/statics/friction.js";
-import { blockEquations, frictionMistakes, frictionSteps } from "../../src/subjects/statics/friction-tools.js";
+import { blockEquations, frictionMistakes } from "../../src/subjects/statics/friction-tools.js";
+import { frictionSteps } from "../../src/subjects/statics/friction-steps.js";
 import { solveEquations } from "../../src/core/equations.js";
 import { reactionsOf } from "../../src/subjects/statics/supports.js";
 

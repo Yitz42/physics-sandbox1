@@ -87,7 +87,7 @@ const chapters = [
     id: "friction", title: "Friction",
     units: [
       "dry-friction",
-      soon("Tipping versus slipping", "Which happens first, and why."),
+      "tipping",
       soon("Wedges and belt friction", "Wedges, and how a rope wrapped around a post holds a big load."),
     ],
   },

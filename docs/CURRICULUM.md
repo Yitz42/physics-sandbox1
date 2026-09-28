@@ -297,8 +297,15 @@ Claude builds from it.
   N_B, F_A, N_A and the smallest μs that holds).
 - Axes on a ramp: x' up the slope, y' across it; F positive up the slope (to the right on a floor).
 
-**Unit 9.2: Tipping versus slipping** ⭐
+**Unit 9.2: Tipping versus slipping** ⭐ ✅
 - Concept: which happens first, and why.
+- Built: push a tall crate at any height and watch where N acts (x behind the front corner O),
+  sliding it, tipping it, and the height where both happen at once ($h_P = w/2\mu_s$); predict the
+  slipping and tipping pushes (a tall crate pushed high, a filing cabinet pushed low, a rope at a
+  crate's top corner) and the slipping and tipping angles of a fridge on a tilting truck bed;
+  slide a tall bookcase without tipping it (working out the tipping push at the chosen height);
+  debug a student's working (push arm from the centre, whole width, μs in the tipping equation,
+  the larger push taken as first); concept check; solve: ΣF_y, ΣF_x and ΣM_O, then both limits.
 
 **Unit 9.3: Wedges and belt friction**
 - Concept: wedges; belt friction T2 = T1·e^(μβ).

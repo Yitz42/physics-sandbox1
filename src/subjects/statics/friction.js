@@ -9,8 +9,9 @@
 //
 // Two kinds of setup:
 //
-// 1. A block (a crate) on a ramp or a level floor, treated as a particle (its size
-//    only matters for tipping, Unit 9.2):
+// 1. A block (a crate) on a ramp or a level floor, treated as a particle — unless
+//    setup.tipping is set (Unit 9.2, friction-tip.js): then its size matters, N acts
+//    wherever the moments need it (values.x), and it may TIP instead of slipping:
 //      ramp:   { angle, length, maxAngle? }   angle in degrees (0: a level floor). The
 //              ramp rises to the right from its low corner O = (0, 0); maxAngle: the
 //              steepest a slider can make it (the picture keeps room for it)
@@ -34,10 +35,13 @@
 // between holding and slipping). motion: which
 // way the block is about to move, "up" or "down" the slope ("right"/"left" on a floor).
 
-import { clone, setPath } from "../../core/paths.js";
 import { directionVector } from "./directions.js";
 import { G } from "./particle.js";
 import { solveRigidBody } from "./rigid-body.js";
+import { tipState } from "./friction-tip.js";
+import { criticalValue } from "./friction-find.js";
+
+export { criticalValue }; // (where motion starts: friction-find.js)
 
 const deg = Math.PI / 180;
 
@@ -80,7 +84,20 @@ export function blockState(setup, opts = {}) {
   // ΣF_x' = F + ΣP_x' − W sin θ = 0,   ΣF_y' = N + ΣP_y' − W cos θ = 0
   const Fneed = W * sin - alongP;
   const N = W * cos - (opts.plainN ? 0 : awayP);
-  return { W, N, Fneed, ...judge(Fneed, N, setup.mus, setup.muk) };
+  const out = { W, N, Fneed, ...judge(Fneed, N, setup.mus, setup.muk) };
+  // A crate that can tip (Unit 9.2, friction-tip.js): where N acts, and whether it
+  // would have to act outside the base. If it would both slip and tip, the one it is
+  // further past its limit wins (it goes that way first).
+  if (setup.tipping && out.state !== "lifts") {
+    const { x, tipRatio } = tipState(setup, N);
+    out.x = x;
+    out.tipRatio = tipRatio;
+    const slipRatio = out.Fmax > 0 ? Math.abs(Fneed) / out.Fmax : Infinity;
+    if (tipRatio > 1 + 1e-6 && (out.state !== "slides" || tipRatio >= slipRatio)) {
+      Object.assign(out, { state: "tips", F: Fneed, moves: undefined });
+    } else if (Math.abs(tipRatio - 1) <= 1e-6 && out.state === "holds") out.state = "tipImpending";
+  }
+  return out;
 }
 
 // Holds, impending, slides — or lifts off (N < 0). F: the friction that really acts.
@@ -105,7 +122,7 @@ export function placeAlong(setup) {
   return { ...setup, forces };
 }
 
-function bodyState(setup) {
+export function bodyState(setup) {
   const s = placeAlong(setup);
   const rigid = solveRigidBody(s);
   const contacts = {};
@@ -122,52 +139,6 @@ function bodyState(setup) {
 
 export const isBody = (setup) => !!setup.body;
 
-// How far from slipping a setup is: positive once friction can't hold it.
-function slipMargin(setup, opts) {
-  if (isBody(setup)) {
-    const { rigid, contacts } = bodyState(setup);
-    if (rigid.status !== "determinate") return NaN;
-    return Math.max(...Object.values(contacts).map((c) => Math.abs(c.Fneed) - c.Fmax));
-  }
-  const b = blockState(setup, opts);
-  if (b.N < 0) return NaN;
-  const way = ["up", "right"].includes(setup.find.motion) ? -1 : 1; // about to move up → friction points down (F < 0)
-  return way * b.Fneed - setup.mus * b.N;
-}
-
-// The value at find.path where motion starts (NaN if it never does between min and max).
-export function criticalValue(setup, opts = {}) {
-  const f = setup.find;
-  const at = (v) => {
-    const s = clone(setup);
-    setPath(s, f.path, v);
-    return slipMargin(s, opts);
-  };
-  // Step from min to max until it changes between holding (margin < 0) and slipping,
-  // either way round (a bigger push can start a crate moving, or stop it sliding
-  // down), then close in on the change by halving.
-  const steps = 400;
-  let lo = f.min, glo = at(lo);
-  if (Math.abs(glo) < 1e-9) return lo;
-  for (let i = 1; i <= steps; i++) {
-    const hi = f.min + ((f.max - f.min) * i) / steps;
-    const ghi = at(hi);
-    if (Number.isFinite(glo) && Number.isFinite(ghi) && (glo < 0) !== (ghi < 0)) {
-      let a = lo, b = hi;
-      const slipsAtA = glo >= 0;
-      for (let k = 0; k < 60; k++) {
-        const m = (a + b) / 2;
-        if ((at(m) >= 0) === slipsAtA) a = m;
-        else b = m;
-      }
-      return (a + b) / 2;
-    }
-    lo = hi;
-    glo = ghi;
-  }
-  return NaN;
-}
-
 export function solveFriction(setup) {
   if (isBody(setup)) {
     const { rigid, contacts, placed } = bodyState(setup);
@@ -181,7 +152,15 @@ export function solveFriction(setup) {
   }
   const b = blockState(setup);
   const values = { W: b.W, N: b.N, F: b.F, Fneed: b.Fneed, Fmax: b.Fmax, mu: b.N > 0 ? Math.abs(b.Fneed) / b.N : NaN };
-  if (setup.find) values.critical = criticalValue(setup);
+  if (setup.tipping) values.x = b.x;
+  if (setup.find && setup.tipping) {
+    // Both ways it can go (Unit 9.2): the push (or slope) that starts it slipping, the one
+    // that tips it, and so the one that happens first — the smaller.
+    values.criticalSlip = criticalValue(setup);
+    values.criticalTip = criticalValue(setup, { event: "tip" });
+    values.critical = Math.min(values.criticalSlip, values.criticalTip);
+    if (!Number.isFinite(values.critical)) values.critical = Number.isFinite(values.criticalSlip) ? values.criticalSlip : values.criticalTip;
+  } else if (setup.find) values.critical = criticalValue(setup);
   const ok = b.state !== "lifts" && (!setup.find || Number.isFinite(values.critical));
   return {
     kind: "block", status: ok ? "determinate" : "unstable", state: b.state, moves: b.moves, values,
@@ -203,5 +182,12 @@ export function frictionQuantities(setup, rigidQuantities) {
     q[`mu_${s.id}`] = { label: "\\mu_s", unit: "" };
   }
   if (setup.find) q.critical = { label: setup.find.symbol || "x", unit: setup.find.unit || "" };
+  if (setup.tipping) {
+    q.x = { label: "x", unit: "m" };
+    if (setup.find) {
+      q.criticalSlip = { label: `${setup.find.symbol || "x"}_{\\text{slip}}`, unit: setup.find.unit || "" };
+      q.criticalTip = { label: `${setup.find.symbol || "x"}_{\\text{tip}}`, unit: setup.find.unit || "" };
+    }
+  }
   return q;
 }

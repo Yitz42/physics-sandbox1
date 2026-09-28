@@ -55,7 +55,10 @@ src/
                            diagrams for the canvas (pixels for labels, so phones have room)
       friction.js          dry friction: a crate on a ramp or floor (N, the friction needed, μ_s N:
                            holds / impending / slides), a body with rough contacts (a ladder), and where
-                           slipping starts (setup.find); friction-scene.js, friction-tools.js, Unit 9.1
+                           slipping starts (setup.find, friction-find.js); friction-scene.js (crates),
+                           friction-ladder.js (ladders), friction-tools.js, friction-steps.js, Unit 9.1;
+                           setup.tipping: a crate may tip about a corner O instead (friction-tip.js,
+                           friction-tip-tools.js), Unit 9.2
       geometry.js          later: area moments of inertia
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js

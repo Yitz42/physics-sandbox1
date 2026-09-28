@@ -113,3 +113,9 @@ Read this before writing or changing stages or challenge types. Changing any of 
   explore stage has one (a test checks: 3–4 choices, one right, a reason for each wrong one,
   a short question), aimed at the unit's most common misconception. Pictures that show an
   answer all the time (a resultant, a centroid) hide it until the guess (sceneOpts.preGuess).
+- **Tipping versus slipping** (Unit 9.2): moments are taken about the corner O the crate
+  would tip over; the floor's push N acts a distance **x behind O** (0 … w while it stands,
+  x < 0 would be outside the base: it tips). At tipping N and friction both act at O, so
+  ΣM_O gives the tipping push without μs. Stages ask for the slipping push (or angle), the
+  tipping one, and the one at which it first moves — the smaller.
+
