@@ -540,9 +540,11 @@ a.folder-link:hover .folder-title { color: var(--c-accent); }
 .folder-soon { opacity: 0.6; box-shadow: none; }
 .folder-soon .folder-title { color: var(--c-muted); }
 @media (max-width: 480px) { .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 12px; } .folder-title { font-size: 1rem; } .folder-link { padding: 10px 12px 6px; } .folder-num { left: 10px; } }
-/* A page title with a thick back arrow beside it (unit → chapter, chapter → all chapters). */
-.title-row { display: flex; align-items: center; gap: 10px; }
+/* A page title with a back arrow beside it (unit → chapter, chapter → all chapters): a plain
+   blue chevron. The label above ("Chapter 3") sits in the title's column, flush with its text. */
+.title-row { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; }
 .title-row h1 { margin: 0; }
-.title-back { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;
-  color: var(--c-accent); background: var(--c-panel); border: 1px solid var(--c-edge); box-shadow: var(--shadow); }
-.title-back:hover { background: var(--c-accent); color: var(--c-panel); }
+.title-kicker { grid-column: 2; }
+.title-back { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 40px;
+  color: var(--c-accent); transition: transform 0.15s ease; }
+.title-back:hover { transform: translateX(-3px); }

@@ -65,12 +65,15 @@ function unitCard(course, u) {
   ]);
 }
 
-// A page title with a thick "back" arrow right beside it (agreed with the owner):
-// the arrow leads one level up (a unit → its chapter, a chapter → all chapters).
-function titleWithBack(text, href, label) {
+// A page title with a "back" arrow right beside it (agreed with the owner): a plain blue
+// chevron — two lines — leading one level up (a unit → its chapter, a chapter → all chapters).
+// The small label above the title ("Chapter 3") lines up with the title's text, not the arrow.
+function titleWithBack(text, href, label, kicker = null) {
   const arrow = el("a", { className: "title-back", href, title: label, "aria-label": label });
-  arrow.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M20 12H6M12 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  return el("div", { className: "title-row" }, [arrow, el("h1", { textContent: text })]);
+  arrow.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const parts = [arrow, el("h1", { textContent: text })];
+  if (kicker) parts.unshift(el("div", { className: "unit-num title-kicker", textContent: kicker }));
+  return el("div", { className: "title-row" }, parts);
 }
 
 // A planned unit (course.js soon(...)): shown greyed out, not a link.
@@ -165,8 +168,7 @@ export function renderChapter(root, course, chapterId, units) {
   root.append(
     topNav({ course, chapter: ch, units }), // the top tab's menu: Home and every chapter
     el("header", { className: "page-header" }, [
-      el("div", { className: "unit-num", textContent: `Chapter ${c + 1}` }),
-      titleWithBack(ch.title, `#/${course.id}`, `Back to all ${course.title} chapters`),
+      titleWithBack(ch.title, `#/${course.id}`, `Back to all ${course.title} chapters`, `Chapter ${c + 1}`),
     ]),
     el("div", { className: "unit-list" }, ch.units.map((u, i) => (typeof u === "string" ? unitCard(course, byId[u]) : soonCard(`${c + 1}.${i + 1}`, u)))),
     readMore(readingFor(course, ch)),
@@ -202,8 +204,9 @@ export function renderUnit(root, course, unit, stages, units = []) {
   root.append(
     topNav({ course, unit, unitNumber: place.number, stages, units }),
     el("header", { className: "page-header unit-header" }, [
-      el("div", {}, [el("div", { className: "unit-num", textContent: where }),
-        place.chapter ? titleWithBack(unit.title, `#/${course.id}/ch/${place.chapter.id}`, `Back to Chapter ${place.chapterNumber}: ${place.chapter.title}`) : el("h1", { textContent: unit.title })]),
+      el("div", {}, place.chapter
+        ? [titleWithBack(unit.title, `#/${course.id}/ch/${place.chapter.id}`, `Back to Chapter ${place.chapterNumber}: ${place.chapter.title}`, where)]
+        : [el("div", { className: "unit-num", textContent: where }), el("h1", { textContent: unit.title })]),
       progressBar(course, unit),
     ]),
     concept,
