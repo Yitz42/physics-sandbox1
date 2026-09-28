@@ -80,6 +80,11 @@ tests/
   tests.html               open with Live Server: runs every test, shows pass/fail
   statics/*.test.js        textbook problems with known answers
   content/stages.test.js   every stage loads, solves and varies; pictures.test.js: every picture passes
+tools/                     for building the game, never loaded by it
+  design-review/           checks each piece of Claude's work against the design rules before it's
+                           called done (Claude Code hooks; exact rules in checks.py, judged ones sent
+                           to TypeSafe's Jev model, rules.py); README.md there says how to switch it on.
+                           Its tests: python3 tools/design-review/test_review.py
 docs/
   CURRICULUM.md            what each unit teaches and how it is tested
   STAGES.md  TEACHING.md  PICTURES.md  LEARNING-RECORD.md  ARCHITECTURE.md   the detailed rules
