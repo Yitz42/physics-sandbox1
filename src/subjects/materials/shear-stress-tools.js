@@ -192,13 +192,13 @@ export function shearStressDebug(setup = {}, mutation = {}) {
       wrong: "shear-force",
       kind: "concept",
       fix: "Divide the load by 2: in double shear, two planes share the load ($V = P / 2$)",
-      explain: "The clevis holds the pin on both sides of the central plate, creating two shear planes that each carry $V = P / 2 = 24\\,\\text{kN}$.",
+      explain: `The clevis holds the pin on both sides of the central plate, creating two shear planes that each carry $V = P / 2 = ${sigFig(corrV, 4)}\\,\\text{kN}$.`,
     },
     noKilo: {
       wrong: "shear-stress",
       kind: "units",
       fix: "Convert shear force from kN to N ($1\\text{ kN} = 1000\\text{ N}$) before dividing by area",
-      explain: "Since $1\\text{ MPa} = 1\\text{ N/mm}^2$, the shear force must be converted to newtons: $24\\text{ kN} = 24\\,000\\text{ N}$.",
+      explain: `Since $1\\text{ MPa} = 1\\text{ N/mm}^2$, the shear force must be converted to newtons: $${sigFig(corrV, 4)}\\text{ kN} = ${sigFig(corrV * 1000, 5)}\\text{ N}$.`,
     },
     diameterAsRadius: {
       wrong: "pin-area",

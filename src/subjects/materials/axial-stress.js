@@ -53,7 +53,7 @@ export function solveAxialStress(setup = {}) {
   } else if (load.P_N != null) {
     P_N = load.P_N;
   } else if (load.mass != null) {
-    P_N = (load.tension ? 1 : -1) * load.mass * 9.81;
+    P_N = (load.compression ? -1 : 1) * load.mass * 9.81; // (a hanging mass pulls: tension, unless said)
   } else {
     P_N = 25000; // default 25 kN
   }

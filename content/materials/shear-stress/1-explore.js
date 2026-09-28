@@ -14,6 +14,16 @@ export default {
     joint: { type: "lap", planes: 1, pinDiameter: 20 },
     load: { P: 30 },
   },
+  // Predict first (as in statics, owner 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Move the same pin from a single-shear joint to a double-shear clevis. The shear stress in it…**",
+    options: [
+      { text: "halves", correct: true },
+      { text: "doubles", feedback: "Two cut planes SHARE the load: each carries only half of it." },
+      { text: "stays the same", feedback: "In double shear the load is split between two cross-sections, $V = P/2$." },
+    ],
+    explain: "Double shear: two planes each carry $V = P/2$, so $\\tau = V/A$ halves.",
+  },
   toggles: [
     {
       key: "joint.planes",

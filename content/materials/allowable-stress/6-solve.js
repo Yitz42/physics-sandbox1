@@ -12,11 +12,8 @@ export default {
   title: "Connection Capacity Evaluation",
   mission: "Determine the allowable load and governing failure mode for a structural connection.",
   instructions:
-    "A steel clevis connection attaches a cylindrical tension rod of diameter $d = 26\\,\\text{mm}$ to a fixed bracket with a pin of diameter $d = 20\\,\\text{mm}$ ($n = 2$ shear planes). " +
-    "The bracket plates have thickness $t = 15\\,\\text{mm}$. The material stress limits are:\n\n" +
-    "- Allowable rod tensile stress: $\\sigma_{\\text{allow}} = 140\\,\\text{MPa}$\n" +
-    "- Allowable pin shear stress: $\\tau_{\\text{allow}} = 85\\,\\text{MPa}$\n" +
-    "- Allowable plate bearing stress: $\\sigma_{b,\\text{allow}} = 190\\,\\text{MPa}$\n\n" +
+    "A steel clevis connection attaches a cylindrical tension rod to a fixed bracket with a pin in double shear ($n = 2$ shear planes); their diameters are in the picture. " +
+    "The bracket plates' thickness is marked on the picture, and the allowable stresses for the rod, the pin and the plate are listed in its corner.\n\n" +
     "Work through the complete solution: evaluate the maximum safe load for each of the three failure modes, then determine the overall allowable load $P_{\\text{allow}}$.",
   setup: {
     rod: { diameter: 26, allowableStress: 140 },
@@ -85,7 +82,7 @@ export default {
     "Overall allowable load: $P_{\\text{allow}} = \\min(P_{\\text{tension}}, P_{\\text{shear}}, P_{\\text{bearing}})$.",
   ],
   explanation:
-    "1. Rod tension: $P_{\\text{tension}} = (140\\,\\text{MPa})[\\frac{\\pi}{4}(26\\,\\text{mm})^2] = 74.33\\,\\text{kN}$. " +
+    "For example, with a 26 mm rod and a 20 mm pin: 1. Rod tension: $P_{\\text{tension}} = (140\\,\\text{MPa})[\\frac{\\pi}{4}(26\\,\\text{mm})^2] = 74.33\\,\\text{kN}$. " +
     "2. Pin shear: $P_{\\text{shear}} = 2(85\\,\\text{MPa})[\\frac{\\pi}{4}(20\\,\\text{mm})^2] = 53.41\\,\\text{kN}$. " +
     "3. Plate bearing: $P_{\\text{bearing}} = (190\\,\\text{MPa})(15\\,\\text{mm})(20\\,\\text{mm}) = 57.00\\,\\text{kN}$. " +
     "The overall allowable load is $P_{\\text{allow}} = \\min(74.33, 53.41, 57.00) = 53.4\\,\\text{kN}$, governed by pin shear.",

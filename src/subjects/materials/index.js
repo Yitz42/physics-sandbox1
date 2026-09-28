@@ -1,10 +1,11 @@
 // index.js — plugs the Mechanics of Materials subject into the core.
 //
-// Registers every materials solver by name:
-//   materials.axialStress   normal stress in axially loaded members (σ = P / A)
+// Registers every materials solver by name (Chapter 1: Stress):
+//   materials.axialStress     normal stress in axially loaded members (σ = P / A), Unit 1.1
+//   materials.shearStress     direct shear (τ = V / A, V = P / n), Unit 1.2
+//   materials.bearingStress   bearing stress (σ_b = P / A_b, A_b = t d), Unit 1.3
+//   materials.allowableStress allowable load: the weakest of tension, shear and bearing, Unit 1.4
 // Planned for later units (see docs/CURRICULUM.md):
-//   materials.shearStress   direct shear (τ = V / A)
-//   materials.bearingStress bearing stress (σ_b = P / A_b)
 //   materials.torsion       torsional shear (τ = T ρ / J) and twist angle
 //   materials.bending       beam flexure (σ = −M y / I)
 //   materials.transverse    transverse shear (τ = V Q / I t)
@@ -13,7 +14,8 @@
 import { registerSolver } from "../../core/registry.js";
 import { registerErrorKinds } from "../../core/diagnosis.js";
 import { solveAxialStress } from "./axial-stress.js";
-import { axialStressEquations, axialStressSummary, axialStressQuantities, axialStressMistakes, axialStressDebug } from "./axial-stress-tools.js";
+import { axialStressEquations, axialStressSummary, axialStressQuantities, axialStressMistakes } from "./axial-stress-tools.js";
+import { axialStressDebug } from "./axial-stress-steps.js";
 import { axialStressScene } from "./axial-stress-scene.js";
 
 import { solveShearStress } from "./shear-stress.js";
@@ -25,7 +27,8 @@ import { bearingStressEquations, bearingStressSummary, bearingStressQuantities, 
 import { bearingStressScene } from "./bearing-stress-scene.js";
 
 import { solveAllowableStress } from "./allowable-stress.js";
-import { allowableStressEquations, allowableStressSummary, allowableStressQuantities, allowableStressMistakes, allowableStressDebug } from "./allowable-stress-tools.js";
+import { allowableStressEquations, allowableStressSummary, allowableStressQuantities, allowableStressMistakes } from "./allowable-stress-tools.js";
+import { allowableStressDebug } from "./allowable-stress-steps.js";
 import { allowableStressScene } from "./allowable-stress-scene.js";
 
 

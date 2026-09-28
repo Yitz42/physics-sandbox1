@@ -12,7 +12,7 @@ export default {
   mission: "Determine the shear force per plane, pin area, and average shear stress in a double-shear clevis joint.",
   instructions:
     "A steel clevis joint connects a tension rod to a fixed support bracket using a cylindrical pin. " +
-    "The connection carries a tensile load $P = 50\\,\\text{kN}$, and the pin has a diameter $d = 22\\,\\text{mm}$.\n\n" +
+    "The connection carries the tensile load $P$ shown, through a pin of the diameter $d$ shown.\n\n" +
     "Work through the complete solution: determine the number of shear planes, select the governing formulas, and compute the shear force $V$, pin area $A$, and shear stress $\\tau$.",
   setup: {
     joint: { type: "clevis", planes: 2, pinDiameter: 22 },
@@ -56,7 +56,7 @@ export default {
     "Convert $V$ to newtons ($1\\text{ kN} = 1000\\text{ N}$) and divide by $A$ in $\\text{mm}^2$ to get $\\tau$ in MPa.",
   ],
   explanation:
-    "First determine the shear force per plane: $V = \\frac{P}{2} = \\frac{50\\,\\text{kN}}{2} = 25\\,\\text{kN} = 25\\,000\\,\\text{N}$. " +
-    "Next, compute the pin cross-sectional area: $A = \\frac{\\pi}{4}(22\\,\\text{mm})^2 = 380.1\\,\\text{mm}^2$. " +
-    "Finally, calculate the average shear stress: $\\tau = \\frac{V}{A} = \\frac{25\\,000\\,\\text{N}}{380.1\\,\\text{mm}^2} = 65.8\\,\\text{MPa}$.",
+    "First the shear force per plane: two planes share the load, $V = P/2$. Next the pin's cross-sectional area, $A = \\frac{\\pi}{4} d^2$. " +
+    "Finally the average shear stress, $\\tau = V/A$ with V in newtons. For example, 50 kN on a 22 mm pin: " +
+    "$V = 25\\,\\text{kN}$, $A = 380.1\\,\\text{mm}^2$, $\\tau = 65.8\\,\\text{MPa}$.",
 };

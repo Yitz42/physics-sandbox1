@@ -14,6 +14,16 @@ export default {
     joint: { plateThickness: 10, pinDiameter: 18 },
     load: { P: 25 },
   },
+  // Predict first (as in statics, owner 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Double the plate's thickness, same load and pin. The bearing stress…**",
+    options: [
+      { text: "halves", correct: true },
+      { text: "drops to a quarter", feedback: "The bearing area $t \\cdot d$ grows in proportion to t — nothing is squared here." },
+      { text: "stays the same", feedback: "A thicker plate gives the pin more to press against: more area, less stress." },
+    ],
+    explain: "$A_b = t \\cdot d$: twice the thickness is twice the area, so $\\sigma_b = P/A_b$ halves.",
+  },
   editable: [
     { path: "load.P", label: "Bearing load P", min: 10, max: 80, step: 5, unit: "kN" },
     { path: "joint.plateThickness", label: "Plate thickness t", min: 6, max: 25, step: 1, unit: "mm" },

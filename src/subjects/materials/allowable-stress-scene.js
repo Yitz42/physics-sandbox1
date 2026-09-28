@@ -249,7 +249,8 @@ export function allowableStressScene(setup = {}, result, opts = {}) {
   shapes.push({
     type: "text",
     at: [xR, yPinSection + R_pin + 0.16],
-    text: `Pin Shear: ${v.P_shear.toFixed(1)} kN${v.governing === "shear" ? " (GOVERNS)" : ""}`,
+    // (The capacities are what the stages ask for: shown only once the answer is revealed.)
+    text: reveal ? `Pin Shear: ${v.P_shear.toFixed(1)} kN${v.governing === "shear" ? " (GOVERNS)" : ""}` : "Pin Shear",
   });
   shapes.push({
     type: "text",
@@ -273,7 +274,7 @@ export function allowableStressScene(setup = {}, result, opts = {}) {
   shapes.push({
     type: "text",
     at: [xR, yBearingSection + tH / 2 + 0.14],
-    text: `Plate Bearing: ${v.P_bearing.toFixed(1)} kN${v.governing === "bearing" ? " (GOVERNS)" : ""}`,
+    text: reveal ? `Plate Bearing: ${v.P_bearing.toFixed(1)} kN${v.governing === "bearing" ? " (GOVERNS)" : ""}` : "Plate Bearing",
   });
   shapes.push({
     type: "text",
@@ -293,12 +294,18 @@ export function allowableStressScene(setup = {}, result, opts = {}) {
   // =========================================================================
   // CORNER NOTE
   // =========================================================================
+  // The allowable stresses are givens of the problem (a build stage varies them), so they are
+  // always listed. The capacities they give are what the stages ask for: only once revealed
+  // (after Test — or, in the explore stage, after its opening guess).
   const noteLines = [];
-  noteLines.push("Allowable Stress Design");
-  noteLines.push(`Tension limit: ${v.P_tension.toFixed(1)} kN`);
-  noteLines.push(`Pin shear limit: ${v.P_shear.toFixed(1)} kN`);
-  noteLines.push(`Bearing limit: ${v.P_bearing.toFixed(1)} kN`);
-  noteLines.push(`Allowable load: ${v.P_allow.toFixed(1)} kN (${v.governing})`);
+  // (Short lines: the note must leave room for the labels round the drawing.)
+  noteLines.push(`Rod: σ ≤ ${v.sigma_allow} MPa`);
+  noteLines.push(`Pin: τ ≤ ${v.tau_allow} MPa`);
+  noteLines.push(`Plate: σb ≤ ${v.sigma_b_allow} MPa`);
+  if (reveal) {
+    noteLines.push(`Tension: ${v.P_tension.toFixed(1)} kN`);
+    noteLines.push(`Allowable: ${v.P_allow.toFixed(1)} kN (${v.governing})`);
+  }
   if (reveal && v.FS != null) {
     noteLines.push(`Applied P = ${v.P.toFixed(1)} kN, FS = ${v.FS.toFixed(2)}`);
   }

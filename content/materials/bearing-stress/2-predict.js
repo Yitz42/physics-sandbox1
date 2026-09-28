@@ -30,9 +30,9 @@ export default {
     "Convert load from kN to N ($1\\text{ kN} = 1000\\text{ N}$) before dividing by area in $\\text{mm}^2$.",
     "Average bearing stress: $\\sigma_b = \\frac{P}{A_b} = \\frac{P}{t \\cdot d}$. With $P$ in N and $A_b$ in $\\text{mm}^2$, $\\sigma_b$ is directly in MPa.",
   ],
+  // (Numbers change between versions: the working itself is under the equations after Test.)
   explanation:
-    "The projected contact area is the rectangle of width equal to the pin diameter $d$ and height equal to the plate thickness $t$: " +
-    "$A_b = t \\cdot d = (12\\,\\text{mm})(20\\,\\text{mm}) = 240\\,\\text{mm}^2$. " +
-    "The bearing stress is the load divided by this projected area: " +
-    "$\\sigma_b = \\frac{36\\,000\\,\\text{N}}{240\\,\\text{mm}^2} = 150.0\\,\\text{MPa}$.",
+    "The projected contact area is the rectangle the pin's diameter $d$ wide and the plate's thickness $t$ high: $A_b = t \\cdot d$. " +
+    "The bearing stress is the load in newtons divided by it: $\\sigma_b = P/A_b$. " +
+    "For example, a 12 mm plate on a 20 mm pin: $A_b = 240\\,\\text{mm}^2$, and 36 kN gives $\\sigma_b = 150.0\\,\\text{MPa}$.",
 };

@@ -267,7 +267,7 @@ export function shearStressScene(setup = {}, result, opts = {}) {
     from: [xR - vArrowLen / 2, R_pin + 0.18],
     to: [xR + vArrowLen / 2, R_pin + 0.18],
     role: "known",
-    label: `V = ${format(v.V, "kN")}`,
+    label: `V = ${reveal ? format(v.V, "kN") : "?"}`, // (V is asked for: its size only once revealed)
   });
 
   // Caption under right panel

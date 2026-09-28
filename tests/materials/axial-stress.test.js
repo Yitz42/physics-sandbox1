@@ -2,13 +2,8 @@
 import { equationTex } from "../../src/core/equations.js";
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveAxialStress, barArea, PI } from "../../src/subjects/materials/axial-stress.js";
-import {
-  axialStressEquations,
-  axialStressSummary,
-  axialStressQuantities,
-  axialStressMistakes,
-  axialStressDebug,
-} from "../../src/subjects/materials/axial-stress-tools.js";
+import { axialStressEquations, axialStressSummary, axialStressQuantities, axialStressMistakes } from "../../src/subjects/materials/axial-stress-tools.js";
+import { axialStressDebug } from "../../src/subjects/materials/axial-stress-steps.js";
 import { axialStressScene } from "../../src/subjects/materials/axial-stress-scene.js";
 
 setFile("materials / normal stress (Unit 1.1)");

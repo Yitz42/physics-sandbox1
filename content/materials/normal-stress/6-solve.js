@@ -59,13 +59,12 @@ export default {
     { quantity: "sigma", precision: 0.1 },
   ],
   hints: [
-    "Rectangle area: $A = b \\cdot h$. With $b = 40\\,\\text{mm}$ and $h = 12\\,\\text{mm}$, calculate $A$ in $\\text{mm}^2$.",
-    "Convert force to newtons: $P = -72\\,\\text{kN} = -72\\,000\\,\\text{N}$.",
+    "Rectangle area: $A = b \\cdot h$, with b and h from the picture, in $\\text{mm}^2$.",
+    "Convert the force to newtons: multiply kN by 1000, keeping its minus sign (compression).",
     "Calculate stress: $\\sigma = P / A$. Since $P$ is compressive (negative), $\\sigma$ is negative.",
   ],
   explanation:
-    "First calculate the cross-sectional area: $A = b \\cdot h = (40\\,\\text{mm})(12\\,\\text{mm}) = 480\\,\\text{mm}^2$. " +
-    "Next, convert the load to newtons: $P = -72\\,\\text{kN} = -72\\,000\\,\\text{N}$. " +
-    "Finally, compute the average normal stress: $\\sigma = \\frac{P}{A} = \\frac{-72\\,000\\,\\text{N}}{480\\,\\text{mm}^2} = -150.0\\,\\text{MPa}$. " +
+    "First the cross-sectional area, $A = b \\cdot h$. Then the load in newtons, and $\\sigma = P/A$. " +
+    "For example, a 40 × 12 mm strut ($A = 480\\,\\text{mm}^2$) under 72 kN of compression carries $\\sigma = -72\\,000/480 = -150.0\\,\\text{MPa}$. " +
     "The negative sign indicates compression.",
 };

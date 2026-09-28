@@ -74,7 +74,7 @@ export default {
   explanation:
     "To size a plate against bearing failure, we solve $\\sigma_b = \\frac{P}{t \\cdot d} \\le \\sigma_{b,\\text{allow}}$ for thickness: " +
     "$t_{\\min} = \\frac{P}{d \\cdot \\sigma_{b,\\text{allow}}}$. " +
-    "For $P = 45\\,\\text{kN}$, $d = 20\\,\\text{mm}$, and $\\sigma_{b,\\text{allow}} = 150\\,\\text{MPa}$: " +
+    "For example, with $P = 45\\,\\text{kN}$, $d = 20\\,\\text{mm}$ and $\\sigma_{b,\\text{allow}} = 150\\,\\text{MPa}$: " +
     "$t_{\\min} = \\frac{45\\,000\\,\\text{N}}{(20\\,\\text{mm})(150\\,\\text{MPa})} = 15.0\\,\\text{mm}$. " +
     "A thickness of $15\\,\\text{mm}$ provides exactly the required contact area ($A_b = 300\\,\\text{mm}^2$) without excess weight.",
 };

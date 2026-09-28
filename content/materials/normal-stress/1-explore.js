@@ -14,6 +14,16 @@ export default {
     load: { P: 40 },
     view3d: { yaw: 34, pitch: 20 },
   },
+  // Predict first (as in statics, owner 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**Double the bar's diameter, same load. The stress…**",
+    options: [
+      { text: "drops to a quarter", correct: true },
+      { text: "halves", feedback: "The area goes with the diameter SQUARED: twice the diameter is four times the area." },
+      { text: "stays the same", feedback: "The load is shared by more material, so each square millimetre carries less." },
+    ],
+    explain: "$A = \\frac{\\pi}{4} d^2$: twice the diameter is 4 times the area, so $\\sigma = P/A$ drops to a quarter.",
+  },
   toggles: [
     {
       key: "viewMode",

@@ -7,18 +7,25 @@ export default {
   title: "The Weakest Link",
   mission: "Explore how tension, pin shear, and plate bearing limits determine the safe allowable load.",
   instructions:
-    "A structural connection can fail in three different ways under an axial load $P$:\n\n" +
-    "1. **Rod Tension**: normal stress in the bar exceeds $\\sigma_{\\text{allow}}$ ($\\sigma = P / A_{\\text{rod}}$).\n" +
-    "2. **Pin Shear**: shear stress across the pin planes exceeds $\\tau_{\\text{allow}}$ ($\\tau = V / A_{\\text{pin}}$).\n" +
-    "3. **Plate Bearing**: contact pressure in the hole exceeds $\\sigma_{b,\\text{allow}}$ ($\\sigma_b = P / [t \\cdot d]$).\n\n" +
-    "The connection fails as soon as its weakest component reaches its limit, so the **allowable load** is:\n\n" +
-    "$$P_{\\text{allow}} = \\min(P_{\\text{tension}}, P_{\\text{shear}}, P_{\\text{bearing}})$$\n\n" +
-    "Adjust the sliders to see which failure mode governs and how the factor of safety $FS = P_{\\text{allow}} / P$ changes.",
+    "A connection can fail three ways: the **rod** can break in tension, the **pin** can shear, or the **plate** can crush around the hole (bearing). " +
+    "It fails as soon as its weakest part reaches its limit, so the allowable load is the smallest of the three: " +
+    "$P_{\\text{allow}} = \\min(P_{\\text{tension}}, P_{\\text{shear}}, P_{\\text{bearing}})$. " +
+    "Change the sizes and the load, and watch which part governs.",
 
   setup: {
     rod: { diameter: 20, allowableStress: 140 },
     joint: { planes: 2, pinDiameter: 16, plateThickness: 10, allowableShear: 80, allowableBearing: 160 },
     load: { P: 30 },
+  },
+  // Predict first (as in statics, owner 2026-09-27): one quick guess before the numbers show.
+  guess: {
+    prompt: "**The rod could carry 60 kN, the pin 40 kN and the plate 45 kN. The whole connection can safely carry…**",
+    options: [
+      { text: "40 kN — the weakest part", correct: true },
+      { text: "60 kN — the strongest part", feedback: "Load it past 40 kN and the pin shears off, however strong the rod is." },
+      { text: "about 48 kN — the average", feedback: "Parts don't share out their strength: the first one to reach its limit fails." },
+    ],
+    explain: "A connection fails at its weakest part: $P_{\\text{allow}} = \\min(P_{\\text{tension}}, P_{\\text{shear}}, P_{\\text{bearing}})$.",
   },
   editable: [
     { path: "load.P", label: "Applied load P", min: 15, max: 70, step: 5, unit: "kN" },
@@ -41,7 +48,7 @@ export default {
     },
   ],
   hints: [
-    "Look at the capacity bars on the right: the shortest bar governs the connection.",
+    "Each part's limit is its allowable stress times its area: the pin's shear and the plate's bearing limits are written by their sections on the right. The smallest governs.",
     "If bearing governs, increasing plate thickness $t$ or pin diameter $d$ expands the contact area and raises bearing capacity.",
     "The factor of safety is $FS = P_{\\text{allow}} / P$. When $FS \\ge 1.0$, the joint is safe.",
   ],

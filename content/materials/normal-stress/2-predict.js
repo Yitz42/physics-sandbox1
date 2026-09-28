@@ -39,8 +39,9 @@ export default {
     "Convert load $P$ from kN to N: $P\\,\\text{(N)} = P\\,\\text{(kN)} \\times 1000$.",
     "Convenient units: $1\\,\\text{MPa} = 1\\,\\text{N/mm}^2$. Divide force in newtons by area in $\\text{mm}^2$: $\\sigma = P / A$.",
   ],
+  // (Numbers change between versions: the working itself is under the equations after Test.)
   explanation:
-    "First find the cross-sectional area: $A = \\frac{\\pi}{4} d^2 = \\frac{\\pi}{4} (20\\,\\text{mm})^2 = 314.2\\,\\text{mm}^2$. " +
-    "Then divide the force in newtons by the area in $\\text{mm}^2$: $\\sigma = \\frac{30\\,000\\,\\text{N}}{314.2\\,\\text{mm}^2} = 95.5\\,\\text{MPa}$. " +
+    "First find the cross-sectional area, $A = \\frac{\\pi}{4} d^2$ (in $\\text{mm}^2$ with d in mm). " +
+    "Then divide the force in newtons by that area: $\\sigma = P/A$. For example, $d = 20\\,\\text{mm}$ gives $A = 314.2\\,\\text{mm}^2$, and 30 kN gives $\\sigma = 30\\,000/314.2 = 95.5\\,\\text{MPa}$. " +
     "Because $1\\,\\text{N/mm}^2 = 10^6\\,\\text{N/m}^2 = 1\\,\\text{MPa}$, working in newtons and millimetres gives megapascals automatically!",
 };

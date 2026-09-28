@@ -168,7 +168,8 @@ export function bearingStressScene(setup = {}, result, opts = {}) {
   const noteLines = [];
   noteLines.push("Pinned Connection");
   noteLines.push(`Pin: ⌀ ${dVal} mm, Plate: t = ${tVal} mm`);
-  noteLines.push(`A_b = t · d = ${v.A_b.toFixed(0)} mm²`);
+  // (A_b is asked for in the predict, build and solve stages: only once revealed.)
+  if (reveal) noteLines.push(`A_b = t · d = ${v.A_b.toFixed(0)} mm²`);
   if (joint.allowableStress != null) noteLines.push(`σ_allow = ${joint.allowableStress} MPa`);
   if (reveal && v.sigma_b != null) {
     noteLines.push(`σ_b = ${v.sigma_b.toFixed(1)} MPa`);

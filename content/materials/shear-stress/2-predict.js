@@ -31,9 +31,9 @@ export default {
     "Area of the pin: $A = \\frac{\\pi}{4} d^2$. With diameter in mm, area comes out directly in $\\text{mm}^2$.",
     "To find shear stress $\\tau = V / A$: convert $V$ from kN to N ($1\\text{ kN} = 1000\\text{ N}$) and divide by area in $\\text{mm}^2$ ($1\\text{ N/mm}^2 = 1\\text{ MPa}$).",
   ],
+  // (Numbers change between versions: the working itself is under the equations after Test.)
   explanation:
-    "Because the pin is in double shear, the applied tension splits equally across two cut surfaces: " +
-    "$V = \\frac{P}{2} = \\frac{36\\,\\text{kN}}{2} = 18\\,\\text{kN} = 18\\,000\\,\\text{N}$. " +
-    "The pin area is $A = \\frac{\\pi}{4}(18\\,\\text{mm})^2 = 254.5\\,\\text{mm}^2$. " +
-    "The shear stress is $\\tau = \\frac{18\\,000\\,\\text{N}}{254.5\\,\\text{mm}^2} = 70.7\\,\\text{MPa}$.",
+    "Because the pin is in double shear, the load splits equally across two cut surfaces: $V = P/2$. " +
+    "The pin area is $A = \\frac{\\pi}{4} d^2$, and the shear stress $\\tau = V/A$ with V in newtons. " +
+    "For example, 36 kN on an 18 mm pin: $V = 18\\,\\text{kN}$, $A = 254.5\\,\\text{mm}^2$, $\\tau = 70.7\\,\\text{MPa}$.",
 };

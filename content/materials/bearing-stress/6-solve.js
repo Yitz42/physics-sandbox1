@@ -10,8 +10,8 @@ export default {
   title: "The Gusset Plate Pin",
   mission: "Determine the projected contact area and average bearing stress in a pinned plate connection.",
   instructions:
-    "A steel truss tension member of thickness $t = 14\\,\\text{mm}$ is attached to a gusset plate with a high-strength cylindrical pin of diameter $d = 24\\,\\text{mm}$. " +
-    "The connection carries an axial tensile load $P = 55\\,\\text{kN}$.\n\n" +
+    "A steel truss tension member of thickness $t$ is attached to a gusset plate with a high-strength cylindrical pin of diameter $d$. " +
+    "The connection carries the axial tensile load $P$ shown (the sizes are in the picture).\n\n" +
     "Work through the complete solution: identify the appropriate bearing area formula, and calculate the projected bearing area $A_b$ and the average bearing stress $\\sigma_b$ acting on the plate.",
   setup: {
     joint: { plateThickness: 14, pinDiameter: 24 },
@@ -72,13 +72,10 @@ export default {
   ],
   hints: [
     "Projected bearing area: $A_b = t \\cdot d$.",
-    "Convert load from kN to N: $P = 55\\,\\text{kN} = 55\\,000\\,\\text{N}$.",
+    "Convert the load from kN to N: multiply by 1000.",
     "Calculate bearing stress: $\\sigma_b = \\frac{P}{A_b}$ in MPa ($1\\text{ N/mm}^2 = 1\\text{ MPa}$).",
   ],
   explanation:
-    "First, calculate the projected bearing area: " +
-    "$A_b = t \\cdot d = (14\\,\\text{mm})(24\\,\\text{mm}) = 336.0\\,\\text{mm}^2$. " +
-    "Next, convert the tensile force to newtons: $P = 55\\,\\text{kN} = 55\\,000\\,\\text{N}$. " +
-    "Finally, compute the average bearing stress: " +
-    "$\\sigma_b = \\frac{P}{A_b} = \\frac{55\\,000\\,\\text{N}}{336.0\\,\\text{mm}^2} = 163.7\\,\\text{MPa}$.",
+    "First the projected bearing area, $A_b = t \\cdot d$. Next the load in newtons. Then the average bearing stress, $\\sigma_b = P/A_b$. " +
+    "For example, a 14 mm member on a 24 mm pin under 55 kN: $A_b = 336.0\\,\\text{mm}^2$ and $\\sigma_b = 163.7\\,\\text{MPa}$.",
 };

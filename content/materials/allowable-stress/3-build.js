@@ -1,6 +1,6 @@
 // Allowable stress, stage 3 — build: size the connecting pin to safely support the design load.
 // Hand check (default numbers): P = 48 kN, double shear (n = 2).
-//   Rod d = 24 mm, σ_allow = 130 MPa → P_tension = 58.8 kN.
+//   Rod d = 28 mm, σ_allow = 130 MPa → P_tension = 130(615.8) = 80.0 kN (more than any version's load).
 //   Plate t = 14 mm, σ_b,allow = 180 MPa → requires d_pin ≥ 48 000 / (14 · 180) = 19.05 mm.
 //   Pin double shear τ_allow = 80 MPa → requires d_pin ≥ √(4 · 48 000 / (2 · π · 80)) = 19.54 mm.
 //   Smallest safe whole-millimetre pin is d = 20 mm:
@@ -79,7 +79,7 @@ export default {
   ],
   explanation:
     "A connecting pin must be sized against both transverse shear and contact bearing. " +
-    "For $P = 48\\,\\text{kN}$, $\\tau_{\\text{allow}} = 80\\,\\text{MPa}$ in double shear requires $d \\ge 19.54\\,\\text{mm}$, " +
+    "For example, for $P = 48\\,\\text{kN}$, $\\tau_{\\text{allow}} = 80\\,\\text{MPa}$ in double shear requires $d \\ge 19.54\\,\\text{mm}$, " +
     "while $\\sigma_{b,\\text{allow}} = 180\\,\\text{MPa}$ with $t = 14\\,\\text{mm}$ requires $d \\ge 19.05\\,\\text{mm}$. " +
     "Pin shear governs here, requiring $d = 20\\,\\text{mm}$ to provide an allowable capacity of $50.3\\,\\text{kN} \\ge 48\\,\\text{kN}$ ($FS = 1.05$).",
 };

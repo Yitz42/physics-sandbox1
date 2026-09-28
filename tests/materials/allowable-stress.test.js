@@ -1,13 +1,8 @@
 // allowable-stress.test.js — tests for Mechanics of Materials Unit 1.4: Allowable stress & FS.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveAllowableStress, PI } from "../../src/subjects/materials/allowable-stress.js";
-import {
-  allowableStressEquations,
-  allowableStressSummary,
-  allowableStressQuantities,
-  allowableStressMistakes,
-  allowableStressDebug,
-} from "../../src/subjects/materials/allowable-stress-tools.js";
+import { allowableStressEquations, allowableStressSummary, allowableStressQuantities, allowableStressMistakes } from "../../src/subjects/materials/allowable-stress-tools.js";
+import { allowableStressDebug } from "../../src/subjects/materials/allowable-stress-steps.js";
 import { allowableStressScene } from "../../src/subjects/materials/allowable-stress-scene.js";
 
 setFile("materials / allowable stress & factor of safety (Unit 1.4)");

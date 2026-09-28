@@ -4,6 +4,8 @@
 // concept with the six stages explore → predict → build → debug → concept check → solve,
 // and units are numbered by chapter (e.g. Unit 1.1).
 //
+// The chapters match Hibbeler's (reading.js) chapter for chapter, as statics does, so Chapter 12
+// here is the book's Chapter 12 (the page numbers chapters by their place in this list).
 // A chapter's `units` lists unit folders (built units) and soon(...) entries:
 // planned units, shown on the course page as "Coming soon".
 
@@ -61,10 +63,9 @@ const chapters = [
   },
   {
     id: "bending",
-    title: "Pure bending",
+    title: "Bending",
     units: [
       soon("The flexure formula", "$\\sigma = -\\frac{My}{I}$: bending stress in beams, neutral axis, and section modulus $S = I/c$."),
-      soon("Beam design for bending", "Selecting standard cross-sections (W-shapes, channels, rectangles) for allowable $\\sigma$."),
     ],
   },
   {
@@ -90,6 +91,22 @@ const chapters = [
       soon("Plane-stress transformation", "Stresses $\\sigma_{x'}$, $\\tau_{x'y'}$ on an inclined plane rotated by angle $\\theta$."),
       soon("Principal stresses and maximum shear", "Principal planes, principal stresses $\\sigma_1, \\sigma_2$, and maximum in-plane shear $\\tau_{\\max}$."),
       soon("Mohr's circle for stress", "Graphical representation of plane stress: center $(\\sigma_{\\text{avg}}, 0)$, radius $R$, and stress states."),
+    ],
+  },
+  {
+    id: "strain-transformation",
+    title: "Strain transformation",
+    units: [
+      soon("Plane-strain transformation", "Strains on rotated axes, principal strains, and Mohr's circle for strain."),
+      soon("Strain gauges and rosettes", "Finding the state of strain at a point from three gauge readings."),
+    ],
+  },
+  {
+    id: "design",
+    title: "Design of beams and shafts",
+    units: [
+      soon("Beam design", "Choosing a section so both bending and shear stresses stay within their allowable values."),
+      soon("Shaft design", "Sizing a shaft that carries bending and torsion together."),
     ],
   },
   {

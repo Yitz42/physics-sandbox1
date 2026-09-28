@@ -472,12 +472,18 @@ Chapters follow standard textbooks (Hibbeler, Beer & Johnston). Each unit teache
 - **Chapter 3: Mechanical properties**: stress-strain curve, Hooke's law ($\sigma = E\epsilon$), Poisson's ratio.
 - **Chapter 4: Axial load and deformation**: elastic deformation ($\delta = \frac{PL}{AE}$), thermal stress.
 - **Chapter 5: Torsion**: shear stress ($\tau = \frac{T\rho}{J}$), angle of twist ($\phi = \frac{TL}{JG}$).
-- **Chapter 6: Pure bending**: flexure formula ($\sigma = -\frac{My}{I}$), section modulus.
+- **Chapter 6: Bending**: flexure formula ($\sigma = -\frac{My}{I}$), section modulus.
 - **Chapter 7: Transverse shear**: shear formula ($\tau = \frac{VQ}{It}$), shear flow ($q = \frac{VQ}{I}$).
 - **Chapter 8: Combined loadings**: pressure vessels, combined axial/bending/torsion.
 - **Chapter 9: Stress transformation**: transformation equations, principal stresses, Mohr's circle.
-- **Chapter 10: Deflection of beams**: elastic curve, deflection by integration and superposition.
-- **Chapter 11: Buckling of columns**: Euler buckling ($P_{\text{cr}} = \frac{\pi^2 EI}{(KL)^2}$).
+- **Chapter 10: Strain transformation**: plane-strain transformation, strain rosettes.
+- **Chapter 11: Design of beams and shafts**: choosing sections for bending and shear; shafts in bending and torsion.
+- **Chapter 12: Deflection of beams and shafts**: elastic curve, deflection by integration and superposition.
+- **Chapter 13: Buckling of columns**: Euler buckling ($P_{\text{cr}} = \frac{\pi^2 EI}{(KL)^2}$).
+- Chapters match Hibbeler, *Mechanics of Materials* 10th ed., chapter for chapter (as statics does).
+- Chapter 1 rules (review, 2026-09-28): the pictures never show an asked number before Test (a
+  capacity, an area, V); the allowable stresses are givens, always listed; text in varied stages
+  names no numbers that change between versions (it says "shown", or "for example").
 
 ## Subject 3: Dynamics (later)
 - Kinematics of particles
