@@ -263,7 +263,8 @@ export function drawShape(cv, s, env) {
     case "polygon": {
       const pts = s.points.map(S);
       ctx.fillStyle = s.fill || cssColor("--c-crate", "#e9d5b0");
-      ctx.strokeStyle = lit ? roleColor("known") : (s.stroke || ink);
+      // (stroke "ink": the picture's own ink colour, which follows light and dark mode.)
+      ctx.strokeStyle = lit ? roleColor("known") : (!s.stroke || s.stroke === "ink" ? ink : s.stroke);
       ctx.lineWidth = s.lineWidth || 1.5;
       if (s.dashed) ctx.setLineDash([5, 4]);
       ctx.beginPath();

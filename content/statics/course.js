@@ -88,7 +88,7 @@ const chapters = [
     units: [
       "dry-friction",
       "tipping",
-      soon("Wedges and belt friction", "Wedges, and how a rope wrapped around a post holds a big load."),
+      "wedges-belts",
     ],
   },
   {

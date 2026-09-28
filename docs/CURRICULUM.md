@@ -307,9 +307,17 @@ Claude builds from it.
   debug a student's working (push arm from the centre, whole width, μs in the tipping equation,
   the larger push taken as first); concept check; solve: ΣF_y, ΣF_x and ΣM_O, then both limits.
 
-**Unit 9.3: Wedges and belt friction**
+**Unit 9.3: Wedges and belt friction** ✅
 - Concept: wedges; belt friction T2 = T1·e^(μβ).
-- Test ideas: how many wraps of rope hold a boat.
+- Built: wrap a rope round a post (β and μs sliders) and watch the hand pull a 1000 N load needs;
+  predict a sailor's pull at a bollard, a hoist over a fixed pipe (the hand is the tight side), the
+  turns needed, the load a capstan holds, the push that drives a wedge under a machine and the pull
+  that gets one back out (self-locking); choose a wedge angle that lifts enough per stroke and is
+  self-locking (working out its push); debug a student's bollard working (β in degrees, 1 + μβ,
+  tight side swapped, a part-turn dropped); concept check; solve a wedge: the block's and the
+  wedge's ΣF_x, ΣF_y, then N₁, N₂ and P.
+- A wedge flatter than tan α = μs doesn't slide out from under its block: pulled out, the block
+  rides with it (P_out = μs W), since the wall can only push (wedge.js pullOut).
 
 ### Chapter 10: Moments of inertia
 

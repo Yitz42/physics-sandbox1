@@ -59,7 +59,9 @@ src/
                            friction-ladder.js (ladders), friction-tools.js, friction-steps.js, Unit 9.1;
                            setup.tipping: a crate may tip about a corner O instead (friction-tip.js,
                            friction-tip-tools.js), Unit 9.2
-      geometry.js          later: area moments of inertia
+      belt.js              belt friction T₂ = T₁e^{μβ} (belt-scene.js, belt-steps.js), Unit 9.3
+      wedge.js             a wedge under a block against a wall: N and μN at each contact, the push in
+                           and the pull out, self-locking (wedge-scene.js), Unit 9.3
     controls/              automatic controls: block-diagram.js (+ block-tools.js,
                            block-layout.js) and signal-flow.js (Mason's rule); index.js
                            lists the solvers planned for later chapters
