@@ -26,6 +26,7 @@
 
 import { mag, dot } from "../../core/vector.js";
 import { solveBalance3d } from "./force3d-balance.js";
+import { solveMoment3d } from "./force3d-moment.js";
 
 export const G = 9.81; // m/s²
 
@@ -89,6 +90,7 @@ export function describe(values, name, v) {
 
 export function solveForce3d(setup) {
   if (setup.analysis === "equilibrium") return solveBalance3d(setup);
+  if (setup.analysis === "moment") return solveMoment3d(setup); // M_O = r × F (Units 4.7, 4.8)
   const values = {};
   for (const f of setup.forces || []) {
     const d = directionOf3(f, setup);
@@ -139,6 +141,23 @@ export function force3dQuantities(setup) {
     }
   }
   if (setup.resultant) add("R", "F_R");
+  if (setup.analysis === "moment") {
+    // M_O = r × F: each force's, and the total (N·m); with an axis, M_a along it.
+    const O = setup.about || "O";
+    const mom = (name, sym) => {
+      q[name] = { label: sym, unit: "N·m" };
+      for (const k of ["x", "y", "z"]) q[`${name}.${k}`] = { label: `(${sym})_${k}`, unit: "N·m" };
+      q[`${name}.alpha`] = { label: "\\alpha", unit: "deg" };
+      q[`${name}.beta`] = { label: "\\beta", unit: "deg" };
+      q[`${name}.gamma`] = { label: "\\gamma", unit: "deg" };
+    };
+    mom("M", `M_{${O}}`);
+    for (const f of setup.forces || []) {
+      mom(`M_${f.id}`, `M_{${f.symbol}}`);
+      for (const k of ["x", "y", "z"]) q[`r_${f.id}.${k}`] = { label: `r_${k}`, unit: "m" };
+    }
+    if (setup.axis) q.Ma = { label: "M_a", unit: "N·m" };
+  }
   return q;
 }
 

@@ -9,9 +9,10 @@ export function cssColor(name, fallback = "#333") {
 }
 
 // Draw an arrow from `a` to `b` (pixels). Options:
-//   color, width, dashed, alpha, glow (for highlighted arrows)
+//   color, width, dashed, alpha, glow (for highlighted arrows),
+//   double (two heads, one behind the other: a MOMENT vector, as textbooks draw it in 3D)
 export function drawArrow(ctx, a, b, opts = {}) {
-  const { color = "#333", width = 2.5, dashed = false, alpha = 1, glow = false } = opts;
+  const { color = "#333", width = 2.5, dashed = false, alpha = 1, glow = false, double = false } = opts;
   const dx = b[0] - a[0];
   const dy = b[1] - a[1];
   const len = Math.hypot(dx, dy);
@@ -33,16 +34,20 @@ export function drawArrow(ctx, a, b, opts = {}) {
   // Shaft stops at the base of the head so the tip stays sharp.
   ctx.beginPath();
   ctx.moveTo(a[0], a[1]);
-  ctx.lineTo(b[0] - ux * head * 0.8, b[1] - uy * head * 0.8);
+  const back = double ? head * 0.85 : 0; // (a second head sits this far behind the first)
+  ctx.lineTo(b[0] - ux * (head * 0.8 + back), b[1] - uy * (head * 0.8 + back));
   ctx.stroke();
   ctx.setLineDash([]);
-  // Arrow head: a filled triangle.
-  ctx.beginPath();
-  ctx.moveTo(b[0], b[1]);
-  ctx.lineTo(b[0] - ux * head - uy * head * 0.45, b[1] - uy * head + ux * head * 0.45);
-  ctx.lineTo(b[0] - ux * head + uy * head * 0.45, b[1] - uy * head - ux * head * 0.45);
-  ctx.closePath();
-  ctx.fill();
+  // Arrow head(s): filled triangles.
+  for (const off of double ? [0, back] : [0]) {
+    const t = [b[0] - ux * off, b[1] - uy * off];
+    ctx.beginPath();
+    ctx.moveTo(t[0], t[1]);
+    ctx.lineTo(t[0] - ux * head - uy * head * 0.45, t[1] - uy * head + ux * head * 0.45);
+    ctx.lineTo(t[0] - ux * head + uy * head * 0.45, t[1] - uy * head - ux * head * 0.45);
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.restore();
 }
 

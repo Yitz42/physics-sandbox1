@@ -59,6 +59,7 @@ export function drawShape(cv, s, env) {
         width: s.role === "component" ? 1.8 : s.role === "axis" ? 1.5 : 2.8,
         dashed: ["component", "target", "resultant", "shadow"].includes(s.role),
         alpha: s.alpha ?? (s.role === "target" ? 0.7 : s.role === "shadow" ? 0.55 : 1),
+        double: !!s.double, // a moment vector (two heads)
       });
       out.segments.push([a, b]);
       break;

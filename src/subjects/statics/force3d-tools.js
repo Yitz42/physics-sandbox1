@@ -7,6 +7,8 @@ import { fixedTex, sigFig } from "../../core/units.js";
 import { solveForce3d, directionOf3, pointOf, componentSymbol, cosd, acosd, DEG } from "./force3d.js";
 import { balanceEquations } from "./force3d-balance.js";
 import { balanceSummary, balanceMistakes } from "./force3d-balance-tools.js";
+import { momentEquations, momentSummary, momentMistakes } from "./force3d-moment-tools.js";
+import { momentSteps } from "./force3d-moment-steps.js";
 
 export { componentSymbol };
 
@@ -53,6 +55,7 @@ export function factorFor(f, setup, i) {
 
 export function force3dEquations(setup, result) {
   if (setup.analysis === "equilibrium") return balanceEquations(setup); // ΣF_x = 0 … (Unit 3.4)
+  if (setup.analysis === "moment") return momentEquations(setup, result); // M = r × F (Units 4.7, 4.8)
   const res = result || solveForce3d(setup);
   const v = res.values;
   const eqs = [];
@@ -83,6 +86,7 @@ export function force3dEquations(setup, result) {
 export function force3dSummary(setup, result, { reveal = true, hideAnswers = false } = {}) {
   const res = result || solveForce3d(setup);
   if (setup.analysis === "equilibrium") return balanceSummary(setup, res, { reveal, hideAnswers });
+  if (setup.analysis === "moment") return momentSummary(setup, res, { reveal, hideAnswers });
   const v = res.values;
   const lines = [];
   if (res.status === "unstable") return lines; // (the message says why)
@@ -121,6 +125,7 @@ export function force3dSummary(setup, result, { reveal = true, hideAnswers = fal
 
 export function force3dMistakes(setup, name) {
   if (setup.analysis === "equilibrium") return balanceMistakes(setup, name);
+  if (setup.analysis === "moment") return momentMistakes(setup, name);
   const res = solveForce3d(setup);
   const v = res.values;
   const right = v[name];
@@ -181,6 +186,7 @@ export function force3dMistakes(setup, name) {
 // sign), "noUnit" (F r_AB instead of F u_AB).
 
 export function force3dSteps(setup, mutation) {
+  if (setup.analysis === "moment") return momentSteps(setup, mutation); // r × F working (Unit 4.7)
   const f = setup.forces.find((x) => x.dir && x.dir.from);
   const v = solveForce3d(setup).values;
   const [A, B] = [f.dir.from, f.dir.to];

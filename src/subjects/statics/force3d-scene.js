@@ -27,6 +27,7 @@ import { projector } from "../../render/projection.js";
 import { solveForce3d, pointOf, directionOf3 } from "./force3d.js";
 import { sizeOf3 } from "./force3d-balance.js";
 import { componentBox, angleMarks, anglesFor } from "./force3d-marks.js";
+import { momentShapes } from "./force3d-moment-scene.js";
 
 const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale3 = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
@@ -53,6 +54,7 @@ export function force3dScene(setup, result, opts = {}) {
   shapes.push({ type: "axes", dirs: { x: unit2(P.screenDir([1, 0, 0])), y: unit2(P.screenDir([0, 1, 0])), z: unit2(P.screenDir([0, 0, 1])) } });
   // A pole, cables, the named points.
   if (setup.pole) shapes.push({ type: "beam", points: setup.pole.map((n) => at(pointOf(setup, n))), width: 10 });
+  if (setup.body) shapes.push({ type: "beam", points: setup.body.map((n) => at(pointOf(setup, n))), width: 10 }); // a bent bar or pipe
   for (const [a, b] of setup.cables || []) shapes.push({ type: "line", from: at(pointOf(setup, a)), to: at(pointOf(setup, b)), style: "cable" });
   for (const [a, b] of setup.springs || []) shapes.push({ type: "spring", from: at(pointOf(setup, a)), to: at(pointOf(setup, b)) });
   // Weights: a crate on a short cord below the point it hangs from (drawn flat, facing the viewer).
@@ -91,7 +93,8 @@ export function force3dScene(setup, result, opts = {}) {
     // (agreed with the owner): every arrow the same short length at the point, its size in its
     // label — so moving an anchor never slides the labels along the cables. A cable that would
     // have to push stays along its cable, in red, with its negative value.
-    const balance = setup.analysis === "equilibrium";
+    // (Moment pictures too, unless sliders set the force: then its length shows its size.)
+    const balance = setup.analysis === "equilibrium" || (setup.analysis === "moment" && !setup.fullScale);
     const len = F == null ? 0.35 * size : balance ? 0.3 * size : F * k;
     const tip = add3(start, scale3(d.u, len));
     const asked = F == null || ((setup.hideMagnitude || f.hideMagnitude) && !reveal);
@@ -113,6 +116,12 @@ export function force3dScene(setup, result, opts = {}) {
     }
     if (shown(setup.showComponents)) shapes.push(...componentBox(f, start, scale3(d.u, F * k), d.u, F, at, reveal || setup.showComponents === "always"));
     if (anglesFor(setup, f)) shapes.push(...angleMarks(anglesFor(setup, f), start, d.u, 0.3 * size, at, reveal));
+  }
+  // Moments in 3D (Units 4.7, 4.8): r, the moment vector at O, an axis.
+  if (setup.analysis === "moment") {
+    const mm = momentShapes(setup, v, at, size, reveal);
+    shapes.push(...mm.shapes);
+    fixed.push(...mm.fixed);
   }
   // The resultant, once found.
   if (setup.resultant && reveal && v.R > 0) {

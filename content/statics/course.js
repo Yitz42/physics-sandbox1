@@ -45,7 +45,7 @@ const chapters = [
     id: "moments", title: "Moments and static equivalence",
     units: [
       "moments", "varignon", "couples", "moving-forces", "equivalent-systems", "distributed-loads",
-      soon("Moments in 3D", "The moment as a cross product, $\\mathbf{M}_O = \\mathbf{r} \\times \\mathbf{F}$, pointing along the axis it turns about."),
+      "moments-3d",
       soon("Moment about an axis", "How hard a force turns something about a given axis, like a door about its hinges."),
     ],
   },

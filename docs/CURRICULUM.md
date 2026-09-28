@@ -143,8 +143,13 @@ Claude builds from it.
 - Built: shape a load and watch its resultant; predict a triangular load's resultant;
   spread gravel over a trailer's axle; debug a trapezoid split; solve a curved load.
 
-**Unit 4.7: Moments in 3D**
+**Unit 4.7: Moments in 3D** ✅
 - Concept: M_O = r × F (cross product); the moment vector points along the turning axis.
+- Built (statics.force3d, analysis "moment"; the moment drawn as a double-headed arrow): explore —
+  set a force's components at the end of a bent pipe and watch M_O; predict — a rope on the pipe,
+  the flagpole cable as a moment (no twist: M_z = 0); build — push so the pipe only twists
+  (M_x = M_y = 0) by 60–80 N·m; debug — r backwards, F × r, the j term's lost minus, wrong
+  pairing; concept check; solve — a load and a rope on a bracket (r, F, r × F, then ΣM).
 
 **Unit 4.8: Moment about an axis**
 - Concept: how hard a force turns something about a given axis (a door about its hinges).

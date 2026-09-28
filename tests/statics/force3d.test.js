@@ -216,3 +216,70 @@ test("3D equilibrium: hall lamp, A (1, 1, 3), 60 kg → 114.4, 274.7, 297.6 N; s
   ok(m.some((x) => x.kind === "vector" && Math.abs(x.value - 114.45 / 7) < 0.01), "forgot to divide by r = 7 m");
   ok(m.every((x) => x.kind), "every slip names its kind");
 });
+
+// --- Units 4.7, 4.8: moments in 3D, M_O = r × F (force3d-moment.js; hand checks as in
+// content/statics/library/moments3d.js) ---
+const pipe = (C = [0.8, 0.1, 0.2], F = 300) => ({
+  analysis: "moment", about: "O",
+  points: { O: [0, 0, 0], A: [0, 0.5, 0], B: [0.4, 0.5, 0], C },
+  forces: [{ id: "F", symbol: "F", magnitude: F, dir: { from: "B", to: "C" } }],
+});
+
+test("3D moment: rope from B (0.4, 0.5, 0) toward C, 300 N = {200 i − 200 j + 100 k} N → M_O = {50 i − 40 j − 180 k} N·m, 191.05 N·m", () => {
+  // M_x = (0.5)(100) − 0 = 50; M_y = 0 − (0.4)(100) = −40; M_z = (0.4)(−200) − (0.5)(200) = −180.
+  const v = solveForce3d(pipe()).values;
+  close(v["M.x"], 50, 1e-9);
+  close(v["M.y"], -40, 1e-9);
+  close(v["M.z"], -180, 1e-9);
+  close(v.M, Math.sqrt(36500), 1e-9);
+  // Any point on the line gives the same moment: r to C instead of B.
+  const s = pipe();
+  s.forces[0].at = "C";
+  close(solveForce3d(s).values["M.z"], -180, 1e-9);
+  const eqs = force3dEquations(pipe());
+  equal(eqs.map((e) => e.id), ["Mx", "My", "Mz"]);
+  close(eqs[2].result.value, -180, 1e-9);
+});
+
+test("3D moment: flagpole cable A (0, 0, 6) → B (2, −3, 0), 700 N → M_O = {1800 i + 1200 j} N·m, no twist (M_z = 0)", () => {
+  const v = solveForce3d({ analysis: "moment", about: "O", points: { O: [0, 0, 0], A: [0, 0, 6], B: [2, -3, 0] },
+    forces: [{ id: "T", symbol: "T", magnitude: 700, dir: { from: "A", to: "B" } }] }).values;
+  close(v["M.x"], 1800, 1e-9);
+  close(v["M.y"], 1200, 1e-9);
+  close(v["M.z"], 0, 1e-9);
+  close(v.M, 2163.33, 1e-5);
+});
+
+test("3D moment: bracket, 400 N down at A (0, 0.3, 0) + 350 N rope B → D → M_O = {−30 i − 75 j − 70 k} N·m, 106.9 N·m; slips explained", () => {
+  const s = {
+    analysis: "moment", about: "O",
+    points: { O: [0, 0, 0], A: [0, 0.3, 0], B: [0.25, 0.3, 0], D: [0.55, 0.1, 0.6] },
+    forces: [
+      { id: "F_1", symbol: "F_1", at: "A", dir: { components: [0, 0, -400] } },
+      { id: "T", symbol: "T", magnitude: 350, dir: { from: "B", to: "D" } },
+    ],
+  };
+  const v = solveForce3d(s).values;
+  close(v["M.x"], -30, 1e-9);
+  close(v["M.y"], -75, 1e-9);
+  close(v["M.z"], -70, 1e-9);
+  close(v.M, 106.888, 1e-5);
+  const my = force3dMistakes(s, "M.y");
+  ok(my.some((m) => Math.abs(m.value - 75) < 1e-6 && /middle \(j\)/.test(m.message)), "the lost minus on the j term");
+  ok(force3dMistakes(s, "M.x").some((m) => m.kind === "missing" && Math.abs(m.value - (-30 - 90)) < 1e-6), "a force left out (T's 90 N·m)");
+  ok(force3dMistakes(s, "M.z").every((m) => m.kind), "every slip names its kind");
+  const g = force3dChoices(s);
+  ok(g.every((x) => x.options.filter((o) => o.correct).length === 1), "one right line per group");
+  ok(g.every((x) => x.options.every((o) => o.correct || o.kind)), "every wrong line names its mistake");
+});
+
+test("3D moment: a student's r × F working — each slip spoils its own line, later lines follow", () => {
+  for (const [slip, line] of [["backwards", "r"], ["order", "det"], ["jSign", "My"], ["pairing", "Mz"]]) {
+    const w = force3dSteps(pipe(), { slip });
+    equal(w.wrong, line, `${slip}:`);
+    equal(w.corrected.length, 6);
+    ok(w.fixes.filter((f) => f.correct).length === 1, `${slip}: one right fix`);
+  }
+  ok(force3dSteps(pipe(), { slip: "order" }).follows.includes("Mz"), "M_z follows a swapped determinant");
+  equal(force3dSteps(pipe(), { slip: "jSign" }).follows, [], "only M_y is wrong when its minus is lost");
+});

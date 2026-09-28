@@ -5,6 +5,7 @@
 import { sigFig } from "../../core/units.js";
 import { solveForce3d, cosd, DEG } from "./force3d.js";
 import { vecTex } from "./force3d-tools.js";
+import { momentChoices } from "./force3d-moment-steps.js";
 
 const n4 = (v) => sigFig(v, 4);
 const AX = ["x", "y", "z"];
@@ -14,6 +15,7 @@ const AX = ["x", "y", "z"];
 // and elevation, F as a Cartesian vector. Then the resultant.
 
 export function force3dChoices(setup, result) {
+  if (setup.analysis === "moment") return momentChoices(setup, result); // r, F, r × F, ΣM (Unit 4.7)
   const v = (result || solveForce3d(setup)).values;
   const groups = [];
   for (const f of setup.forces || []) {
