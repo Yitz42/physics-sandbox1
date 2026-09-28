@@ -147,6 +147,15 @@ test("equations: a couple moment term shows its unit, N·m built so KaTeX can dr
   equal(equationTex(eq, "symbolic", { highlight: false }), "M_R = -M_3");
 });
 
+test("equations: a term's own number form (numTex) is used in Numbers, and the result can stay hidden", () => {
+  // A = π/4 d² with d = 18 mm: Numbers shows the given d, not the answer 254.5 mm².
+  const eq = { id: "area", lhs: "A", form: "define", result: { value: 254.47, unit: "mm^2" },
+    terms: [{ id: "A", sign: 1, symbol: "\\tfrac{\\pi}{4} d^2", value: 254.47, numTex: "\\tfrac{\\pi}{4}(18\\,\\text{mm})^2" }] };
+  equal(equationTex(eq, "numeric", { highlight: false, showResult: false }), "A = \\tfrac{\\pi}{4}(18\\,\\text{mm})^2");
+  equal(equationTex(eq, "symbolic", { highlight: false }), "A = \\tfrac{\\pi}{4} d^2");
+  ok(equationTex(eq, "numeric", { highlight: false }).endsWith("= 254.5\\,\\text{mm}^2"), "after Test the result shows, in mm²");
+});
+
 import { cleanNumberText, roundToPrecision, answerRange } from "../../src/challenges/common/answers.js";
 test("answer boxes: no leading zeros, only digits, one point and a leading minus", () => {
   equal(cleanNumberText("090"), "90");

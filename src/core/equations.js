@@ -13,7 +13,8 @@
 //     symbol: "T_{AB}",      // KaTeX symbol
 //     value: null,           // known number, or null when unknown
 //     factor: { tex: "\\cos 30^\\circ", value: 0.866, pre: false,
-//               alt: { tex: "\\sin 30^\\circ", value: 0.5 } } }   // optional
+//               alt: { tex: "\\sin 30^\\circ", value: 0.5 } },  // optional
+//     numTex: "\\tfrac{\\pi}{4}(18\\,\\text{mm})^2" }  // optional: its own number form
 // `factor.alt` is the "sin/cos swapped" version used to build mistakes;
 // `factor.alts` can list more wrong versions, each with an optional `reason`
 // and `kind` (the kind of mistake it is, see src/core/diagnosis.js).
@@ -40,6 +41,10 @@ function factorValue(term) {
 
 // KaTeX for one term (without its leading sign).
 function termBody(term, numeric) {
+  // A term may write its own number form (numTex) when "(value unit)" can't show
+  // the working, e.g. the area π/4 d² → "π/4 (18 mm)²" or σ = P/A → "48 000 N / A".
+  // That puts only the GIVEN numbers in, so the result can stay hidden until Test.
+  if (numeric && term.numTex) return term.numTex;
   const known = numeric && term.value != null;
   // Known values are substituted with their unit when the term has one, e.g. "(250\,N)".
   const unit = term.unit ? `\\,${unitTex(term.unit)}` : "";

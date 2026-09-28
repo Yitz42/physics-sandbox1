@@ -26,9 +26,26 @@ const UNITS = {
   kg: { text: "kg", tex: "\\text{kg}" },
   "N·m": { text: "N·m", tex: "\\text{N}\\!\\cdot\\!\\text{m}" },
   "N/m": { text: "N/m", tex: "\\text{N/m}" }, // a distributed load: newtons per metre of beam
+  mm: { text: "mm", tex: "\\text{mm}" },
+  "mm^2": { text: "mm²", tex: "\\text{mm}^2" },
+  "m^2": { text: "m²", tex: "\\text{m}^2" },
+  Pa: { text: "Pa", tex: "\\text{Pa}" },
+  kPa: { text: "kPa", tex: "\\text{kPa}" },
+  MPa: { text: "MPa", tex: "\\text{MPa}" },
+  GPa: { text: "GPa", tex: "\\text{GPa}" },
   deg: { text: "°", tex: "^\\circ" },
   "": { text: "", tex: "" },
 };
+
+function texOfUnit(unit) {
+  if (!unit) return "";
+  if (UNITS[unit]) return UNITS[unit].tex;
+  if (unit.startsWith("\\") || unit.includes("\\text")) return unit;
+  if (unit.includes("^")) {
+    return unit.replace(/([a-zA-Z]+)\^([0-9]+)/g, "\\text{$1}^{$2}");
+  }
+  return `\\text{${unit}}`;
+}
 
 // Plain-text value with unit, e.g. format(346.41, "N") → "346 N".
 // Forces of 10 000 N or more switch to kN so numbers stay readable.
@@ -44,14 +61,14 @@ export function formatTex(value, unit = "", sig = 3) {
   if (unit === "N" && Math.abs(value) >= 10000) return formatTex(value / 1000, "kN", sig);
   const num = sigFig(value, sig);
   if (unit === "deg") return `${num}^\\circ`;
-  const u = UNITS[unit] ? UNITS[unit].tex : `\\text{${unit}}`;
+  const u = texOfUnit(unit);
   return u ? `${num}\\,${u}` : num;
 }
 
 // KaTeX for a unit on its own, e.g. unitTex("N·m") → "\text{N}\!\cdot\!\text{m}".
 // (KaTeX can't put the "·" character inside \text{}, so N·m is built from parts.)
 export function unitTex(unit) {
-  return UNITS[unit] ? UNITS[unit].tex : `\\text{${unit}}`;
+  return texOfUnit(unit);
 }
 
 // Unit label for an input box, e.g. "N" or "°".
@@ -64,6 +81,6 @@ export function unitLabel(unit) {
 export function fixedTex(value, unit = "", decimals = 1) {
   const num = (Math.abs(value) < 0.5 * 10 ** -decimals ? 0 : value).toFixed(decimals);
   if (unit === "deg") return `${num}^\\circ`;
-  const u = UNITS[unit] ? UNITS[unit].tex : `\\text{${unit}}`;
+  const u = texOfUnit(unit);
   return u ? `${num}\\,${u}` : num;
 }

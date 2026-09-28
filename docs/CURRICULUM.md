@@ -386,15 +386,63 @@ rate feedback; find the wrong step; reduce, then T(s)) ·
 
 ---
 
-## Subject 2: Mechanics of materials (later)
-- Stress and strain, axial loading
-- Torsion
-- Bending stress (σ = My/I) at a point in a beam or bridge
-- Shear stress in beams
-- Combined loading: stress at a point
-- Stress transformation and Mohr's circle
-- Deflection
-- Buckling of columns
+## Subject 2: Mechanics of materials
+
+Chapters follow standard textbooks (Hibbeler, Beer & Johnston). Each unit teaches one concept with all six stages.
+
+### Chapter 1: Stress
+**Unit 1.1: Normal stress** ✅
+- Concept: $\sigma = P / A$, internal normal force per unit cross-sectional area; tension (+) and compression (−).
+- Built:
+  - explore: change axial load $P$ and rod diameter $d$, watch normal stress $\sigma$ update live;
+  - predict: calculate cross-sectional area $A$ and stress $\sigma$ in MPa for a solid steel tie rod;
+  - build: choose the smallest standard diameter $d$ so that $\sigma \le \sigma_{\text{allow}}$ under a heavy load;
+  - debug: spot a student's mistake in calculating normal stress (forgot $\pi/4$, missing kilo- conversion);
+  - concept check: diameter scaling ($A \propto d^2$), length independence, tension vs compression;
+  - solve: full solution for an axially loaded rectangular strut ($b \cdot h$, compression, stress).
+
+**Unit 1.2: Direct shear stress** ✅
+- Concept: $\tau = V / A$, internal cutting force per cross-sectional shear plane; single shear ($V = P$) vs double shear ($V = P / 2$).
+- Built:
+  - explore: toggle single vs double shear, adjust load $P$ and pin diameter $d$, watch shear stress update live;
+  - predict: calculate shear force per plane $V$, circular pin area $A$, and average shear stress $\tau$ in a clevis joint;
+  - build: size the smallest whole-millimetre bolt for an allowable shear stress limit $\tau \le \tau_{\text{allow}}$;
+  - debug: find the mistake in a student's double-shear calculation (forgot double shear factor 2, units conversion, diameter vs radius);
+  - concept check: shear vs normal orientation, double shear advantage, diameter squared scaling, physical slicing failure;
+  - solve: complete problem on a double-shear clevis pin connection with step-by-step guidance.
+
+**Unit 1.3: Bearing stress** ✅
+- Concept: $\sigma_b = P / A_b$, compressive contact pressure between cylindrical pins and plate holes on projected area $A_b = t \cdot d$.
+- Built:
+  - explore: adjust load $P$, plate thickness $t$, and pin diameter $d$, observe live contact stress $\sigma_b = P / (t \cdot d)$;
+  - predict: predict projected contact area $A_b$ and average bearing stress $\sigma_b$ in a pinned connection;
+  - build: size the smallest whole-millimetre plate thickness $t$ to keep bearing stress below allowable limit $\sigma_b \le \sigma_{b,\text{allow}}$;
+  - debug: spot a student's mistake using curved semicircular surface area $(\pi / 2) d t$ or pin shear area instead of projected area $t \cdot d$;
+  - concept check: why projected area is used (pressure resultant integral), linear thickness scaling, clevis outer flange load sharing, hole elongation failure;
+  - solve: complete textbook problem on a structural gusset plate pin connection.
+
+**Unit 1.4: Allowable stress and factor of safety** ✅
+- Concept: $FS = \sigma_{\text{fail}} / \sigma_{\text{allow}}$, simultaneous evaluation of normal tension, pin shear, and plate bearing limits; weakest link governs $P_{\text{allow}} = \min(P_{\text{tension}}, P_{\text{shear}}, P_{\text{bearing}})$.
+- Built:
+  - explore: adjust rod diameter, pin diameter, plate thickness, and load, watch capacities update and see which failure mode governs;
+  - predict: calculate tension, shear, and bearing allowable load limits and identify the governing failure mode;
+  - build: size the connecting pin diameter so the connection safely supports the design load ($P_{\text{allow}} \ge P$, $FS \ge 1.0$);
+  - debug: spot a student's mistake taking maximum instead of minimum allowable capacity, or forgetting double shear factor 2;
+  - concept check: weakest link principle, factor of safety definition, plate thickening for bearing vs pin shear, single vs double shear capacity;
+  - solve: comprehensive connection design problem evaluating tension rod, double-shear pin, and plate bearing limits.
+
+
+### Future chapters (planned)
+- **Chapter 2: Strain**: normal strain ($\epsilon = \Delta L / L_0$) and shear strain ($\gamma$).
+- **Chapter 3: Mechanical properties**: stress-strain curve, Hooke's law ($\sigma = E\epsilon$), Poisson's ratio.
+- **Chapter 4: Axial load and deformation**: elastic deformation ($\delta = \frac{PL}{AE}$), thermal stress.
+- **Chapter 5: Torsion**: shear stress ($\tau = \frac{T\rho}{J}$), angle of twist ($\phi = \frac{TL}{JG}$).
+- **Chapter 6: Pure bending**: flexure formula ($\sigma = -\frac{My}{I}$), section modulus.
+- **Chapter 7: Transverse shear**: shear formula ($\tau = \frac{VQ}{It}$), shear flow ($q = \frac{VQ}{I}$).
+- **Chapter 8: Combined loadings**: pressure vessels, combined axial/bending/torsion.
+- **Chapter 9: Stress transformation**: transformation equations, principal stresses, Mohr's circle.
+- **Chapter 10: Deflection of beams**: elastic curve, deflection by integration and superposition.
+- **Chapter 11: Buckling of columns**: Euler buckling ($P_{\text{cr}} = \frac{\pi^2 EI}{(KL)^2}$).
 
 ## Subject 3: Dynamics (later)
 - Kinematics of particles

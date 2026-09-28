@@ -12,7 +12,6 @@ export default [
     title: "Mechanics of Materials",
     subject: "materials",
     description: "Stress, strain, Mohr's circle and beam stresses.",
-    comingSoon: true,
   },
   {
     id: "dynamics",

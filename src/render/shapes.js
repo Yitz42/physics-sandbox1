@@ -195,9 +195,109 @@ export function drawShape(cv, s, env) {
         const size = Math.max(8, Math.min(13, (13 * (w - 6)) / Math.max(1, measureLabel(ctx, s.label, 13))));
         drawLabel(ctx, s.label, x, y, { color: ink, size });
       }
+      if (s.hatched) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x - w / 2, y - h / 2, w, h);
+        ctx.clip();
+        ctx.strokeStyle = s.hatchColor || faint;
+        ctx.lineWidth = 1;
+        const step = s.hatchStep || 8;
+        const diag = Math.hypot(w, h);
+        for (let d = -diag; d <= diag; d += step) {
+          ctx.beginPath();
+          ctx.moveTo(x - w / 2 + d, y - h / 2);
+          ctx.lineTo(x - w / 2 + d + h, y + h / 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
       // A crate keeps labels off. A "passable" box (a plate) is a soft obstacle:
       // labels avoid covering it when there's another good spot, but may if not.
       out.boxes.push({ x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2, soft: !!s.passable });
+      break;
+    }
+    case "circle": {
+      const [x, y] = S(s.at);
+      const r = s.r != null ? s.r * cv.view.scale : (s.rPx || 20);
+      ctx.fillStyle = s.fill || cssColor("--c-crate", "#e9d5b0");
+      ctx.strokeStyle = lit ? roleColor("known") : (s.stroke || ink);
+      ctx.lineWidth = s.lineWidth || 2;
+      if (s.dashed) ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (s.fill !== "none") ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (s.innerR != null) {
+        const ri = s.innerR * cv.view.scale;
+        ctx.beginPath();
+        ctx.arc(x, y, ri, 0, Math.PI * 2);
+        ctx.fillStyle = paper;
+        ctx.fill();
+        ctx.stroke();
+      }
+      if (s.hatched) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        if (s.innerR != null) {
+          ctx.arc(x, y, s.innerR * cv.view.scale, 0, Math.PI * 2, true);
+        }
+        ctx.clip();
+        ctx.strokeStyle = s.hatchColor || faint;
+        ctx.lineWidth = 1;
+        const step = s.hatchStep || 8;
+        for (let d = -r * 2; d <= r * 2; d += step) {
+          ctx.beginPath();
+          ctx.moveTo(x - r + d, y - r);
+          ctx.lineTo(x - r + d + 2 * r, y + r);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      out.boxes.push({ x0: x - r, y0: y - r, x1: x + r, y1: y + r, soft: !!s.passable });
+      if (s.label) drawLabel(ctx, s.label, x, y, { color: ink, size: 13 });
+      break;
+    }
+    case "polygon": {
+      const pts = s.points.map(S);
+      ctx.fillStyle = s.fill || cssColor("--c-crate", "#e9d5b0");
+      ctx.strokeStyle = lit ? roleColor("known") : (s.stroke || ink);
+      ctx.lineWidth = s.lineWidth || 1.5;
+      if (s.dashed) ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+      ctx.closePath();
+      if (s.fill && s.fill !== "none") ctx.fill();
+      if (s.stroke && s.stroke !== "none") ctx.stroke();
+      ctx.setLineDash([]);
+      if (s.hatched) {
+        ctx.save();
+        ctx.beginPath();
+        pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+        ctx.closePath();
+        ctx.clip();
+        ctx.strokeStyle = s.hatchColor || faint;
+        ctx.lineWidth = 1;
+        const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+        const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+        const step = s.hatchStep || 8;
+        for (let d = minX - (maxY - minY); d <= maxX; d += step) {
+          ctx.beginPath();
+          ctx.moveTo(d, maxY);
+          ctx.lineTo(d + (maxY - minY), minY);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+      out.boxes.push({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), soft: !!s.passable });
+      if (s.label) {
+        const cx = xs.reduce((a, b) => a + b, 0) / xs.length;
+        const cy = ys.reduce((a, b) => a + b, 0) / ys.length;
+        drawLabel(ctx, s.label, cx, cy, { color: ink, size: 13 });
+      }
       break;
     }
     // "arc" (an angle marking) is drawn by angles.js, after the rest of the

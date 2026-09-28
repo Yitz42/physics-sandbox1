@@ -6,6 +6,7 @@ import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts
 import { getSolver } from "../../src/core/registry.js";
 import { makeVariant, clone, setPath, getPath } from "../../src/core/paths.js";
 import { isKnownKind } from "../../src/core/diagnosis.js";
+import { equationTex } from "../../src/core/equations.js";
 
 setFile("content / every stage");
 
@@ -64,6 +65,16 @@ for (const { unit, file, whole, stage: part } of stages) {
     ok(fine.includes(r.status), `status was ${r.status}: ${r.message}`);
     for (const ask of [].concat(stage.ask || [])) ok(Number.isFinite(r.values[ask.quantity]), `no value for ${ask.quantity}`);
   });
+
+  // The equations panel must be able to draw the solver's equations, in symbols
+  // and in numbers (a solver that writes them in another shape crashes the page).
+  if (solver.equations) {
+    test(`${stage.id}: its equations draw, in symbols and in numbers`, () => {
+      for (const eq of solver.equations(stage.setup, solver.solve(stage.setup))) {
+        for (const mode of ["symbolic", "numeric"]) ok(typeof equationTex(eq, mode) === "string", `${eq.id} (${mode})`);
+      }
+    });
+  }
 
   if (stage.vary) {
     test(`${stage.id}: 25 random new versions all solve with pulling cables`, () => {
