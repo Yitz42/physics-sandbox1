@@ -65,6 +65,7 @@ export const EVENT_TYPES = [
   { name: "exploreAction", about: "An explore stage's summary for one round (exploreSummary), logged when the student finishes, leaves or starts another round." },
   { name: "complete", about: "The stage was completed without help. activeMs / hiddenMs: the visit so far." },
   { name: "confidence", about: "The student tapped Sure / Not sure (confidence); the next check carries it too." },
+  { name: "guess", about: "A prediction in an explore stage, before seeing the answer (question: guess, or task N; submitted: what they predicted; expected: what happened; correct). Recorded to follow intuition, never scored." },
 ];
 
 export const PROGRESS_FIELDS = [

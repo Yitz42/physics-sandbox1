@@ -26,7 +26,7 @@ test("an exported file names its format, is anonymous, and spells out every fiel
   equal(f.events[0].time, "2026-09-20T10:00:00.000Z");
   equal([f.events[0].submitted, f.events[0].expected, f.events[0].mistakeKinds], ["42.4", 416, ["weight"]]);
   ok(f.dictionaries.eventFields.every((d) => d.name && d.about), "every field is explained");
-  ok(f.dictionaries.eventTypes.length === 8 && f.dictionaries.eventTypes.every((d) => d.name && d.about), "every event type is explained");
+  ok(f.dictionaries.eventTypes.length === 9 && /* (9th: guess — an explore prediction) */ f.dictionaries.eventTypes.every((d) => d.name && d.about), "every event type is explained");
   ok(/previous check/.test(f.dictionaries.timing), "the timing is defined");
   equal(f.progress, [{ course: "statics", stage: "cables/2-predict", status: "complete", updated: "2026-09-20T10:01:00.000Z" }]);
 });

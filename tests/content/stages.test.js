@@ -246,6 +246,38 @@ test("3D particles build: 10 places for D work (e.g. (1, 5, 9)), the same for an
   ok(!works(-2, -3, 50), "outside the triangle: a cable would push");
 });
 
+test("Predict first: the cables guess has one right answer (the steeper cable, 439.8 N vs 359.1 N at 50 kg)", () => {
+  const st = find("cables/1-explore");
+  equal(st.guess.options.filter((o) => o.correct).length, 1);
+  ok(st.guess.options.every((o) => o.correct || o.feedback), "every wrong guess explains itself");
+  const v = getSolver(st.solver).solve(st.setup).values;
+  close(v.T_AB, 359.07, 1e-4);
+  close(v.T_AC, 439.77, 1e-4);
+  ok(v.T_AC > v.T_AB, "AC (steeper) pulls harder");
+});
+
+test("Predict first: each springs change does what its explanation says (steeper → less stretch; stiffer → same force; heavier → more stretch)", () => {
+  const st = find("springs/1-explore");
+  const solver = getSolver(st.solver);
+  const expectWent = ["down", "same", "up"];
+  const changes = [["forces.#T_AB.direction.angle", 60], ["forces.#F_AC.k", 1600], ["forces.#W.mass", 40]];
+  st.tasks.forEach((t, i) => {
+    const before = clone(st.setup);
+    const after = clone(st.setup);
+    setPath(after, ...changes[i]);
+    const v0 = solver.solve(before).values[t.predict.watch], v1 = solver.solve(after).values[t.predict.watch];
+    const went = Math.abs(v1 - v0) < 0.005 * Math.abs(v0) ? "same" : v1 > v0 ? "up" : "down";
+    equal(went, expectWent[i], `task ${i + 1}:`);
+    ok(t.check(solver.solve(after).values, after, null, before), `task ${i + 1} ticks after its change`);
+    ok(!t.check(solver.solve(after).values, after, null, undefined), `task ${i + 1} needs a prediction first`);
+  });
+  // Changing two things at once doesn't count (the outcome wouldn't test the prediction).
+  const both = clone(st.setup);
+  setPath(both, "forces.#T_AB.direction.angle", 60);
+  setPath(both, "forces.#W.mass", 40);
+  ok(!st.tasks[0].check(solver.solve(both).values, both, null, clone(st.setup)), "two changes at once");
+});
+
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
   const st = find("cables/3-build");
   const solver = getSolver(st.solver);

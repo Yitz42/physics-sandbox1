@@ -160,6 +160,11 @@ export function runStage({ stage: whole, view, key, next, nextLabel = "Next stag
         const fg = time.chk === 1 && isFastGuess(activeNow() - roundStart);
         recordEvent({ ...here, e: "check", q, ok: !!ok, k: ok ? [] : kinds, a, ...time, fg, cf: ctx.confidence, ...detail, ...paramsOnce() });
       },
+      // A prediction in an explore stage (challenges/common/predict-first.js): recorded to
+      // see how intuition grows, never scored — guessing wrong is part of learning.
+      recordGuess({ q, ok, sub, exp }) {
+        recordEvent({ ...here, e: "guess", q, ok: !!ok, sub, exp });
+      },
       setConfidence(value) {
         ctx.confidence = value;
         recordEvent({ ...here, e: "confidence", cf: value });

@@ -15,7 +15,7 @@ Read this before changing src/core/evidence.js, record-file.js, migrations.js, c
   always kept. Change the format only by adding fields or raising the version.
 - **Learning record, format 2** (owner's spec, 2026-09-27): every event has a type
   (stageStart, stageLeave, check, showAnswer, hint, exploreAction, complete,
-  confidence), a random session id, app/content versions (src/core/version.js)
+  confidence, guess — an explore-stage prediction, recorded but never scored), a random session id, app/content versions (src/core/version.js)
   and the time-zone offset. Checks store what was typed, the right value, units,
   tolerance and the round's `vary` numbers; FBD checks store the arrows drawn and
   expected; debug / concept-check / build store what was flagged, picked or

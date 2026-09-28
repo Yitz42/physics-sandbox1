@@ -7,21 +7,40 @@
 //   editable   slider/select specs            draggable  force ids with a drag handle
 //   tasks      [{ text, check(values, setup, result) → true/false }]
 //   sceneOpts  e.g. { components: true } to draw Fx and Fy
+//   guess      a quick guess before the sliders unlock (style A, common/predict-first.js)
+//   tasks[i].predict  predict which way a quantity goes before making the change (style B)
 
 import { createWorkspace } from "./common/workspace.js";
 import { el, button } from "../ui/controls.js";
 import { renderMixed } from "../render/panel.js";
 import { showMessage } from "../ui/feedback.js";
 import { changeTally } from "./common/design.js";
+import { mountGuess, mountTaskPrediction } from "./common/predict-first.js";
+import { clone } from "../core/paths.js";
 
 export function mount(ctx) {
   const { stage } = ctx;
   const tasks = stage.tasks || [];
   const done = new Set();
+  // Style A: until the student has guessed, the numbers are hidden and the sliders locked.
+  let guessing = !!stage.guess;
+  if (guessing) {
+    mountGuess(ctx, stage.guess, () => {
+      guessing = false;
+      ctx.el.controls.classList.remove("locked");
+      ws.setReveal(true);
+    });
+    ctx.el.controls.classList.add("locked");
+  }
   const list = el("ul", { className: "task-list" });
-  const items = tasks.map((t) => {
+  const predictions = [];
+  const items = tasks.map((t, i) => {
     const li = el("li", { className: "task" });
-    renderMixed(li, t.text);
+    const text = el("div");
+    renderMixed(text, t.text);
+    li.appendChild(text);
+    // Style B: a one-tap prediction before the change (it counts only once predicted).
+    if (t.predict) predictions[i] = mountTaskPrediction(ctx, li, t, i, () => clone(ws.setup), (id) => ws.result.values[id]);
     list.appendChild(li);
     return li;
   });
@@ -36,22 +55,26 @@ export function mount(ctx) {
   ws = createWorkspace(ctx, {
     editable: stage.editable,
     draggable: stage.draggable,
-    equations: "live",
-    reveal: true,
+    equations: stage.guess ? "hidden" : "live",
+    reveal: !stage.guess,
     sceneOpts: stage.sceneOpts,
     onChange: (result) => {
       if (ws) tally.note(ws.setup);
       // Tick off any task that is now true. Ticks stay, even if later untrue.
+      if (guessing) return; // (nothing counts before the guess)
       tasks.forEach((t, i) => {
+        const pr = predictions[i];
+        if (pr && !pr.ready()) return; // predict first, then make the change
         let ok = false;
         try {
-          ok = t.check(result.values, ws ? ws.setup : ctx.setup, result);
+          ok = t.check(result.values, ws ? ws.setup : ctx.setup, result, pr && pr.before());
         } catch {
           ok = false;
         }
         if (ok && !done.has(i)) {
           done.add(i);
           items[i].classList.add("done");
+          if (pr) pr.settle();
         }
       });
       // The solver's note (e.g. "It moves!") shows only while it applies.

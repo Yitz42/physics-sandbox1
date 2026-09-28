@@ -12,6 +12,18 @@ export default {
     "A crate hangs from ring A, held by two cables. On the left is the real setup (the **space diagram**); on the right is the **free-body diagram** of ring A. " +
     "Move the sliders and watch the tensions — the equations $\\Sigma F_x = 0$ and $\\Sigma F_y = 0$ are solved live.",
   setup: crateSetup({ angleAB: 30, angleAC: 45, mass: 50 }),
+  // Predict first, style A (owner's sample, 2026-09-27): one quick guess before the numbers show.
+  // (50 kg: T_AB = 359.1 N, T_AC = 439.8 N — the steeper cable pulls harder.)
+  guess: {
+    prompt: "The crate hangs on two cables: AB at 30° and AC at 45° above the level. **Which cable pulls harder?**",
+    options: [
+      { text: "AB, the flatter cable", feedback: "The sideways pulls must cancel: $T_{AB}\\cos 30^\\circ = T_{AC}\\cos 45^\\circ$. The steeper cable has the smaller cosine, so IT needs the bigger tension." },
+      { text: "AC, the steeper cable", correct: true },
+      { text: "They pull equally", feedback: "Only when both cables make the same angle. Here their sideways parts can only cancel if the steeper one pulls harder." },
+      { text: "Each pulls half the crate's weight", feedback: "Only straight-up cables would share the weight in halves. Slanted cables also pull sideways against each other, so each carries MORE than half." },
+    ],
+    explain: "$\\Sigma F_x = 0$ makes the sideways parts equal, $T_{AB}\\cos 30^\\circ = T_{AC}\\cos 45^\\circ$ — so the steeper cable pulls harder.",
+  },
   editable: [
     { path: "forces.#T_AB.direction.angle", label: "Angle of AB", min: 10, max: 80, step: 1, unit: "deg" },
     { path: "forces.#T_AC.direction.angle", label: "Angle of AC", min: 10, max: 80, step: 1, unit: "deg" },

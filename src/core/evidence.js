@@ -11,7 +11,7 @@
 //
 // One event (short keys, to keep storage small; record-file.js spells them out):
 //   e: event type — "stageStart", "stageLeave", "check", "showAnswer", "hint",
-//      "exploreAction", "complete" or "confidence"
+//      "exploreAction", "complete", "confidence" or "guess" (an explore prediction, never scored)
 //   common to every event:
 //     t: time (ms, UTC), tz: the browser's time-zone offset in minutes,
 //     sid: session id (random, new each time the game is opened — never a person),

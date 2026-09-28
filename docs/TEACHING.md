@@ -105,3 +105,9 @@ Read this before writing or changing stages or challenge types. Changing any of 
   Unit 3.5 (owner's request): questions from the chapter's own units AND ones that
   combine them with earlier chapters. A known size the student must work out (a spring's
   force from its coordinates, a cable at its rating) is written `hideMagnitude: true`.
+- **Predict first in explore stages** (owner, 2026-09-27: build intuition quickly). Two
+  styles, samples for the owner to choose between (challenges/common/predict-first.js):
+  A. `guess` — one question before the sliders unlock, numbers hidden until then
+     (sample: Unit 3.1 explore); B. `task.predict` — a one-tap up / down / same before
+     each change, then the real outcome beside the guess (sample: Unit 3.2 explore).
+  Guesses are recorded but never scored.
