@@ -2,7 +2,8 @@
 // elevation, and along a line between two points; size, direction angles, resultants.
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { solveForce3d } from "../../src/subjects/statics/force3d.js";
-import { force3dEquations, force3dSteps, force3dMistakes } from "../../src/subjects/statics/force3d-tools.js";
+import { force3dEquations, force3dMistakes } from "../../src/subjects/statics/force3d-tools.js";
+import { force3dSteps } from "../../src/subjects/statics/force3d-steps.js";
 import { force3dChoices } from "../../src/subjects/statics/force3d-choices.js";
 import { projector } from "../../src/render/projection.js";
 

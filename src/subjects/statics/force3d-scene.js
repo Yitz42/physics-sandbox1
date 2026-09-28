@@ -28,14 +28,18 @@ import { solveForce3d, pointOf, directionOf3 } from "./force3d.js";
 import { sizeOf3 } from "./force3d-balance.js";
 import { componentBox, angleMarks, anglesFor } from "./force3d-marks.js";
 import { momentShapes } from "./force3d-moment-scene.js";
+import { allForces3 } from "./force3d-rigid.js";
+import { visibleBox, fitGround } from "./force3d-ground.js";
 
 const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale3 = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 const nice = (v) => format(v, "").replace(/^-/, "−");
 const unit2 = (d) => { const m = Math.hypot(d[0], d[1]) || 1; return [d[0] / m, d[1] / m]; };
 
-export function force3dScene(setup, result, opts = {}) {
-  const res = result || solveForce3d(setup);
+export function force3dScene(setup0, result, opts = {}) {
+  // (A rigid body, Unit 5.6: its supports are drawn as their reactions — forces at their points.)
+  const setup = setup0.analysis === "rigid" ? { ...setup0, forces: allForces3(setup0) } : setup0;
+  const res = result || solveForce3d(setup0);
   const v = res.values;
   const P = projector(setup.view3d);
   const at = P.at;
@@ -55,6 +59,7 @@ export function force3dScene(setup, result, opts = {}) {
   // A pole, cables, the named points.
   if (setup.pole) shapes.push({ type: "beam", points: setup.pole.map((n) => at(pointOf(setup, n))), width: 10 });
   if (setup.body) shapes.push({ type: "beam", points: setup.body.map((n) => at(pointOf(setup, n))), width: 10 }); // a bent bar or pipe
+  if (setup.plate) shapes.push({ type: "polygon", points: setup.plate.map((n) => at(pointOf(setup, n))), stroke: "ink", lineWidth: 2, passable: true }); // a flat plate (Unit 5.6)
   for (const [a, b] of setup.cables || []) shapes.push({ type: "line", from: at(pointOf(setup, a)), to: at(pointOf(setup, b)), style: "cable" });
   for (const [a, b] of setup.springs || []) shapes.push({ type: "spring", from: at(pointOf(setup, a)), to: at(pointOf(setup, b)) });
   // Weights: a crate on a short cord below the point it hangs from (drawn flat, facing the viewer).
@@ -94,7 +99,7 @@ export function force3dScene(setup, result, opts = {}) {
     // label — so moving an anchor never slides the labels along the cables. A cable that would
     // have to push stays along its cable, in red, with its negative value.
     // (Moment pictures too, unless sliders set the force: then its length shows its size.)
-    const balance = setup.analysis === "equilibrium" || (setup.analysis === "moment" && !setup.fullScale);
+    const balance = setup.analysis === "equilibrium" || setup.analysis === "rigid" || (setup.analysis === "moment" && !setup.fullScale);
     const len = F == null ? 0.35 * size : balance ? 0.3 * size : F * k;
     const tip = add3(start, scale3(d.u, len));
     const asked = F == null || ((setup.hideMagnitude || f.hideMagnitude) && !reveal);
@@ -134,6 +139,7 @@ export function force3dScene(setup, result, opts = {}) {
   const named = Object.entries(pts).filter(([n]) => n !== "O");
   // (… and each spring's stiffness, under the coordinates.)
   const springs = (setup.forces || []).filter((f) => f.kind === "spring" && f.dir && f.dir.from).map((f) => `${f.dir.from}${f.dir.to}: k = ${f.k} N/m`);
+  // (A rigid body's supports are named in its story, not here: the key stays small enough for phones.)
   if (named.length && setup.showCoords !== false) shapes.push({ type: "note", lines: [...named.map(([n, p]) => `${n} (${p.map(nice).join(", ")}) m`), ...springs] });
 
   // The frame (agreed with the owner): the objects as big as possible — round what's
@@ -186,32 +192,4 @@ export function force3dScene(setup, result, opts = {}) {
   for (const p of Object.values(pts)) if (p[2] > 1e-9) shade.dots.push([at(fall(p)), 4.5]);
   shapes.push({ type: "ground", corners: corners.map(at), lines, shadows: shade });
   return shapes;
-}
-
-// What the canvas shows round a frame (workspace.js fits the frame inside a 36 px border,
-// centred): its whole box, less a 10 px cushion — in picture metres. Null without a canvas.
-const PAD = 36;
-function visibleBox(f, size) {
-  if (!size) return null;
-  const s = Math.min((size.width - 2 * PAD) / (f.xmax - f.xmin), (size.height - 2 * PAD) / (f.ymax - f.ymin));
-  const cx = (f.xmin + f.xmax) / 2, cy = (f.ymin + f.ymax) / 2, hw = size.width / 2 / s - 10 / s, hh = size.height / 2 / s - 10 / s;
-  return { xmin: cx - hw, xmax: cx + hw, ymin: cy - hh, ymax: cy + hh };
-}
-
-// The biggest ground patch round (cx, cy) whose corners, as drawn, are inside the box:
-// its half-widths along x and along y grow in turn (each by 5%) while it still fits, up
-// to g's size. [x0, x1, y0, y1].
-function fitGround(g, at, box, cushion, [cx, cy]) {
-  const inside = (hx, hy) => [[-1, -1], [1, -1], [1, 1], [-1, 1]].every(([a, b]) => {
-    const q = at([cx + a * hx, cy + b * hy, 0]);
-    return q[0] >= box.xmin + cushion && q[0] <= box.xmax - cushion && q[1] >= box.ymin + cushion && q[1] <= box.ymax - cushion;
-  });
-  const maxX = (g[1] - g[0]) / 2, maxY = (g[3] - g[2]) / 2;
-  let hx = 0.02 * maxX, hy = 0.02 * maxY;
-  for (let grew = true, n = 0; grew && n < 400; n++) {
-    grew = false;
-    if (hx * 1.05 <= maxX && inside(hx * 1.05, hy)) { hx *= 1.05; grew = true; }
-    if (hy * 1.05 <= maxY && inside(hx, hy * 1.05)) { hy *= 1.05; grew = true; }
-  }
-  return [cx - hx, cx + hx, cy - hy, cy + hy];
 }

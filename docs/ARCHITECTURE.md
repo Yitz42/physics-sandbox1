@@ -37,7 +37,9 @@ src/
       particle.js          concurrent forces, ΣF = 0; unit and position vectors; springs (F = ks);
                            pulleys (forces sharing one tension)
       force3d.js           forces in 3D: direction angles, azimuth/elevation, along a line, resultants
-                           (force3d-scene.js: 3D pictures; force3d-tools.js), Unit 2.3
+                           (force3d-scene.js: 3D pictures, force3d-ground.js; force3d-tools.js,
+                           force3d-steps.js), Unit 2.3; analysis "rigid": a rigid body in 3D, supports
+                           as reactions, six equations (force3d-rigid.js, force3d-rigid-tools.js), Unit 5.6
       moment.js            moments about a point: M = Fd = xFy − yFx (Varignon), balance ΣM = 0
       couple.js            couples: M = Fd about any point, equivalent couples, ΣM of couples
       equivalent.js        equivalent systems: F_R = ΣF, (M_R)_O = ΣM_O, single resultant position

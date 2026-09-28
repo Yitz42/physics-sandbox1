@@ -56,7 +56,7 @@ const chapters = [
       "equation-sets",
       "stability",
       "two-force-members",
-      soon("Rigid body equilibrium in 3D", "Six equations, supports in space, and solving for their reactions."),
+      "rigid-body-3d",
     ],
   },
   {

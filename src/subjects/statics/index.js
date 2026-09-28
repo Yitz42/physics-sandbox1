@@ -39,7 +39,8 @@ import { internalScene } from "./internal-scene.js";
 import { internalSummary, internalMistakes, internalChoices, internalSteps } from "./internal-tools.js";
 import { solveForce3d, force3dQuantities } from "./force3d.js";
 import { force3dScene } from "./force3d-scene.js";
-import { force3dEquations, force3dSummary, force3dMistakes, force3dSteps } from "./force3d-tools.js";
+import { force3dEquations, force3dSummary, force3dMistakes } from "./force3d-tools.js";
+import { force3dSteps } from "./force3d-steps.js";
 import { force3dChoices } from "./force3d-choices.js";
 
 // Statics' own kinds of mistake (on top of the general ones in core/diagnosis.js:

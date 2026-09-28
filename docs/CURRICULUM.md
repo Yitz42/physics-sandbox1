@@ -205,8 +205,14 @@ Claude builds from it.
   predict a pin force's direction from geometry; prop a shelf within three limits;
   debug an FBD with components at a link; solve a boom propped by a strut.
 
-**Unit 5.6: Rigid body equilibrium in 3D**
+**Unit 5.6: Rigid body equilibrium in 3D** ✅
 - Concept: six equations; supports in space (ball-and-socket, journal bearings).
+- Built: move the cable anchor of a plate shelf (hinged on a ball-and-socket and a bearing) and
+  watch T and the reactions; predict the shelf's T, B_z, A_z, a windlass's push and bearing
+  reactions, and a boom's cable tension and A_x; size a windlass crank (the shortest that keeps the
+  push under 150 N, working out the push); debug a student's shelf working (r for u, a wrong moment
+  arm, a sign, a reaction left out of ΣF_z); concept check on 3D supports; solve a windlass or a
+  boom: the six equations, then the unknowns.
 
 ### Chapter 6: Equilibrium of structures
 
