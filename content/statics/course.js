@@ -21,8 +21,8 @@ const chapters = [
   {
     id: "intro", title: "Introduction to statics",
     units: [
-      soon("Newton's laws and units", "Newton's three laws, SI units (m, kg, s, N) and why $W = mg$."),
-      soon("Solving a statics problem", "The steps every problem follows: a sketch, the free-body diagram, the equations, the answer and a check."),
+      "newtons-laws",
+      "solving-problems",
     ],
   },
   {

@@ -20,11 +20,20 @@ Claude builds from it.
 
 ### Chapter 1: Introduction to statics
 
-**Unit 1.1: Newton's laws and units**
+**Unit 1.1: Newton's laws and units** ✅
 - Concept: Newton's three laws; SI units (m, kg, s, N); weight W = mg.
+- Built: hang a crate and change its mass and g (other planets), watching W and the cable's pull;
+  predict a person's weight and the floor's push, a mass from a weight in kN, a rover's weight on
+  the Moon, a push's acceleration on ice (F = ma), an elevator cable's pull; load a hoist to its
+  cable's rating (working out the pull); debug a student's working (W = m, W = m/g, kN the wrong
+  way, the third-law pair's direction); concept check; solve an elevator's cable (W = mg, T − W = ma).
 
-**Unit 1.2: Solving a statics problem**
+**Unit 1.2: Solving a statics problem** ✅
 - Concept: the steps every problem follows: sketch, free-body diagram, equations, answer, check.
+- Built: slide a load along a beam and watch the supports share it; predict the unknowns of a crate on
+  two cables, a plank, an overhanging beam and a cantilever (the same steps each time); place a
+  roller so neither support is overloaded (working out both reactions); debug a plank's FBD; concept
+  check on the method; solve a plank with a person on it, FBD to answers, and check with ΣM_B.
 
 ### Chapter 2: Forces and other vectors
 

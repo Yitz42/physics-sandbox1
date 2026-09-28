@@ -199,3 +199,4 @@ registerSolver("statics.internal", {
 // Chapters 9–10 (friction: dry friction, tipping, belts, wedges; moments of inertia) register
 // their solvers in their own file.
 import "./index-friction.js";
+import "./index-intro.js"; // Chapter 1: Newton's laws and units

@@ -29,6 +29,7 @@ const UNITS = {
   mm: { text: "mm", tex: "\\text{mm}" },
   "mm^2": { text: "mm²", tex: "\\text{mm}^2" },
   "m^2": { text: "m²", tex: "\\text{m}^2" },
+  "m/s^2": { text: "m/s²", tex: "\\text{m/s}^2" }, // acceleration (g = 9.81 m/s²)
   // (Area moments of inertia of beam sections, in the textbook's usual size.)
   "10^6 mm^4": { text: "×10⁶ mm⁴", tex: "\\times 10^6\\,\\text{mm}^4" },
   Pa: { text: "Pa", tex: "\\text{Pa}" },
