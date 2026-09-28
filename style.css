@@ -549,21 +549,12 @@ a.folder-link:hover .folder-title { color: var(--c-accent); }
   color: var(--c-accent); transition: transform 0.15s ease; }
 .title-back:hover { transform: translateX(-3px); }
 
-/* Predict first (explore stages, challenges/common/predict-first.js).
-   A: a guess before the sliders unlock; B: a one-tap prediction inside each objective. */
+/* Predict first (explore stages, challenges/common/predict-first.js): one guess before the
+   sliders unlock; afterwards a single line (guess, answer, why) replaces the choices. */
 .controls.locked { opacity: 0.4; pointer-events: none; filter: grayscale(0.6); }
 .guess-box { margin-bottom: 14px; }
 .guess-prompt p { margin: 0 0 4px; }
 .guess-choices .guess-choice { margin: 6px 0; padding: 8px 14px; }
-.predict-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 4px; font-size: 0.92em; color: var(--c-muted); }
-.predict-row p { margin: 0; }
-.predict-taps { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-.predict-tap { padding: 3px 10px; border-radius: 999px; border: 1.5px solid var(--c-line); background: var(--c-panel); color: var(--c-ink); font-size: 0.95em; cursor: pointer; }
-.predict-tap:hover:not(:disabled) { border-color: var(--c-accent); }
-.predict-tap.selected { border-color: var(--c-accent); box-shadow: 0 0 0 2px var(--c-accent) inset; }
-.predict-tap:disabled { cursor: default; }
-.task.predicted .predict-tap:not(.selected) { opacity: 0.55; }
-.predict-outcome { font-size: 0.92em; margin-top: 4px; }
-.predict-outcome p { margin: 0; }
-.predict-outcome.good { color: var(--c-good); }
-.predict-outcome.surprise { color: var(--c-accent); }
+.guess-result { font-size: 0.95em; padding: 6px 10px; border-radius: 8px; border-left: 3px solid var(--c-accent); background: var(--c-panel); }
+.guess-result p { margin: 0; }
+.guess-result.good { border-left-color: var(--c-good); }

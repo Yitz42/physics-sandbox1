@@ -6,7 +6,6 @@ import { getPath, setPath, makeVariant, pickValue } from "../../src/core/paths.j
 import { solveSystem, rank } from "../../src/core/linear.js";
 import { solveEquations, equationTex, swapFactor, flipSign, mistakesOf } from "../../src/core/equations.js";
 import { stageParts, checkStage, stageSituations, nextSituation } from "../../src/core/content.js";
-import { trend } from "../../src/challenges/common/predict-first.js";
 
 setFile("core");
 
@@ -318,12 +317,4 @@ test("symbolic: an inner loop inside an outer loop → G₁G₂ / (1 + G₂H₂ 
   const num = S.substitute(T.num, { zero: 0, add: (a, b) => a + b, mul: (a, b) => a * b }, (id) => vals[id], (c) => c);
   const den = S.substitute(T.den, { zero: 0, add: (a, b) => a + b, mul: (a, b) => a * b }, (id) => vals[id], (c) => c);
   close(num / den, 6 / 8.5);
-});
-
-test("predict first: a change is up, down or the same (within 0.5 %, so rounding isn't a change)", () => {
-  equal(trend(233.8, 305.2), "up");
-  equal(trend(233.8, 150), "down");
-  equal(trend(233.8, 233.9), "same");
-  equal(trend(0, 0), "same");
-  equal(trend(-5, -8), "down");
 });

@@ -4,7 +4,7 @@
 import { test, ok, equal, close, setFile } from "../harness.js";
 import { loadCourseList, loadCourse, loadUnit, loadStage, checkStage, stageParts, stageSituations } from "../../src/core/content.js";
 import { getSolver } from "../../src/core/registry.js";
-import { makeVariant, clone, setPath } from "../../src/core/paths.js";
+import { makeVariant, clone, setPath, getPath } from "../../src/core/paths.js";
 import { isKnownKind } from "../../src/core/diagnosis.js";
 
 setFile("content / every stage");
@@ -256,26 +256,17 @@ test("Predict first: the cables guess has one right answer (the steeper cable, 4
   ok(v.T_AC > v.T_AB, "AC (steeper) pulls harder");
 });
 
-test("Predict first: each springs change does what its explanation says (steeper → less stretch; stiffer → same force; heavier → more stretch)", () => {
+test("Predict first: the springs guess — a spring twice as stiff pulls just as hard (233.8 N), and stretches half as far", () => {
   const st = find("springs/1-explore");
+  equal(st.guess.options.filter((o) => o.correct).length, 1);
+  ok(st.guess.options.every((o) => o.correct || o.feedback), "every wrong guess explains itself");
   const solver = getSolver(st.solver);
-  const expectWent = ["down", "same", "up"];
-  const changes = [["forces.#T_AB.direction.angle", 60], ["forces.#F_AC.k", 1600], ["forces.#W.mass", 40]];
-  st.tasks.forEach((t, i) => {
-    const before = clone(st.setup);
-    const after = clone(st.setup);
-    setPath(after, ...changes[i]);
-    const v0 = solver.solve(before).values[t.predict.watch], v1 = solver.solve(after).values[t.predict.watch];
-    const went = Math.abs(v1 - v0) < 0.005 * Math.abs(v0) ? "same" : v1 > v0 ? "up" : "down";
-    equal(went, expectWent[i], `task ${i + 1}:`);
-    ok(t.check(solver.solve(after).values, after, null, before), `task ${i + 1} ticks after its change`);
-    ok(!t.check(solver.solve(after).values, after, null, undefined), `task ${i + 1} needs a prediction first`);
-  });
-  // Changing two things at once doesn't count (the outcome wouldn't test the prediction).
-  const both = clone(st.setup);
-  setPath(both, "forces.#T_AB.direction.angle", 60);
-  setPath(both, "forces.#W.mass", 40);
-  ok(!st.tasks[0].check(solver.solve(both).values, both, null, clone(st.setup)), "two changes at once");
+  const stiff = clone(st.setup);
+  setPath(stiff, "forces.#F_AC.k", 2 * getPath(st.setup, "forces.#F_AC.k"));
+  const v0 = solver.solve(st.setup).values, v1 = solver.solve(stiff).values;
+  close(v0.F_AC, 233.83, 1e-4);
+  close(v1.F_AC, v0.F_AC, 1e-9);
+  close(v1["F_AC.s"], v0["F_AC.s"] / 2, 1e-9);
 });
 
 test("Cables build: off-centre skylight; 45°/35° holds (734.4 N, 633.9 N); 39°/35° snaps AB; 45°/36° hits the skylight; must be worked out first", () => {
