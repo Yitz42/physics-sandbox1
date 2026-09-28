@@ -87,10 +87,16 @@ export function force3dScene(setup, result, opts = {}) {
   for (const { f, d } of vecs) {
     const start = f.at ? pointOf(setup, f.at) : f.dir && f.dir.from ? pointOf(setup, f.dir.from) : [0, 0, 0];
     const F = sizeOf({ f, d });
-    // (An unknown not yet found: a neutral length, labelled "?".)
-    const tip = add3(start, scale3(d.u, F == null ? 0.35 * size : F * k));
+    // (An unknown not yet found: a neutral length, labelled "?".) A particle in equilibrium
+    // (agreed with the owner): every arrow the same short length at the point, its size in its
+    // label — so moving an anchor never slides the labels along the cables. A cable that would
+    // have to push stays along its cable, in red, with its negative value.
+    const balance = setup.analysis === "equilibrium";
+    const len = F == null ? 0.35 * size : balance ? 0.3 * size : F * k;
+    const tip = add3(start, scale3(d.u, len));
     const asked = F == null || ((setup.hideMagnitude || f.hideMagnitude) && !reveal);
-    shapes.push({ type: "arrow", id: f.id, from: at(start), to: at(tip), role: known(f) == null ? "unknown" : "known", label: `${f.symbol} = ${asked ? "?" : format(F, "N")}` });
+    const role = balance && f.kind === "cable" && F < -1e-6 ? "wrong" : known(f) == null ? "unknown" : "known";
+    shapes.push({ type: "arrow", id: f.id, from: at(start), to: at(tip), role, label: `${f.symbol} = ${asked ? "?" : format(F, "N")}` });
     // (The frame keeps room for the arrow at its longest — unless sliders set it: then
     // the box they can reach is already in, setup.reach.)
     fixed.push(start, ...(setup.reach ? [] : [add3(start, scale3(d.u, 0.8 * size))]));
