@@ -22,15 +22,21 @@ export function mount(ctx) {
   const done = new Set();
   // Predict first: until the student has guessed, the numbers are hidden and the sliders locked.
   let guessing = !!stage.guess;
+  // Locked means locked: greyed out AND every slider, number box and dropdown disabled
+  // (so neither the mouse, the keyboard nor a finger can move them), and nothing in the
+  // picture can be dragged (ws.locked).
+  const lock = (on) => {
+    ctx.el.controls.classList.toggle("locked", on);
+    ctx.el.controls.querySelectorAll("input, select, button, textarea").forEach((c) => (c.disabled = on));
+    if (ws) ws.locked = on;
+  };
   if (guessing) {
     mountGuess(ctx, stage.guess, () => {
       guessing = false;
-      ctx.el.controls.classList.remove("locked");
-      ws.locked = false; // (the arrows can be dragged again)
+      lock(false);
       delete ws.sceneOpts.preGuess;
       ws.setReveal(true);
     });
-    ctx.el.controls.classList.add("locked");
   }
   const list = el("ul", { className: "task-list" });
   const items = tasks.map((t) => {
@@ -83,7 +89,7 @@ export function mount(ctx) {
   }
   // Without tasks, the student decides when they've explored enough.
   if (!tasks.length) ctx.el.area.appendChild(button("I've explored enough ✓", () => !finished && finish(), "btn"));
-  ws.locked = guessing; // no dragging before the guess either
+  if (guessing) lock(true); // (now that the sliders exist)
   ws.update(); // re-run the task checks now that ws exists
 }
 

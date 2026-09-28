@@ -177,6 +177,7 @@ export function createWorkspace(ctx, opts = {}) {
   // ---- Pointer: drag tips, click arrows ---------------------------------------
   cv.onPointer({
     down(p, e) {
+      if (ws.locked) return; // (nothing moves until the stage unlocks it)
       if (ws.onPointer && ws.onPointer.down && ws.onPointer.down(p, e)) return;
       const tol = cv.pxToWorld(14);
       const h = ws.shapes.find((s) => s.type === "handle" && mag(sub(s.at, p)) < tol);
@@ -189,6 +190,7 @@ export function createWorkspace(ctx, opts = {}) {
       ws.setHighlight(hit && hit.id !== ws.highlight ? hit.id : null);
     },
     move(p, e) {
+      if (dragging && ws.locked) dragging = null;
       if (dragging) {
         solver.drag(ws.setup, dragging, p);
         ws.update();
